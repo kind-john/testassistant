@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">CktTestAssistant</string>
+    <string name="deletetestitem">delete</string>
+    <string name="savetestitem">save</string>
+    <string name="add_testitem">add</string>
+    <string name="add_usecase">add</string>
+</resources>
