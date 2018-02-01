@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.ckt.ckttestassistant.interfaces.OnItemClickListener;
 import com.ckt.ckttestassistant.utils.LogUtils;
 import com.ckt.ckttestassistant.R;
 import com.ckt.ckttestassistant.TestCategory;
@@ -24,13 +25,7 @@ public class TestCategoryListAdapter extends RecyclerView.Adapter<TestCategoryLi
     private final Context mContext;
     private final ArrayList<TestCategory> mItems;
     private OnItemClickListener mItemClickListener;
-    public interface OnItemClickListener{
-        /**
-         *
-         * @param pos
-         */
-        void onItemClick(int pos);
-    }
+
     public void setOnItemClickListener(OnItemClickListener listener){
         this.mItemClickListener = listener;
     }

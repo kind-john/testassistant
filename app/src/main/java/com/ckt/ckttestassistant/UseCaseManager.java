@@ -90,6 +90,10 @@ public class UseCaseManager {
     }
 
     public void saveUseCaseToXml(ArrayList<TestItemBase> selectedTestItems, String name) {
+        if(selectedTestItems == null || selectedTestItems.isEmpty()){
+            LogUtils.d(TAG, "don't select any testitem,so don't save anything!");
+            return;
+        }
         String path = mContext.getFilesDir()+"/usecases.xml";
         UseCaseBase uc = new CktUseCase(name);
         uc.setTestItems(selectedTestItems);

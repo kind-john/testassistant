@@ -9,6 +9,7 @@ import android.widget.Button;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.ckt.ckttestassistant.interfaces.OnItemClickListener;
 import com.ckt.ckttestassistant.utils.LogUtils;
 import com.ckt.ckttestassistant.R;
 import com.ckt.ckttestassistant.testitems.TestItemBase;
@@ -26,15 +27,6 @@ public class TestItemListAdapter extends RecyclerView.Adapter<TestItemListAdapte
     private OnItemClickListener mItemClickListener;
     private UpdateShowPanelListener mUpdateShowPanelListener;
     private boolean mIsShowButton = false;
-    private StringBuilder mSelectInfoBuilder = new StringBuilder();
-
-    public interface OnItemClickListener{
-        /**
-         *
-         * @param pos
-         */
-        void onItemClick(int pos);
-    }
 
     public interface UpdateShowPanelListener{
         /**
@@ -92,7 +84,6 @@ public class TestItemListAdapter extends RecyclerView.Adapter<TestItemListAdapte
                             if(mSelectedItems != null){
                                 mSelectedItems.add(mAllItems.get(index));
                             }
-                            //mSelectInfoBuilder.append(" > "+mItems.get(index).getTitle());
                             mUpdateShowPanelListener.updateShowPanel(mSelectedItems);
                         }
                     }

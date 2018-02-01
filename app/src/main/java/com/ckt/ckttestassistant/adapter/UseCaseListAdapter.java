@@ -2,19 +2,18 @@ package com.ckt.ckttestassistant.adapter;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
-import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.ckt.ckttestassistant.utils.LogUtils;
 import com.ckt.ckttestassistant.R;
+import com.ckt.ckttestassistant.interfaces.OnItemClickListener;
 import com.ckt.ckttestassistant.usecases.UseCaseBase;
+import com.ckt.ckttestassistant.utils.LogUtils;
 
 import java.util.ArrayList;
 
@@ -27,15 +26,16 @@ public class UseCaseListAdapter extends RecyclerView.Adapter<UseCaseListAdapter.
     private final Context mContext;
     private final ArrayList<UseCaseBase> mAllItems;
     private final ArrayList<UseCaseBase> mSelectedItems;
+    private UpdateShowPanelListener mUpdateShowPanelListener;
     private OnItemClickListener mItemClickListener;
-    public interface OnItemClickListener{
+
+    public interface UpdateShowPanelListener{
         /**
          *
-         * @param pos
+         * @param info
          */
-        void onItemClick(int pos);
+        void updateShowPanel(ArrayList<UseCaseBase> info);
     }
-
     public UseCaseListAdapter(Context context, ArrayList<UseCaseBase> allItems, ArrayList<UseCaseBase> selectedItems) {
         this.mContext = context;
         this.mAllItems = allItems;
@@ -44,6 +44,10 @@ public class UseCaseListAdapter extends RecyclerView.Adapter<UseCaseListAdapter.
 
     public void setOnItemClickListener(OnItemClickListener listener){
         this.mItemClickListener = listener;
+    }
+
+    public void setUpdateShowPanelListener(UpdateShowPanelListener listener){
+        this.mUpdateShowPanelListener = listener;
     }
 
     @Override
@@ -76,7 +80,12 @@ public class UseCaseListAdapter extends RecyclerView.Adapter<UseCaseListAdapter.
             holder.mAdd.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    mSelectedItems.add(mAllItems.get(index));
+                    if (mUpdateShowPanelListener != null) {
+                        if(mSelectedItems != null) {
+                            mSelectedItems.add(mAllItems.get(index));
+                        }
+                        mUpdateShowPanelListener.updateShowPanel(mSelectedItems);
+                    }
                 }
             });
         }

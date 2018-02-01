@@ -16,6 +16,7 @@ import android.widget.TextView;
 import com.ckt.ckttestassistant.CktTestAssistantMainActivity;
 import com.ckt.ckttestassistant.UseCaseManager;
 import com.ckt.ckttestassistant.adapter.CktItemDecoration;
+import com.ckt.ckttestassistant.interfaces.OnItemClickListener;
 import com.ckt.ckttestassistant.testitems.CktTestItem;
 import com.ckt.ckttestassistant.testitems.WifiSwitchOn;
 import com.ckt.ckttestassistant.utils.LogUtils;
@@ -111,7 +112,7 @@ public class DefineUseCaseFragment extends Fragment {
         mTestCategoryList = (RecyclerView) rootView.findViewById(R.id.testcategorylist);
         mTestItemList = (RecyclerView) rootView.findViewById(R.id.testitemlist);
         mAdapter = new TestCategoryListAdapter(mContext, mTestCategoryItems);
-        mAdapter.setOnItemClickListener(new TestCategoryListAdapter.OnItemClickListener() {
+        mAdapter.setOnItemClickListener(new OnItemClickListener() {
             @Override
             public void onItemClick(int pos) {
                 LogUtils.d(TAG, "onItemClick");

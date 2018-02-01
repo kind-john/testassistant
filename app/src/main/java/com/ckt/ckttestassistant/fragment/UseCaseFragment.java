@@ -15,6 +15,7 @@ import android.widget.TextView;
 
 import com.ckt.ckttestassistant.UseCaseManager;
 import com.ckt.ckttestassistant.adapter.CktItemDecoration;
+import com.ckt.ckttestassistant.interfaces.OnItemClickListener;
 import com.ckt.ckttestassistant.usecases.CktUseCase;
 import com.ckt.ckttestassistant.utils.LogUtils;
 import com.ckt.ckttestassistant.R;
@@ -75,7 +76,7 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
                 int end = mShowPanelInfo.length();
                 LogUtils.d(TAG, "start = "+start+ "; end = "+end);
                 mShowPanelInfo.delete(start, end);*/
-                if(mSelectedItems != null){
+                if(mSelectedItems != null && !mSelectedItems.isEmpty()){
                     mSelectedItems.remove(mSelectedItems.size() - 1);
                 }
                 generateShowPanelString(mSelectedItems);
@@ -94,7 +95,13 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
         mUseCaseList = (RecyclerView) rootView.findViewById(R.id.usecaselist);
         mUseCaseTestItemList = (RecyclerView) rootView.findViewById(R.id.testitemlist);
         mAdapter = new UseCaseListAdapter(mContext, mAllItems, mSelectedItems);
-        mAdapter.setOnItemClickListener(new UseCaseListAdapter.OnItemClickListener() {
+        mAdapter.setUpdateShowPanelListener(new UseCaseListAdapter.UpdateShowPanelListener() {
+            @Override
+            public void updateShowPanel(ArrayList<UseCaseBase> info) {
+                setShowPanel(info);
+            }
+        });
+        mAdapter.setOnItemClickListener(new OnItemClickListener() {
             @Override
             public void onItemClick(int pos) {
                 LogUtils.d(TAG, "onItemClick");
@@ -145,6 +152,9 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
             for (int i = 0; i < selectItems.size(); i++){
                 mShowPanelInfo.append(" > " + selectItems.get(i).getTitle());
             }
+        } else {
+            //处理最后一个删除不了的问题
+            mShowPanelInfo.delete(11, mShowPanelInfo.length());
         }
     }
 
