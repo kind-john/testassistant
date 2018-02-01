@@ -18,10 +18,6 @@ import java.util.ArrayList;
 public class CktTestAssistantMainActivity extends AppCompatActivity {
 
     private static final String TAG = "CktTestAssistantMainActivity";
-    private TextView mUseCaseTextView;
-    private Button mDeleteButton;
-    private StringBuilder mShowPanelInfo = new StringBuilder();
-    private Button mSaveButton;
     private ArrayList<TestItemBase> mSelectedTestItems;
     private UseCaseManager mUseCaseManager;
 
@@ -39,54 +35,12 @@ public class CktTestAssistantMainActivity extends AppCompatActivity {
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tab);
         ViewPager viewPager = (ViewPager) findViewById(R.id.fragment);
-        mUseCaseTextView = (TextView) findViewById(R.id.usecasetext);
         mUseCaseManager = UseCaseManager.getInstance(getApplicationContext());
         mUseCaseManager.init();
-        mShowPanelInfo.append("use case : ");
-        mDeleteButton = (Button) findViewById(R.id.delete);
-        mDeleteButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //do something
-                /*int start = mShowPanelInfo.lastIndexOf(">") - 1;
-                int end = mShowPanelInfo.length();
-                LogUtils.d(TAG, "start = "+start+ "; end = "+end);
-                mShowPanelInfo.delete(start, end);*/
-                if(mSelectedTestItems != null){
-                    mSelectedTestItems.remove(mSelectedTestItems.size() - 1);
-                }
-                generateShowPanelString(mSelectedTestItems);
-                mUseCaseTextView.setText(mShowPanelInfo.toString());
-            }
-        });
-        mSaveButton = (Button) findViewById(R.id.save);
-        mSaveButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //do something
-                mUseCaseManager.saveUseCaseToXml(getApplicationContext(), mSelectedTestItems, "usecase");
-            }
-        });
+
         FragmentAdapter adapter = new FragmentAdapter(getSupportFragmentManager(), getTabTitles());
         viewPager.setAdapter(adapter);
         tabLayout.setupWithViewPager(viewPager);
-    }
-
-
-
-    public void setShowPanel(ArrayList<TestItemBase> selectItems){
-        mSelectedTestItems = selectItems;
-        generateShowPanelString(mSelectedTestItems);
-        mUseCaseTextView.setText(mShowPanelInfo.toString());
-    }
-
-    private void generateShowPanelString(ArrayList<TestItemBase> selectItems) {
-        if (selectItems != null && !selectItems.isEmpty()){
-            mShowPanelInfo.delete(11, mShowPanelInfo.length());
-            for (int i = 0; i < selectItems.size(); i++){
-                mShowPanelInfo.append(" > " + selectItems.get(i).getTitle());
-            }
-        }
     }
 
     private String[] getTabTitles() {

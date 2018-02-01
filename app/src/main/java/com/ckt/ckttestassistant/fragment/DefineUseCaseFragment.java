@@ -10,8 +10,11 @@ import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.TextView;
 
 import com.ckt.ckttestassistant.CktTestAssistantMainActivity;
+import com.ckt.ckttestassistant.UseCaseManager;
 import com.ckt.ckttestassistant.adapter.CktItemDecoration;
 import com.ckt.ckttestassistant.testitems.CktTestItem;
 import com.ckt.ckttestassistant.testitems.WifiSwitchOn;
@@ -38,6 +41,7 @@ public class DefineUseCaseFragment extends Fragment {
     private RecyclerView mTestItemList;
     private HashMap<String, ArrayList<TestItemBase>> mAllTestItems = new HashMap<String,ArrayList<TestItemBase>>();
     private ArrayList<TestItemBase> mSelectedTestItems = new ArrayList<TestItemBase>();
+    private StringBuilder mShowPanelInfo = new StringBuilder();
     private String[] mTestCategory = {
             "camera",
             "switch",
@@ -48,12 +52,62 @@ public class DefineUseCaseFragment extends Fragment {
             "current"
     };
     private int mCurrentType = 0;
+    private Button mDeleteButton;
+    private Button mSaveButton;
+    private TextView mTestItemTextView;
+    private UseCaseManager mUseCaseManager;
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        LogUtils.d(TAG, "onCreate");
+        mContext = getActivity().getApplicationContext();
+        mUseCaseManager = UseCaseManager.getInstance(mContext);
+        mShowPanelInfo.append("test item : ");
+        for (int i = 0; i < mTestCategory.length; i++){
+            mTestCategoryItems.add(new TestCategory(mTestCategory[i]));
+            ArrayList<TestItemBase> itemList = new ArrayList<TestItemBase>();
+
+            CktTestItem item1 = new CktTestItem("ckt test item");
+            itemList.add(item1.ID,item1);
+            WifiSwitchOn item2 = new WifiSwitchOn("wifi switch on");
+            itemList.add(item2.ID,item2);
+
+            mAllTestItems.put(mTestCategory[i], itemList);
+        }
+    }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         LogUtils.d(TAG, "onCreateView");
         View rootView = inflater.inflate(R.layout.fragment_defineusecase_layout, container, false);
+        mTestItemTextView = (TextView) rootView.findViewById(R.id.usecasetext);
+        mTestItemTextView.setText(mShowPanelInfo.toString());
+        mDeleteButton = (Button) rootView.findViewById(R.id.delete);
+        mDeleteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //do something
+                /*int start = mShowPanelInfo.lastIndexOf(">") - 1;
+                int end = mShowPanelInfo.length();
+                LogUtils.d(TAG, "start = "+start+ "; end = "+end);
+                mShowPanelInfo.delete(start, end);*/
+                if(mSelectedTestItems != null){
+                    mSelectedTestItems.remove(mSelectedTestItems.size() - 1);
+                }
+                generateShowPanelString(mSelectedTestItems);
+                mTestItemTextView.setText(mShowPanelInfo.toString());
+            }
+        });
+        mSaveButton = (Button) rootView.findViewById(R.id.save);
+        mSaveButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //do something
+                mUseCaseManager.saveUseCaseToXml(mContext, mSelectedTestItems, "usecase");
+            }
+        });
         mTestCategoryList = (RecyclerView) rootView.findViewById(R.id.testcategorylist);
         mTestItemList = (RecyclerView) rootView.findViewById(R.id.testitemlist);
         mAdapter = new TestCategoryListAdapter(mContext, mTestCategoryItems);
@@ -76,30 +130,13 @@ public class DefineUseCaseFragment extends Fragment {
         return rootView;
     }
 
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        LogUtils.d(TAG, "onCreate");
-        mContext = getActivity().getApplicationContext();
-        for (int i = 0; i < mTestCategory.length; i++){
-            mTestCategoryItems.add(new TestCategory(mTestCategory[i]));
-            ArrayList<TestItemBase> itemList = new ArrayList<TestItemBase>();
-
-            CktTestItem item1 = new CktTestItem("ckt test item");
-            itemList.add(item1.ID,item1);
-            WifiSwitchOn item2 = new WifiSwitchOn("wifi switch on");
-            itemList.add(item2.ID,item2);
-
-            mAllTestItems.put(mTestCategory[i], itemList);
-        }
-    }
     private void updateTestItemList() {
         LogUtils.d(TAG, "updateTestItemList");
         TestItemListAdapter adapter = new TestItemListAdapter(mAllTestItems.get(mTestCategory[mCurrentType]), mSelectedTestItems, true);
         adapter.setUpdateShowPanelListener(new TestItemListAdapter.UpdateShowPanelListener() {
             @Override
             public void updateShowPanel(ArrayList<TestItemBase> info) {
-                ((CktTestAssistantMainActivity)getActivity()).setShowPanel(info);
+                setShowPanel(info);
             }
         });
         mTestItemList.setAdapter(adapter);
@@ -111,7 +148,7 @@ public class DefineUseCaseFragment extends Fragment {
         adapter.setUpdateShowPanelListener(new TestItemListAdapter.UpdateShowPanelListener() {
             @Override
             public void updateShowPanel(ArrayList<TestItemBase> info) {
-                ((CktTestAssistantMainActivity)getActivity()).setShowPanel(info);
+                setShowPanel(info);
             }
         });
         mTestItemList.setHasFixedSize(true);
@@ -120,5 +157,20 @@ public class DefineUseCaseFragment extends Fragment {
                 LinearLayoutManager.VERTICAL,
                 CktItemDecoration.DECORATION_TYPE_TESTCATEGORY_TESTITEM));
         mTestItemList.setAdapter(adapter);
+    }
+
+    public void setShowPanel(ArrayList<TestItemBase> selectItems){
+        mSelectedTestItems = selectItems;
+        generateShowPanelString(mSelectedTestItems);
+        mTestItemTextView.setText(mShowPanelInfo.toString());
+    }
+
+    private void generateShowPanelString(ArrayList<TestItemBase> selectItems) {
+        if (selectItems != null && !selectItems.isEmpty()){
+            mShowPanelInfo.delete(12, mShowPanelInfo.length());
+            for (int i = 0; i < selectItems.size(); i++){
+                mShowPanelInfo.append(" > " + selectItems.get(i).getTitle());
+            }
+        }
     }
 }
