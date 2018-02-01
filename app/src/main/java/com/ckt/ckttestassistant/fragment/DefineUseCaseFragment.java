@@ -69,9 +69,9 @@ public class DefineUseCaseFragment extends Fragment {
             ArrayList<TestItemBase> itemList = new ArrayList<TestItemBase>();
 
             CktTestItem item1 = new CktTestItem("ckt test item");
-            itemList.add(item1.ID,item1);
+            itemList.add(item1);
             WifiSwitchOn item2 = new WifiSwitchOn("wifi switch on");
-            itemList.add(item2.ID,item2);
+            itemList.add(item2);
 
             mAllTestItems.put(mTestCategory[i], itemList);
         }
@@ -93,7 +93,7 @@ public class DefineUseCaseFragment extends Fragment {
                 int end = mShowPanelInfo.length();
                 LogUtils.d(TAG, "start = "+start+ "; end = "+end);
                 mShowPanelInfo.delete(start, end);*/
-                if(mSelectedTestItems != null){
+                if(mSelectedTestItems != null && !mSelectedTestItems.isEmpty()){
                     mSelectedTestItems.remove(mSelectedTestItems.size() - 1);
                 }
                 generateShowPanelString(mSelectedTestItems);
@@ -105,7 +105,7 @@ public class DefineUseCaseFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 //do something
-                mUseCaseManager.saveUseCaseToXml(mContext, mSelectedTestItems, "usecase");
+                mUseCaseManager.saveUseCaseToXml(mSelectedTestItems, "usecase");
             }
         });
         mTestCategoryList = (RecyclerView) rootView.findViewById(R.id.testcategorylist);
@@ -171,6 +171,9 @@ public class DefineUseCaseFragment extends Fragment {
             for (int i = 0; i < selectItems.size(); i++){
                 mShowPanelInfo.append(" > " + selectItems.get(i).getTitle());
             }
+        } else {
+            //处理最后一个删除不了的问题
+            mShowPanelInfo.delete(12, mShowPanelInfo.length());
         }
     }
 }

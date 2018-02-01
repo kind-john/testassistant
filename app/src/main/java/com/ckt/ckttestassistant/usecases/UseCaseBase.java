@@ -24,7 +24,7 @@ public abstract class UseCaseBase {
     protected int mTimes = DEFAULT_TIMES;
     protected String mTitle = "case";
     protected  boolean mIsChecked = false;
-    private int ID;
+    private int ID = -1;
 
     public void setNextUseCase(UseCaseBase nextUseCase){
         this.mNextUseCase = nextUseCase;

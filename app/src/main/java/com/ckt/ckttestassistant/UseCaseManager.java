@@ -57,6 +57,9 @@ public class UseCaseManager {
     public void init(){
         //load from xml
         mXmlHelper = new CktXmlHelper2();
+        String path = mContext.getFilesDir()+"/usecases.xml";
+        mAllUseCases.clear();
+        mXmlHelper.getUseCases(path, mAllUseCases);
         /*CktXmlHelper.readxml(mContext, FILENAME, mAllUseCases);
         UseCaseBase usecase1 = new CktUseCase("test1 stub");
         usecase1.addTestItem(new CktTestItem());
@@ -85,8 +88,8 @@ public class UseCaseManager {
         return true;
     }
 
-    public void saveUseCaseToXml(Context context, ArrayList<TestItemBase> selectedTestItems, String name) {
-        String path = context.getFilesDir()+"/usecases.xml";
+    public void saveUseCaseToXml(ArrayList<TestItemBase> selectedTestItems, String name) {
+        String path = mContext.getFilesDir()+"/usecases.xml";
         UseCaseBase uc = new CktUseCase(name);
         uc.setTestItems(selectedTestItems);
         mAllUseCases.add(uc);

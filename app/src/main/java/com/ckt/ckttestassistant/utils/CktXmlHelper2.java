@@ -7,6 +7,10 @@ import com.ckt.ckttestassistant.testitems.TestItemBase;
 import com.ckt.ckttestassistant.usecases.CktUseCase;
 import com.ckt.ckttestassistant.usecases.UseCaseBase;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlSerializer;
@@ -18,13 +22,45 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
 /**
  * Created by ckt on 18-1-31.
  */
 
 public class CktXmlHelper2 {
     private static final String TAG = "CktXmlHelper2";
+    private static int maxID = -1;
+    public int getMaxId(String fileName, String code, String idnum) {
+        int num = 0;
+        try {
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder bulider = factory.newDocumentBuilder();
+            Document doc = bulider.parse(fileName);
+            doc.normalize();
 
+            NodeList listnode = doc.getElementsByTagName(code);
+            for (int i = 0; i < listnode.getLength(); i++) {
+                Element elink = (Element) listnode.item(i);
+                String id = elink.getAttribute(idnum);
+                if (Integer.valueOf(id) > num) {
+                    num = Integer.valueOf(id);
+                }
+            }
+            return num;
+        } catch (ParserConfigurationException e) {
+            e.printStackTrace();
+            return num;
+        } catch (SAXException e) {
+            e.printStackTrace();
+            return num;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return num;
+        }
+    }
     public void getUseCases(String path, ArrayList<UseCaseBase> allUseCases){
         try {
             InputStream is = new FileInputStream(path);
@@ -42,37 +78,70 @@ public class CktXmlHelper2 {
                         break;
                     case XmlPullParser.START_TAG:// 判断当前事件是否为标签元素开始事件
                         String name = parser.getName();
-                        if (name.equals("usecases")) {
+                        LogUtils.d(TAG,"XmlPullParser.START_TAG name:"+name);
 
-                        }
                         if (name.equals("usecase")) { // 判断开始标签元素是否是student
                             int id = Integer.parseInt(parser.getAttributeValue(0));
                             LogUtils.d(TAG, "usecase id : " + id);
+                            if(maxID < id){
+                                maxID = id;
+                            }
+                            usecase = new CktUseCase(id);
+                        }else if(name.equals("title")){
                             String title = parser.nextText();
-                            String isChecked = parser.nextText();
-                            int total = Integer.parseInt(parser.nextText());
-                            usecase = new CktUseCase(id);//do something
-                        }
-                        if (usecase != null) {
-                            if (name.equals("testitem")) {
-                                testitem = new CktTestItem();
-                                int id2 = Integer.parseInt(parser.getAttributeValue(0));
-                                testitem.setID(id2);
-                                if(name.equals("title")){
-                                    testitem.setTitle(parser.nextText());
+                            LogUtils.d(TAG, "title : " + title);
+
+                            if(testitem != null){
+                                LogUtils.d(TAG, "testitem title : " + title);
+                                testitem.setTitle(title);
+                            }else if(usecase != null){
+                                LogUtils.d(TAG, "usecase title : " + title);
+                                usecase.setTitle(title);
+                            }
+                        }else if(name.equals("times")){
+                            int times = Integer.parseInt(parser.nextText());
+                            LogUtils.d(TAG, "times : " + times);
+
+                            if(testitem != null){
+                                LogUtils.d(TAG, "testitem times : " + times);
+                                testitem.setTimes(times);
+                            }else if(usecase != null){
+                                LogUtils.d(TAG, "usecase times : " + times);
+                                usecase.setTimes(times);
+                            }
+
+                        }else if(name.equals("selected")){
+                            boolean isChecked = Boolean.parseBoolean(parser.nextText());
+                            LogUtils.d(TAG, "usecase isChecked : " + isChecked);
+                            if(usecase != null){
+                                usecase.setIsChecked(isChecked);
+                            }
+                        }else if(name.equals("testitem")){
+                            if (usecase != null) {
+                                if (name.equals("testitem")) {
+                                    testitem = new CktTestItem();
+                                    int id2 = Integer.parseInt(parser.getAttributeValue(0));
+                                    testitem.setID(id2);
+                                    LogUtils.d(TAG, "testitem id : " + id2);
+
                                 }
                             }
+                        }else{
+                            LogUtils.e(TAG, "error: some new tag has not parser!!! name = " + name);
                         }
                         break;
 
                     case XmlPullParser.END_TAG:
-                        if (parser.getName().equals("usecase")) {
+                        String endName = parser.getName();
+                        LogUtils.d(TAG,"XmlPullParser.END_TAG name:"+endName);
+                        if (endName.equals("usecase")) {
                             allUseCases.add(usecase);
                             usecase = null;
-                        }
-                        if (parser.getName().equals("testitem")) {
+                        }else if (endName.equals("testitem")) {
                             usecase.addTestItem(testitem);
                             testitem = null;
+                        }else{
+                            LogUtils.d(TAG, "ignored endName = " + endName);
                         }
                         break;
 
@@ -164,16 +233,25 @@ public class CktXmlHelper2 {
         serializer.setOutput(outStream, "UTF-8");
         serializer.startDocument("UTF-8", true);
         serializer.startTag(null, "usecases");
+        int usecaseID = -1;
         for(UseCaseBase uc : ucs){
             serializer.startTag(null, "usecase");
-            serializer.attribute(null, "id", uc.getID()+"");
+            usecaseID = uc.getID();
+            LogUtils.d(TAG, "usecaseID="+usecaseID);
+            if(usecaseID == -1){
+                //自定义用例添加时自动生成ID
+                LogUtils.d(TAG, "maxId="+maxID);
+                usecaseID = maxID + 1;
+
+            }
+            serializer.attribute(null, "id", String.valueOf(usecaseID));
 
             serializer.startTag(null, "title");
             serializer.text(uc.getTitle()+"");
             serializer.endTag(null, "title");
 
             serializer.startTag(null, "times");
-            serializer.text(uc.getTimes()+"");
+            serializer.text(String.valueOf(uc.getTimes()));
             serializer.endTag(null, "times");
 
             for(TestItemBase ti : uc.getTestItems()){
@@ -185,8 +263,12 @@ public class CktXmlHelper2 {
                 serializer.endTag(null, "title");
 
                 serializer.startTag(null, "times");
-                serializer.text(uc.getTitle()+"");
+                serializer.text(ti.getTimes()+"");
                 serializer.endTag(null, "times");
+
+                serializer.startTag(null, "selected");
+                serializer.text(ti.isChecked()+"");
+                serializer.endTag(null, "selected");
 
                 serializer.endTag(null, "testitem");
             }
