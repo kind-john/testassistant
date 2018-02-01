@@ -2,13 +2,11 @@ package com.ckt.ckttestassistant;
 
 import android.content.Context;
 
-import com.ckt.ckttestassistant.testitems.CktTestItem;
 import com.ckt.ckttestassistant.testitems.TestItemBase;
 import com.ckt.ckttestassistant.usecases.CktUseCase;
 import com.ckt.ckttestassistant.usecases.UseCaseBase;
-import com.ckt.ckttestassistant.utils.CktXmlHelper;
 import com.ckt.ckttestassistant.utils.CktXmlHelper2;
-import com.ckt.ckttestassistant.utils.FileUtils;
+import com.ckt.ckttestassistant.utils.LogUtils;
 
 import java.util.ArrayList;
 
@@ -18,11 +16,14 @@ import java.util.ArrayList;
 
 public class UseCaseManager {
     private static final String FILENAME = "usecases.xml";
+    private static final String TAG = "UseCaseManager";
     private ArrayList<UseCaseBase> mAllUseCases = new ArrayList<UseCaseBase>();
     private ArrayList<UseCaseBase> mSelectedUseCases = new ArrayList<UseCaseBase>();
+    private ArrayList<UseCaseChangeObserver> mUseCaseChangeListener = new ArrayList<UseCaseChangeObserver>();
     private static Context mContext;
     private volatile static UseCaseManager instance;
     private CktXmlHelper2 mXmlHelper;
+
 
     private UseCaseManager(){
         System.out.println("Singleton has loaded");
@@ -93,6 +94,7 @@ public class UseCaseManager {
         UseCaseBase uc = new CktUseCase(name);
         uc.setTestItems(selectedTestItems);
         mAllUseCases.add(uc);
+        useCaseChangeNotify(mAllUseCases.size(), 3); //暂时全部刷新
         try {
             mXmlHelper.addUseCases(path, uc);
         }catch (Exception e){
@@ -113,5 +115,37 @@ public class UseCaseManager {
 
     public ArrayList<UseCaseBase> getSelectItems() {
         return mSelectedUseCases != null ? mSelectedUseCases : null;
+    }
+
+    /**
+     * Created by ckt on 18-2-1.
+     */
+
+    public static interface UseCaseChangeObserver {
+        public void allUseCaseChangeNofify(int position, int i);
+    }
+
+    public void addUseCaseChangeObserver(UseCaseChangeObserver observer){
+        if(observer == null){
+            LogUtils.e(TAG, "observer is null !!!");
+            return ;
+        }
+        if(mUseCaseChangeListener != null){
+            if(!mUseCaseChangeListener.contains(observer)){
+                mUseCaseChangeListener.add(observer);
+            }else{
+                LogUtils.d(TAG, "Observer :" + observer.getClass().getName() + "has added");
+            }
+        }else{
+            LogUtils.e(TAG, "addUseCaseChangeObserver error!!");
+        }
+    }
+
+    public void useCaseChangeNotify(int position, int i){
+        if(mUseCaseChangeListener != null && !mUseCaseChangeListener.isEmpty()){
+            for (UseCaseChangeObserver observer : mUseCaseChangeListener){
+                observer.allUseCaseChangeNofify(position, i);
+            }
+        }
     }
 }

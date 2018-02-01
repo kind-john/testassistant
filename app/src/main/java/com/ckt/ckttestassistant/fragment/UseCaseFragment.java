@@ -2,17 +2,11 @@ package com.ckt.ckttestassistant.fragment;
 
 
 import android.content.Context;
-import android.content.res.TypedArray;
-import android.graphics.Canvas;
-import android.graphics.Rect;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,11 +15,9 @@ import android.widget.TextView;
 
 import com.ckt.ckttestassistant.UseCaseManager;
 import com.ckt.ckttestassistant.adapter.CktItemDecoration;
-import com.ckt.ckttestassistant.testitems.CktTestItem;
 import com.ckt.ckttestassistant.usecases.CktUseCase;
 import com.ckt.ckttestassistant.utils.LogUtils;
 import com.ckt.ckttestassistant.R;
-import com.ckt.ckttestassistant.testitems.TestItemBase;
 import com.ckt.ckttestassistant.usecases.UseCaseBase;
 import com.ckt.ckttestassistant.adapter.TestItemListAdapter;
 import com.ckt.ckttestassistant.adapter.UseCaseListAdapter;
@@ -36,7 +28,7 @@ import java.util.ArrayList;
  * Created by ckt on 18-1-30.
  */
 
-public class UseCaseFragment extends Fragment {
+public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseChangeObserver{
     private static final String TAG = "UseCaseFragment";
     private RecyclerView mUseCaseList;
     private Context mContext;
@@ -58,6 +50,7 @@ public class UseCaseFragment extends Fragment {
         mContext = getActivity().getApplicationContext();
         mUseCaseManager = UseCaseManager.getInstance(mContext);
         mUseCaseManager.init();
+        mUseCaseManager.addUseCaseChangeObserver(this);
         mShowPanelInfo.append("use case : ");
         mAllItems = mUseCaseManager.getAllItems();
         mSelectedItems = mUseCaseManager.getSelectItems();
@@ -95,6 +88,7 @@ public class UseCaseFragment extends Fragment {
             public void onClick(View v) {
                 //do something
                 //mUseCaseManager.saveUseCaseToXml(mContext, mSelectedItems, "usecase");
+                LogUtils.d(TAG, "save onClick");
             }
         });
         mUseCaseList = (RecyclerView) rootView.findViewById(R.id.usecaselist);
@@ -151,6 +145,26 @@ public class UseCaseFragment extends Fragment {
             for (int i = 0; i < selectItems.size(); i++){
                 mShowPanelInfo.append(" > " + selectItems.get(i).getTitle());
             }
+        }
+    }
+
+    @Override
+    public void allUseCaseChangeNofify(int position, int i) {
+        LogUtils.d(TAG, "allUseCaseChangeNofify position = "+position+"; i="+i);
+        switch (i){
+            case 0:
+                mAdapter.notifyItemInserted(position);
+                break;
+            case 1:
+                mAdapter.notifyItemChanged(position);
+                break;
+            case 2:
+                mAdapter.notifyItemRemoved(position);
+                break;
+            default:
+                mAdapter.notifyDataSetChanged();
+                break;
+
         }
     }
 }
