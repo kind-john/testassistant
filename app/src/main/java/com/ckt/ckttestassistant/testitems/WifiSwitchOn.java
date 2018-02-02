@@ -39,7 +39,7 @@ public class WifiSwitchOn extends TestItemBase {
 
     @Override
     public boolean doExecute() {
-        LogUtils.d(TAG, "doExecute");
+        LogUtils.d(TAG, "WifiSwitchOn doExecute");
         return false;
     }
 

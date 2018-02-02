@@ -73,7 +73,7 @@ public class UseCaseManager {
         usecase2.addTestItem(new CktTestItem());
         mAllUseCases.add(usecase2);*/
     }
-    boolean startExecute(){
+    public boolean startExecute(){
         int size = 0;
         if(mSelectedUseCases == null || mSelectedUseCases.isEmpty()){
             return true;

@@ -46,6 +46,7 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
     private Button mDeleteButton;
     private Button mSaveButton;
     private TestItemListAdapter mTestItemListAdapter;
+    private Button mStartTestButton;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -70,6 +71,13 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
         View rootView = inflater.inflate(R.layout.fragment_usecase_layout, container, false);
         mUseCaseTextView = (TextView) rootView.findViewById(R.id.usecasetext);
         mUseCaseTextView.setText(mShowPanelInfo.toString());
+        mStartTestButton = (Button) rootView.findViewById(R.id.starttest);
+        mStartTestButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mUseCaseManager.startExecute();
+            }
+        });
         mDeleteButton = (Button) rootView.findViewById(R.id.delete);
         mDeleteButton.setOnClickListener(new View.OnClickListener() {
             @Override

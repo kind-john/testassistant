@@ -47,7 +47,7 @@ public class CktTestItem extends TestItemBase {
 
     @Override
     public boolean doExecute() {
-        LogUtils.d(TAG, "doExecute");
+        LogUtils.d(TAG, "CktTestItem doExecute");
         return false;
     }
 
