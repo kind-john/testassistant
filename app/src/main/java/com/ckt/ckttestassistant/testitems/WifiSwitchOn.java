@@ -39,6 +39,18 @@ public class WifiSwitchOn extends TestItemBase {
 
     @Override
     public void saveParametersToXml(XmlSerializer serializer) throws Exception {
+        try{
+            //eg. start
+            serializer.startTag(null, "delay");
+            serializer.text("100");
+            serializer.endTag(null, "delay");
 
+            serializer.startTag(null, "total");
+            serializer.text("1");
+            serializer.endTag(null, "total");
+            //eg. end
+        }catch (Exception e) {
+            throw new Exception();
+        }
     }
 }

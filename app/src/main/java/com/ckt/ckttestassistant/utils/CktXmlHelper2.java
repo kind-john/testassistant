@@ -89,7 +89,11 @@ public class CktXmlHelper2 {
                                     allUseCaseMaxID = id;
                                 }
                             }
-                            usecase = new CktUseCase(id);
+                            if (id >= 0) {
+                                usecase = new CktUseCase(id);
+                            } else {
+                                LogUtils.e(TAG, "error: id < -1 ,from "+path);
+                            }
                         }else if(name.equals("title")){
                             String title = parser.nextText();
                             LogUtils.d(TAG, "title : " + title);
@@ -121,13 +125,30 @@ public class CktXmlHelper2 {
                             }
                         }else if(name.equals("testitem")){
                             if (usecase != null) {
-                                if (name.equals("testitem")) {
-                                    testitem = new CktTestItem();
-                                    int id2 = Integer.parseInt(parser.getAttributeValue(0));
-                                    testitem.setID(id2);
-                                    LogUtils.d(TAG, "testitem id : " + id2);
-
-                                }
+                                testitem = new CktTestItem();
+                                int id2 = Integer.parseInt(parser.getAttributeValue(0));
+                                testitem.setID(id2);
+                                LogUtils.d(TAG, "testitem id : " + id2);
+                            }
+                        }else if(name.equals("delay")){
+                            int delay = Integer.parseInt(parser.nextText());
+                            LogUtils.d(TAG, "delay : " + delay);
+                            if(testitem != null){
+                                LogUtils.d(TAG, "testitem delay : " + delay);
+                                testitem.setTimes(delay);
+                            }else if(usecase != null){
+                                LogUtils.d(TAG, "usecase delay : " + delay);
+                                usecase.setTimes(delay);
+                            }
+                        }else if(name.equals("total")){
+                            int total = Integer.parseInt(parser.nextText());
+                            LogUtils.d(TAG, "total : " + total);
+                            if(testitem != null){
+                                LogUtils.d(TAG, "testitem total : " + total);
+                                testitem.setTimes(total);
+                            }else if(usecase != null){
+                                LogUtils.d(TAG, "usecase total : " + total);
+                                usecase.setTimes(total);
                             }
                         }else{
                             LogUtils.e(TAG, "error: some new tag has not parser!!! name = " + name);
@@ -280,7 +301,7 @@ public class CktXmlHelper2 {
                 serializer.startTag(null, "title");
                 serializer.text(ti.getTitle()+"");
                 serializer.endTag(null, "title");
-                
+
                 ti.saveParametersToXml(serializer);
                 /*
                 serializer.startTag(null, "times");

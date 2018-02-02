@@ -52,13 +52,6 @@ public class CktTestItem extends TestItemBase {
     public void saveParametersToXml(XmlSerializer serializer) throws Exception{
         try{
             //eg. start
-            serializer.startTag(null, "testitem");
-            serializer.attribute(null, "id", "1");
-
-            serializer.startTag(null, "name");
-            serializer.text(getTitle());
-            serializer.endTag(null, "name");
-
             serializer.startTag(null, "delay");
             serializer.text("100");
             serializer.endTag(null, "delay");
@@ -66,8 +59,6 @@ public class CktTestItem extends TestItemBase {
             serializer.startTag(null, "total");
             serializer.text("1");
             serializer.endTag(null, "total");
-
-            serializer.endTag(null, "testitem");
             //eg. end
         }catch (Exception e) {
             throw new Exception();

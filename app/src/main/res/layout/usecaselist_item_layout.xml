@@ -9,7 +9,7 @@
         android:id="@+id/title"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_weight="5"
+        android:layout_weight="7"
         android:gravity="center_vertical"
         android:text="TextView" />
     <EditText
@@ -18,7 +18,8 @@
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
         android:layout_weight="2"
-        android:text="TextView" />
+        android:text="TextView"
+        android:visibility="gone"/>
     <Button
         android:id="@+id/addusecase"
         android:layout_width="0dp"
