@@ -24,10 +24,22 @@ public abstract class UseCaseBase {
     protected int mTimes = DEFAULT_TIMES;
     protected String mTitle = "case";
     protected  boolean mIsChecked = false;
-    private int ID = -1;
+    protected int ID = -1;
+    protected String mClassName = "UseCaseBase";
 
     public void setNextUseCase(UseCaseBase nextUseCase){
         this.mNextUseCase = nextUseCase;
+    }
+
+    public String getClassName() {
+        return mClassName;
+    }
+
+    public void setClassName(String className) {
+        this.mClassName = className;
+    }
+
+    public UseCaseBase() {
     }
 
     public UseCaseBase(int ID) {

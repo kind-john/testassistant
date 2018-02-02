@@ -140,6 +140,13 @@ public class DefineUseCaseFragment extends Fragment {
                 setShowPanel(info);
             }
         });
+        adapter.setOnItemClickListener(new OnItemClickListener() {
+            @Override
+            public void onItemClick(int pos) {
+                TestItemBase ti = mAllTestItems.get(mTestCategory[mCurrentType]).get(pos);
+                LogUtils.d(TAG, "test item title clicked :"+pos+" : "+ti.getClass().getName());
+            }
+        });
         mTestItemList.setAdapter(adapter);
     }
 
@@ -150,6 +157,13 @@ public class DefineUseCaseFragment extends Fragment {
             @Override
             public void updateShowPanel(ArrayList<TestItemBase> info) {
                 setShowPanel(info);
+            }
+        });
+        adapter.setOnItemClickListener(new OnItemClickListener() {
+            @Override
+            public void onItemClick(int pos) {
+                TestItemBase ti = mAllTestItems.get(mTestCategory[mCurrentType]).get(pos);
+                LogUtils.d(TAG, "test item title clicked :"+pos+" : "+ti.getClass().getName());
             }
         });
         mTestItemList.setHasFixedSize(true);

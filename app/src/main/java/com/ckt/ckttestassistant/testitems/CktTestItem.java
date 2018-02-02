@@ -1,5 +1,7 @@
 package com.ckt.ckttestassistant.testitems;
 
+import android.content.Context;
+
 import com.ckt.ckttestassistant.utils.LogUtils;
 
 import org.xmlpull.v1.XmlSerializer;
@@ -17,14 +19,20 @@ public class CktTestItem extends TestItemBase {
     }
 
     public CktTestItem() {
+        String className = this.getClass().getName();
+        setClassName(className);
     }
 
     public CktTestItem(String mTitle) {
         super(mTitle);
+        String className = this.getClass().getName();
+        setClassName(className);
     }
 
     public CktTestItem(int mTimes, String mTitle, boolean mIsChecked) {
         super(mTimes, mTitle, mIsChecked);
+        String className = this.getClass().getName();
+        setClassName(className);
     }
 
     @Override
@@ -45,6 +53,11 @@ public class CktTestItem extends TestItemBase {
 
     @Override
     public void saveResult() {
+
+    }
+
+    @Override
+    public void showPropertyDialog(Context mContext) {
 
     }
 

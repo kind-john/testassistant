@@ -82,7 +82,8 @@ public class CktXmlHelper2 {
 
                         if (name.equals("usecase")) { // 判断开始标签元素是否是student
                             int id = Integer.parseInt(parser.getAttributeValue(0));
-                            LogUtils.d(TAG, "usecase id : " + id);
+                            String className = parser.getAttributeValue(1);
+                            LogUtils.d(TAG, "usecase id : " + id + "; className = " + className);
                             int whichfile = whichXmlFile(path);
                             if(whichfile == 0){
                                 if(allUseCaseMaxID < id){
@@ -90,7 +91,19 @@ public class CktXmlHelper2 {
                                 }
                             }
                             if (id >= 0) {
-                                usecase = new CktUseCase(id);
+                                try {
+                                    // 根据给定的类名初始化类
+                                    Class catClass = Class.forName(className);
+                                    // 实例化这个类
+                                    usecase = (UseCaseBase) catClass.newInstance();
+
+                                }catch (IllegalAccessException e) {
+                                    e.printStackTrace();
+                                } catch (InstantiationException e) {
+                                    e.printStackTrace();
+                                } catch (ClassNotFoundException e) {
+                                    e.printStackTrace();
+                                }
                             } else {
                                 LogUtils.e(TAG, "error: id < -1 ,from "+path);
                             }
@@ -125,10 +138,23 @@ public class CktXmlHelper2 {
                             }
                         }else if(name.equals("testitem")){
                             if (usecase != null) {
-                                testitem = new CktTestItem();
                                 int id2 = Integer.parseInt(parser.getAttributeValue(0));
-                                testitem.setID(id2);
-                                LogUtils.d(TAG, "testitem id : " + id2);
+                                String className2 = parser.getAttributeValue(1);
+                                LogUtils.d(TAG, "testitem id : " + id2+"; className = "+className2);
+                                try {
+                                    // 根据给定的类名初始化类
+                                    Class catClass = Class.forName(className2);
+                                    // 实例化这个类
+                                    testitem = (TestItemBase) catClass.newInstance();
+                                    testitem.setID(id2);
+                                }catch (IllegalAccessException e) {
+                                    e.printStackTrace();
+                                } catch (InstantiationException e) {
+                                    e.printStackTrace();
+                                } catch (ClassNotFoundException e) {
+                                    e.printStackTrace();
+                                }
+
                             }
                         }else if(name.equals("delay")){
                             int delay = Integer.parseInt(parser.nextText());
@@ -285,6 +311,7 @@ public class CktXmlHelper2 {
                 }
             }
             serializer.attribute(null, "id", String.valueOf(usecaseID));
+            serializer.attribute(null, "classname", uc.getClassName());
 
             serializer.startTag(null, "title");
             serializer.text(uc.getTitle()+"");
@@ -297,6 +324,7 @@ public class CktXmlHelper2 {
             for(TestItemBase ti : uc.getTestItems()){
                 serializer.startTag(null, "testitem");
                 serializer.attribute(null, "id", ti.getID()+"");
+                serializer.attribute(null, "classname", ti.getClassName());
 
                 serializer.startTag(null, "title");
                 serializer.text(ti.getTitle()+"");

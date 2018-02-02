@@ -12,28 +12,45 @@ import java.util.ArrayList;
  */
 
 public class CktUseCase extends UseCaseBase {
+    public CktUseCase() {
+        String className = this.getClass().getName();
+        setClassName(className);
+    }
+
     public CktUseCase(ArrayList<TestItemBase> mTestItems) {
         super(mTestItems);
+        String className = this.getClass().getName();
+        setClassName(className);
     }
 
     public CktUseCase(int ID) {
         super(ID);
+        String className = this.getClass().getName();
+        setClassName(className);
     }
 
     public CktUseCase(ArrayList<TestItemBase> mTestItems, String mTitle) {
         super(mTestItems, mTitle);
+        String className = this.getClass().getName();
+        setClassName(className);
     }
 
     public CktUseCase(String mTitle) {
         super(mTitle);
+        String className = this.getClass().getName();
+        setClassName(className);
     }
 
     public CktUseCase(ArrayList<TestItemBase> mTestItems, UseCaseBase mNextUseCase) {
         super(mTestItems, mNextUseCase);
+        String className = this.getClass().getName();
+        setClassName(className);
     }
 
     public CktUseCase(ArrayList<TestItemBase> mTestItems, int mTimes, String mTitle, boolean mIsChecked) {
         super(mTestItems, mTimes, mTitle, mIsChecked);
+        String className = this.getClass().getName();
+        setClassName(className);
     }
 
     @Override

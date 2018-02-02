@@ -5,6 +5,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -16,6 +17,7 @@ import android.widget.TextView;
 import com.ckt.ckttestassistant.UseCaseManager;
 import com.ckt.ckttestassistant.adapter.CktItemDecoration;
 import com.ckt.ckttestassistant.interfaces.OnItemClickListener;
+import com.ckt.ckttestassistant.testitems.TestItemBase;
 import com.ckt.ckttestassistant.usecases.CktUseCase;
 import com.ckt.ckttestassistant.utils.LogUtils;
 import com.ckt.ckttestassistant.R;
@@ -43,6 +45,7 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
     private TextView mUseCaseTextView;
     private Button mDeleteButton;
     private Button mSaveButton;
+    private TestItemListAdapter mTestItemListAdapter;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -122,23 +125,39 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
 
     private void initTestItemList() {
         LogUtils.d(TAG, "initTestItemList");
-        TestItemListAdapter adapter = new TestItemListAdapter(
+        mTestItemListAdapter = new TestItemListAdapter(
                 mCurrentUseCase == null ? null : mCurrentUseCase.getTestItems(),
                 null, false);
+        mTestItemListAdapter.setOnItemClickListener(new OnItemClickListener() {
+            @Override
+            public void onItemClick(int pos) {
+                TestItemBase ti = mCurrentUseCase.getTestItems().get(pos);
+                LogUtils.d(TAG, "test item title clicked :"+pos+" : "+ti.getClass().getName());
+                ti.showPropertyDialog(mContext);
+            }
+        });
         mUseCaseTestItemList.setHasFixedSize(true);
         mUseCaseTestItemList.setLayoutManager(new LinearLayoutManager(mContext));
         mUseCaseTestItemList.addItemDecoration(new CktItemDecoration(mContext,
                 LinearLayoutManager.VERTICAL,
                 CktItemDecoration.DECORATION_TYPE_USECASE_TESTITEM));
-        mUseCaseTestItemList.setAdapter(adapter);
+        mUseCaseTestItemList.setAdapter(mTestItemListAdapter);
     }
 
     private void updateTestItemList() {
         LogUtils.d(TAG, "updateTestItemList");
-        TestItemListAdapter adapter = new TestItemListAdapter(
+        mTestItemListAdapter = new TestItemListAdapter(
                 mCurrentUseCase == null ? null : mCurrentUseCase.getTestItems(),
                 null, false);
-        mUseCaseTestItemList.setAdapter(adapter);
+        mTestItemListAdapter.setOnItemClickListener(new OnItemClickListener() {
+            @Override
+            public void onItemClick(int pos) {
+                TestItemBase ti = mCurrentUseCase.getTestItems().get(pos);
+                LogUtils.d(TAG, "test item title clicked :"+pos+" : "+ti.getClass().getName());
+                ti.showPropertyDialog(getActivity());
+            }
+        });
+        mUseCaseTestItemList.setAdapter(mTestItemListAdapter);
     }
 
     public void setShowPanel(ArrayList<UseCaseBase> selectItems){

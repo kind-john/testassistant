@@ -36,6 +36,7 @@ public class TestItemListAdapter extends RecyclerView.Adapter<TestItemListAdapte
         void updateShowPanel(ArrayList<TestItemBase> info);
     }
     public void setOnItemClickListener(OnItemClickListener listener){
+        LogUtils.d(TAG, "setOnItemClickListener");
         this.mItemClickListener = listener;
     }
 
@@ -70,6 +71,7 @@ public class TestItemListAdapter extends RecyclerView.Adapter<TestItemListAdapte
 
                 @Override
                 public void onClick(final View v) {
+                    LogUtils.d(TAG, "click title");
                     if(mItemClickListener != null){
                         mItemClickListener.onItemClick(index);
                     }

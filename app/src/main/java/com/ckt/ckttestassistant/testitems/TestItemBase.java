@@ -21,7 +21,16 @@ public abstract class TestItemBase implements CktResultsHelper.ResultCallBack {
     protected int mTimes = DEFAULT_TESTITEM_TIMES;
     protected String mTitle = "testitem";
     protected  boolean mIsChecked = false;
-    private int ID = -1;
+    protected int ID = -1;
+    protected String mClassName = "TestItemBase";
+
+    public String getClassName() {
+        return mClassName;
+    }
+
+    public void setClassName(String className) {
+        this.mClassName = className;
+    }
 
     public TestItemBase getNextTestItem() {
         return mNextTestItem;
@@ -53,6 +62,13 @@ public abstract class TestItemBase implements CktResultsHelper.ResultCallBack {
 
     public void setIsChecked(boolean isChecked) {
         this.mIsChecked = isChecked;
+    }
+    public void setID(int id) {
+        this.ID = id;
+    }
+
+    public int getID() {
+        return ID;
     }
 
     public TestItemBase(TestItemBase mNextTestItem) {
@@ -87,12 +103,5 @@ public abstract class TestItemBase implements CktResultsHelper.ResultCallBack {
     public abstract boolean doExecute();
     public abstract void saveResult();
     public abstract void saveParametersToXml(XmlSerializer serializer) throws Exception;
-
-    public void setID(int id) {
-        this.ID = id;
-    }
-
-    public int getID() {
-        return ID;
-    }
+    public abstract void showPropertyDialog(Context context);
 }
