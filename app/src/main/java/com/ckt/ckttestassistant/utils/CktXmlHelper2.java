@@ -32,7 +32,7 @@ import javax.xml.parsers.ParserConfigurationException;
 
 public class CktXmlHelper2 {
     private static final String TAG = "CktXmlHelper2";
-    private static int maxID = -1;
+    private static int allUseCaseMaxID = -1;
     public int getMaxId(String fileName, String code, String idnum) {
         int num = 0;
         try {
@@ -83,8 +83,11 @@ public class CktXmlHelper2 {
                         if (name.equals("usecase")) { // 判断开始标签元素是否是student
                             int id = Integer.parseInt(parser.getAttributeValue(0));
                             LogUtils.d(TAG, "usecase id : " + id);
-                            if(maxID < id){
-                                maxID = id;
+                            int whichfile = whichXmlFile(path);
+                            if(whichfile == 0){
+                                if(allUseCaseMaxID < id){
+                                    allUseCaseMaxID = id;
+                                }
                             }
                             usecase = new CktUseCase(id);
                         }else if(name.equals("title")){
@@ -224,8 +227,20 @@ public class CktXmlHelper2 {
         NewXML(path, usecases);
     }
 
-    public void NewXML(String path, ArrayList<UseCaseBase> ucs) throws Exception{
+    public int whichXmlFile(String path){
+        int result = 0;
+        String sub = path.substring(path.lastIndexOf("/") + 1);
+        LogUtils.d(TAG, "whichXmlFile sub = "+sub);
+        if(sub.equals("selected_usecases.xml")){
+            result = 1;
+        } else if(sub.equals("usecases.xml")){
+            result = 0;
+        }
+        LogUtils.d(TAG, "whichXmlFile : "+result);
+        return result;
+    }
 
+    public void NewXML(String path, ArrayList<UseCaseBase> ucs) throws Exception{
         File xmlFile = new File(path);
         FileOutputStream outStream = new FileOutputStream(xmlFile);
 
@@ -240,9 +255,13 @@ public class CktXmlHelper2 {
             LogUtils.d(TAG, "usecaseID="+usecaseID);
             if(usecaseID == -1){
                 //自定义用例添加时自动生成ID
-                LogUtils.d(TAG, "maxId="+maxID);
-                usecaseID = maxID + 1;
-
+                int whichfile = whichXmlFile(path);
+                if(whichfile == 0){
+                    LogUtils.d(TAG, "all maxId="+allUseCaseMaxID);
+                    usecaseID = allUseCaseMaxID + 1;
+                }else{
+                    LogUtils.e(TAG, "error: usecaseID == -1 !!!");
+                }
             }
             serializer.attribute(null, "id", String.valueOf(usecaseID));
 
@@ -261,7 +280,9 @@ public class CktXmlHelper2 {
                 serializer.startTag(null, "title");
                 serializer.text(ti.getTitle()+"");
                 serializer.endTag(null, "title");
-
+                
+                ti.saveParametersToXml(serializer);
+                /*
                 serializer.startTag(null, "times");
                 serializer.text(ti.getTimes()+"");
                 serializer.endTag(null, "times");
@@ -269,6 +290,7 @@ public class CktXmlHelper2 {
                 serializer.startTag(null, "selected");
                 serializer.text(ti.isChecked()+"");
                 serializer.endTag(null, "selected");
+                */
 
                 serializer.endTag(null, "testitem");
             }

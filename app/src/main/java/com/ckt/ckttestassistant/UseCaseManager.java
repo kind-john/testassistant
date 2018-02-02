@@ -73,7 +73,6 @@ public class UseCaseManager {
         usecase2.addTestItem(new CktTestItem());
         mAllUseCases.add(usecase2);*/
     }
-
     boolean startExecute(){
         int size = 0;
         if(mSelectedUseCases == null || mSelectedUseCases.isEmpty()){
@@ -87,6 +86,21 @@ public class UseCaseManager {
         mSelectedUseCases.get(0).execute();
 
         return true;
+    }
+    public void saveSelectedUseCaseToXml(ArrayList<UseCaseBase> selectedUseCase){
+        if(selectedUseCase == null || selectedUseCase.isEmpty()){
+            LogUtils.d(TAG, "don't select any testitem,so don't save anything!");
+            return;
+        }
+        String path = mContext.getFilesDir()+"/selected_usecases.xml";
+
+        try {
+            for (UseCaseBase uc : selectedUseCase){
+                mXmlHelper.addUseCases(path, uc);
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     public void saveUseCaseToXml(ArrayList<TestItemBase> selectedTestItems, String name) {

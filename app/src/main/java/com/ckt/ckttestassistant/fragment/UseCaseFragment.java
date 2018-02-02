@@ -90,6 +90,7 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
                 //do something
                 //mUseCaseManager.saveUseCaseToXml(mContext, mSelectedItems, "usecase");
                 LogUtils.d(TAG, "save onClick");
+                mUseCaseManager.saveSelectedUseCaseToXml(mSelectedItems);
             }
         });
         mUseCaseList = (RecyclerView) rootView.findViewById(R.id.usecaselist);
