@@ -19,6 +19,7 @@ public abstract class TestItemBase implements CktResultsHelper.ResultCallBack {
     //设置下一个测试项，如果结束则必须将其设置为空
     protected TestItemBase mNextTestItem;
     protected int mTimes = DEFAULT_TESTITEM_TIMES;
+    protected int mFailTimes = 0;
     protected String mTitle = "testitem";
     protected  boolean mIsChecked = false;
     protected int ID = -1;
@@ -69,6 +70,14 @@ public abstract class TestItemBase implements CktResultsHelper.ResultCallBack {
 
     public int getID() {
         return ID;
+    }
+
+    public int getFailTimes() {
+        return mFailTimes;
+    }
+
+    public void setFailTimes(int failTimes) {
+        this.mFailTimes = failTimes;
     }
 
     public TestItemBase(TestItemBase mNextTestItem) {

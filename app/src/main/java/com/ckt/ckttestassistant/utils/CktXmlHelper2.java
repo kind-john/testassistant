@@ -130,6 +130,18 @@ public class CktXmlHelper2 {
                                 usecase.setTimes(times);
                             }
 
+                        }else if(name.equals("failtimes")){
+                            int failtimes = Integer.parseInt(parser.nextText());
+                            LogUtils.d(TAG, "failtimes : " + failtimes);
+
+                            if(testitem != null){
+                                LogUtils.d(TAG, "testitem failtimes : " + failtimes);
+                                testitem.setFailTimes(failtimes);
+                            }else if(usecase != null){
+                                LogUtils.d(TAG, "usecase failtimes : " + failtimes);
+                                usecase.setFailTimes(failtimes);
+                            }
+
                         }else if(name.equals("selected")){
                             boolean isChecked = Boolean.parseBoolean(parser.nextText());
                             LogUtils.d(TAG, "usecase isChecked : " + isChecked);

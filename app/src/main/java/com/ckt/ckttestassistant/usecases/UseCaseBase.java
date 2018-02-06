@@ -22,10 +22,19 @@ public abstract class UseCaseBase {
     protected ArrayList<TestItemBase> mTestItems = new ArrayList<TestItemBase>();
     protected UseCaseBase mNextUseCase;
     protected int mTimes = DEFAULT_TIMES;
+    protected int mFailTimes = 0;
     protected String mTitle = "case";
     protected  boolean mIsChecked = false;
     protected int ID = -1;
     protected String mClassName = "UseCaseBase";
+
+    public int getFailTimes() {
+        return mFailTimes;
+    }
+
+    public void setFailTimes(int failTimes) {
+        this.mFailTimes = failTimes;
+    }
 
     public void setNextUseCase(UseCaseBase nextUseCase){
         this.mNextUseCase = nextUseCase;
