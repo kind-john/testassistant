@@ -1,5 +1,7 @@
 package com.ckt.ckttestassistant.fragment;
 
+import android.content.Context;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
@@ -10,15 +12,17 @@ import android.support.v4.app.FragmentPagerAdapter;
  */
 
 public class FragmentAdapter extends FragmentPagerAdapter {
+    private final Handler mHandler;
     private String[] mTabTitles;
-    public FragmentAdapter(FragmentManager fm, String[] tabTitles) {
+    public FragmentAdapter(FragmentManager fm, String[] tabTitles, Handler handler) {
         super(fm);
         mTabTitles = tabTitles;
+        mHandler = handler;
     }
 
     @Override
     public Fragment getItem(int position) {
-        return FragmentFactory.getFragment(position);
+        return FragmentFactory.getFragment(position, mHandler);
     }
 
     @Override

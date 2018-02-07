@@ -1,6 +1,9 @@
 package com.ckt.ckttestassistant.usecases;
 
 
+import android.os.Handler;
+
+import com.ckt.ckttestassistant.UseCaseManager;
 import com.ckt.ckttestassistant.testitems.TestItemBase;
 
 import org.xmlpull.v1.XmlSerializer;
@@ -54,8 +57,8 @@ public class CktUseCase extends UseCaseBase {
     }
 
     @Override
-    public boolean execute() {
-        super.execute();
+    public boolean execute(Handler mHandler, UseCaseManager.ExecuteCallback mExecuteCallback) {
+        super.execute(mHandler, mExecuteCallback);
         return true;
     }
 

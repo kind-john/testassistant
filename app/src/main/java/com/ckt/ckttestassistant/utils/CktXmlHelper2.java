@@ -69,8 +69,7 @@ public class CktXmlHelper2 {
             int eventtype = parser.getEventType();// 产生第一个事件
             UseCaseBase usecase = null;
             TestItemBase testitem = null;
-            StringBuffer str1 = new StringBuffer();
-            StringBuffer str2 = new StringBuffer();
+            allUseCaseMaxID = -1;
             while (eventtype != XmlPullParser.END_DOCUMENT) {
                 switch (eventtype) {
                     case XmlPullParser.START_DOCUMENT:// 判断当前事件是否为文档开始事件

@@ -1,20 +1,25 @@
 package com.ckt.ckttestassistant.testitems;
 
 import android.content.Context;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 
 import com.ckt.ckttestassistant.CktResultsHelper;
+import com.ckt.ckttestassistant.UseCaseManager;
 import com.ckt.ckttestassistant.utils.LogUtils;
+import com.ckt.ckttestassistant.utils.MyConstants;
 
 import org.xmlpull.v1.XmlSerializer;
 
-import java.io.FileOutputStream;
+import static java.lang.Thread.sleep;
 
 /**
  * Created by ckt on 18-1-26.
  */
 
 public abstract class TestItemBase implements CktResultsHelper.ResultCallBack {
-    private static final int DEFAULT_TESTITEM_TIMES = 1;
+    private static final int DEFAULT_TESTITEM_TIMES = 3;
     private static final String TAG = "TestItemBase";
     //设置下一个测试项，如果结束则必须将其设置为空
     protected TestItemBase mNextTestItem;
@@ -98,18 +103,39 @@ public abstract class TestItemBase implements CktResultsHelper.ResultCallBack {
         this.mIsChecked = mIsChecked;
     }
 
-    public void execute(){
+    public void execute(Handler handler, UseCaseManager.ExecuteCallback executeCallback, boolean usecaseFinish){
         for(int times = 0; times < mTimes; times++){
-            LogUtils.d(TAG, "  testItem : " + this.getClass().getName() + "extends TestItemBase execute times = " + times);
-            doExecute();
+            String className = this.getClass().getSimpleName();
+            boolean testItemFinish = false;
+            LogUtils.d(TAG, "  testItem : " + className + " extends TestItemBase execute times = " + times);
+            LogUtils.d(TAG, "usecaseFinish : "+usecaseFinish);
+            try{
+                Message msg = Message.obtain();
+                msg.what = MyConstants.UPDATE_PROGRESS_MESSAGE;
+                Bundle data = new Bundle();
+                data.putString(MyConstants.PROGRESS_MESSAGE, className+" : "+times);
+                msg.setData(data);
+                handler.sendMessage(msg);
+                if(executeCallback != null){
+                    //executeCallback.updateProgressMessage(className+" : "+times);
+                }
+                sleep(2000);
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+            if((mNextTestItem == null) && (times == mTimes - 1)){
+                testItemFinish = true;
+            }
+            LogUtils.d(TAG, "testItemFinish : "+testItemFinish);
+            doExecute(executeCallback, (usecaseFinish && testItemFinish));
             saveResult();
         }
 
         if(mNextTestItem != null){
-            mNextTestItem.execute();
+            mNextTestItem.execute(handler, executeCallback, usecaseFinish);
         }
     }
-    public abstract boolean doExecute();
+    public abstract boolean doExecute(UseCaseManager.ExecuteCallback executeCallback, boolean finish);
     public abstract void saveResult();
     public abstract void saveParametersToXml(XmlSerializer serializer) throws Exception;
     public abstract void showPropertyDialog(Context context);

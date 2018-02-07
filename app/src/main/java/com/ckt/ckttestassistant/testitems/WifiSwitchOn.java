@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.support.v7.app.AlertDialog;
 
+import com.ckt.ckttestassistant.UseCaseManager;
 import com.ckt.ckttestassistant.utils.LogUtils;
 
 import org.xmlpull.v1.XmlSerializer;
@@ -38,8 +39,13 @@ public class WifiSwitchOn extends TestItemBase {
     }
 
     @Override
-    public boolean doExecute() {
+    public boolean doExecute(UseCaseManager.ExecuteCallback executeCallback, boolean finish) {
         LogUtils.d(TAG, "WifiSwitchOn doExecute");
+        //do test,then close progressview
+        if(finish && executeCallback != null){
+            LogUtils.d(TAG, "closeProgressView");
+            executeCallback.closeProgressView();
+        }
         return false;
     }
 

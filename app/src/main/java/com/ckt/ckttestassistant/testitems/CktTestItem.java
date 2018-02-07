@@ -2,6 +2,7 @@ package com.ckt.ckttestassistant.testitems;
 
 import android.content.Context;
 
+import com.ckt.ckttestassistant.UseCaseManager;
 import com.ckt.ckttestassistant.utils.LogUtils;
 
 import org.xmlpull.v1.XmlSerializer;
@@ -46,8 +47,13 @@ public class CktTestItem extends TestItemBase {
     }
 
     @Override
-    public boolean doExecute() {
+    public boolean doExecute(UseCaseManager.ExecuteCallback executeCallback, boolean finish) {
         LogUtils.d(TAG, "CktTestItem doExecute");
+        //do test,then close progressview
+        if(finish && executeCallback != null){
+            LogUtils.d(TAG, "closeProgressView");
+            executeCallback.closeProgressView();
+        }
         return false;
     }
 

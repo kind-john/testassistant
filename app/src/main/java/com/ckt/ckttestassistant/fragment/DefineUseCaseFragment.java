@@ -2,6 +2,7 @@ package com.ckt.ckttestassistant.fragment;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
@@ -35,6 +36,7 @@ import java.util.HashMap;
 
 public class DefineUseCaseFragment extends Fragment {
     private static final String TAG = "DefineUseCaseFragment";
+    private Handler mHandler = null;
     private RecyclerView mTestCategoryList;
     private Context mContext;
     private ArrayList<TestCategory> mTestCategoryItems = new ArrayList<TestCategory>();
@@ -57,6 +59,10 @@ public class DefineUseCaseFragment extends Fragment {
     private Button mSaveButton;
     private TextView mTestItemTextView;
     private UseCaseManager mUseCaseManager;
+
+    public void setHandler(Handler handler) {
+        this.mHandler = handler;
+    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {

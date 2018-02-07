@@ -3,9 +3,9 @@ package com.ckt.ckttestassistant.fragment;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -18,7 +18,6 @@ import com.ckt.ckttestassistant.UseCaseManager;
 import com.ckt.ckttestassistant.adapter.CktItemDecoration;
 import com.ckt.ckttestassistant.interfaces.OnItemClickListener;
 import com.ckt.ckttestassistant.testitems.TestItemBase;
-import com.ckt.ckttestassistant.usecases.CktUseCase;
 import com.ckt.ckttestassistant.utils.LogUtils;
 import com.ckt.ckttestassistant.R;
 import com.ckt.ckttestassistant.usecases.UseCaseBase;
@@ -33,6 +32,7 @@ import java.util.ArrayList;
 
 public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseChangeObserver{
     private static final String TAG = "UseCaseFragment";
+    private Handler mHandler = null;
     private RecyclerView mUseCaseList;
     private Context mContext;
     private ArrayList<UseCaseBase> mAllItems;
@@ -48,13 +48,17 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
     private TestItemListAdapter mTestItemListAdapter;
     private Button mStartTestButton;
 
+    public void setHandler(Handler handler) {
+        this.mHandler = handler;
+    }
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         LogUtils.d(TAG, "onCreate");
         mContext = getActivity().getApplicationContext();
         mUseCaseManager = UseCaseManager.getInstance(mContext);
-        mUseCaseManager.init();
+        mUseCaseManager.init(mHandler);
         mUseCaseManager.addUseCaseChangeObserver(this);
         mShowPanelInfo.append("use case : ");
         mAllItems = mUseCaseManager.getAllItems();
@@ -76,6 +80,7 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
             @Override
             public void onClick(View v) {
                 mUseCaseManager.startExecute();
+                //mStartTestButton.setClickable(false);
             }
         });
         mDeleteButton = (Button) rootView.findViewById(R.id.delete);

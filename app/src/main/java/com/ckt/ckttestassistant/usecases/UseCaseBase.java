@@ -1,15 +1,16 @@
 package com.ckt.ckttestassistant.usecases;
 
-import android.content.Context;
-import android.widget.Toast;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 
-import com.ckt.ckttestassistant.utils.LogUtils;
+import com.ckt.ckttestassistant.UseCaseManager;
 import com.ckt.ckttestassistant.testitems.TestItemBase;
+import com.ckt.ckttestassistant.utils.LogUtils;
+import com.ckt.ckttestassistant.utils.MyConstants;
 
 import org.xmlpull.v1.XmlSerializer;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 
 /**
@@ -17,7 +18,7 @@ import java.util.ArrayList;
  */
 
 public abstract class UseCaseBase {
-    private static final int DEFAULT_TIMES = 1;
+    private static final int DEFAULT_TIMES = 3;
     private static final String TAG = "UseCaseBase";
     protected ArrayList<TestItemBase> mTestItems = new ArrayList<TestItemBase>();
     protected UseCaseBase mNextUseCase;
@@ -80,7 +81,7 @@ public abstract class UseCaseBase {
         this.mIsChecked = mIsChecked;
     }
 
-    public boolean execute(){
+    public boolean execute(Handler handler, UseCaseManager.ExecuteCallback executeCallback){
         if(mTestItems == null || mTestItems.isEmpty()){
             return true;
         }
@@ -91,8 +92,25 @@ public abstract class UseCaseBase {
         mTestItems.get(mTestItems.size() - 1).setNextTestItem(null);
 
         for (int times = 0; times < mTimes; times++) {
-            LogUtils.d(TAG, "UseCase : " + this.getClass().getName() + "extends UseCaseBase execute times = " + times);
-            mTestItems.get(0).execute();
+            boolean usecaseFinish = false;
+            String className = this.getClass().getSimpleName();
+            LogUtils.d(TAG, "UseCase : " + className + " extends UseCaseBase execute times = " + times);
+            Message msg = Message.obtain();
+            msg.what = MyConstants.UPDATE_PROGRESS_TITLE;
+            Bundle data = new Bundle();
+            data.putString(MyConstants.PROGRESS_TITLE, className+" : "+times);
+            msg.setData(data);
+            handler.sendMessage(msg);
+            if(executeCallback != null){
+                //executeCallback.updateProgressTitle(className+" : "+times);
+            }
+            if((mNextUseCase == null) && (times == mTimes - 1)){
+                usecaseFinish = true;
+            }
+            mTestItems.get(0).execute(handler, executeCallback, usecaseFinish);
+        }
+        if(mNextUseCase != null){
+            mNextUseCase.execute(handler, executeCallback);
         }
         return true;
     }
