@@ -115,7 +115,8 @@ public class CktXmlHelper {
                             String title = parser.nextText();
                             String isChecked = parser.nextText();
                             int total = Integer.parseInt(parser.nextText());
-                            usecase = new CktUseCase(id);//do something
+                            usecase = new CktUseCase();//do something
+                            usecase.setID(id);
                         }
                         if (usecase != null) {
                             if (name.equals("testitem")) {

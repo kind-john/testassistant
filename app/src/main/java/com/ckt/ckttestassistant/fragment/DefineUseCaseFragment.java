@@ -113,6 +113,11 @@ public class DefineUseCaseFragment extends Fragment {
             public void onClick(View v) {
                 //do something
                 mUseCaseManager.saveUseCaseToXml(mSelectedTestItems, "usecase");
+                if(mSelectedTestItems != null && !mSelectedTestItems.isEmpty()){
+                    mSelectedTestItems.clear();
+                    generateShowPanelString(mSelectedTestItems);
+                    mTestItemTextView.setText(mShowPanelInfo.toString());
+                }
             }
         });
         mTestCategoryList = (RecyclerView) rootView.findViewById(R.id.testcategorylist);

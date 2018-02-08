@@ -18,6 +18,7 @@ public class WifiSwitchOn extends TestItemBase {
     private static final String TAG = "WifiSwitchOn";
 
     public WifiSwitchOn() {
+        super();
         String className = this.getClass().getName();
         setClassName(className);
     }

@@ -20,14 +20,33 @@ import java.util.ArrayList;
 public abstract class UseCaseBase {
     private static final int DEFAULT_TIMES = 3;
     private static final String TAG = "UseCaseBase";
+    private UseCaseManager mUseCaseManager;
     protected ArrayList<TestItemBase> mTestItems = new ArrayList<TestItemBase>();
     protected UseCaseBase mNextUseCase;
     protected int mTimes = DEFAULT_TIMES;
     protected int mFailTimes = 0;
+    protected int mCompletedTimes = 0;
     protected String mTitle = "case";
     protected  boolean mIsChecked = false;
     protected int ID = -1;
     protected String mClassName = "UseCaseBase";
+
+    public int getCompletedTimes() {
+        return mCompletedTimes;
+    }
+
+    public void setCompletedTimes(int completedTimes) {
+        this.mCompletedTimes = completedTimes;
+    }
+
+    public UseCaseBase() {
+        mUseCaseManager = UseCaseManager.getInstance(null);
+    }
+
+    public UseCaseBase(String title) {
+        this.mTitle = mTitle;
+        mUseCaseManager = UseCaseManager.getInstance(null);
+    }
 
     public int getFailTimes() {
         return mFailTimes;
@@ -47,38 +66,6 @@ public abstract class UseCaseBase {
 
     public void setClassName(String className) {
         this.mClassName = className;
-    }
-
-    public UseCaseBase() {
-    }
-
-    public UseCaseBase(int ID) {
-        this.ID = ID;
-    }
-
-    public UseCaseBase(ArrayList<TestItemBase> mTestItems) {
-        this.mTestItems = mTestItems;
-    }
-
-    public UseCaseBase(String mTitle) {
-        this.mTitle = mTitle;
-    }
-
-    public UseCaseBase(ArrayList<TestItemBase> mTestItems, String mTitle) {
-        this.mTestItems = mTestItems;
-        this.mTitle = mTitle;
-    }
-
-    public UseCaseBase(ArrayList<TestItemBase> mTestItems, UseCaseBase mNextUseCase) {
-        this.mTestItems = mTestItems;
-        this.mNextUseCase = mNextUseCase;
-    }
-
-    public UseCaseBase(ArrayList<TestItemBase> mTestItems, int mTimes, String mTitle, boolean mIsChecked) {
-        this.mTestItems = mTestItems;
-        this.mTimes = mTimes;
-        this.mTitle = mTitle;
-        this.mIsChecked = mIsChecked;
     }
 
     public boolean execute(Handler handler, UseCaseManager.ExecuteCallback executeCallback){
@@ -108,6 +95,8 @@ public abstract class UseCaseBase {
                 usecaseFinish = true;
             }
             mTestItems.get(0).execute(handler, executeCallback, usecaseFinish);
+            mCompletedTimes += 1;
+
         }
         if(mNextUseCase != null){
             mNextUseCase.execute(handler, executeCallback);

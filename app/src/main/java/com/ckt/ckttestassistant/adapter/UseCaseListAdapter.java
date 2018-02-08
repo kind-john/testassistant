@@ -32,9 +32,8 @@ public class UseCaseListAdapter extends RecyclerView.Adapter<UseCaseListAdapter.
     public interface UpdateShowPanelListener{
         /**
          *
-         * @param info
          */
-        void updateShowPanel(ArrayList<UseCaseBase> info);
+        void updateShowPanel();
     }
     public UseCaseListAdapter(Context context, ArrayList<UseCaseBase> allItems, ArrayList<UseCaseBase> selectedItems) {
         this.mContext = context;
@@ -84,7 +83,7 @@ public class UseCaseListAdapter extends RecyclerView.Adapter<UseCaseListAdapter.
                         if(mSelectedItems != null) {
                             mSelectedItems.add(mAllItems.get(index));
                         }
-                        mUpdateShowPanelListener.updateShowPanel(mSelectedItems);
+                        mUpdateShowPanelListener.updateShowPanel();
                     }
                 }
             });

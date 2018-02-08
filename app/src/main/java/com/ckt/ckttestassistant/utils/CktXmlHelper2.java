@@ -63,6 +63,11 @@ public class CktXmlHelper2 {
     }
     public void getUseCases(String path, ArrayList<UseCaseBase> allUseCases){
         try {
+            File file = new File(path);
+            if(!file.exists()){
+                LogUtils.d(TAG, path+" not exists, so create it");
+                file.createNewFile();
+            }
             InputStream is = new FileInputStream(path);
             XmlPullParser parser = Xml.newPullParser();
             parser.setInput(is, "utf-8");
@@ -70,6 +75,7 @@ public class CktXmlHelper2 {
             UseCaseBase usecase = null;
             TestItemBase testitem = null;
             allUseCaseMaxID = -1;
+            LogUtils.d(TAG, "set allUseCaseMaxID = -1");
             while (eventtype != XmlPullParser.END_DOCUMENT) {
                 switch (eventtype) {
                     case XmlPullParser.START_DOCUMENT:// 判断当前事件是否为文档开始事件
@@ -83,18 +89,19 @@ public class CktXmlHelper2 {
                             int id = Integer.parseInt(parser.getAttributeValue(0));
                             String className = parser.getAttributeValue(1);
                             LogUtils.d(TAG, "usecase id : " + id + "; className = " + className);
-                            int whichfile = whichXmlFile(path);
-                            if(whichfile == 0){
-                                if(allUseCaseMaxID < id){
-                                    allUseCaseMaxID = id;
-                                }
+
+                            if(allUseCaseMaxID < id){
+                                allUseCaseMaxID = id;
+                                LogUtils.d(TAG, "set allUseCaseMaxID = " + id);
                             }
+                            LogUtils.d(TAG, "getUseCases : allUseCaseMaxID = "+allUseCaseMaxID);
                             if (id >= 0) {
                                 try {
                                     // 根据给定的类名初始化类
                                     Class catClass = Class.forName(className);
                                     // 实例化这个类
                                     usecase = (UseCaseBase) catClass.newInstance();
+                                    usecase.setID(id);
 
                                 }catch (IllegalAccessException e) {
                                     e.printStackTrace();
@@ -218,21 +225,33 @@ public class CktXmlHelper2 {
         }
     }
 
+    public void reCreateXml(String path, ArrayList<UseCaseBase> usecases) throws Exception{
+        File file=new File(path);
+        if(file != null && file.exists()){
+            file.delete();
+        }
+        NewXML(path, usecases);
+    }
 
     public void addUseCases(String path, UseCaseBase usecase) throws Exception{
         ArrayList<UseCaseBase> usecases = new ArrayList<UseCaseBase>();
-        //1、先解析xml数据
+
         File file=new File(path);
         try {
-            getUseCases(path, usecases);
+            if(file != null && file.exists()){
+                getUseCases(path, usecases);
+                //3、生成新的XML
+                file.delete();
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        //2、添加入新的数据person
+        //自定义用例添加时自动生成ID
+        LogUtils.d(TAG, "all maxId="+allUseCaseMaxID);
+        usecase.setID(allUseCaseMaxID + 1);
         usecases.add(usecase);
-        //3、生成新的XML
-        file.delete();
         NewXML(path, usecases);
+        allUseCaseMaxID += 1;
     }
     /**
      * 删除数据
@@ -311,16 +330,7 @@ public class CktXmlHelper2 {
             serializer.startTag(null, "usecase");
             usecaseID = uc.getID();
             LogUtils.d(TAG, "usecaseID="+usecaseID);
-            if(usecaseID == -1){
-                //自定义用例添加时自动生成ID
-                int whichfile = whichXmlFile(path);
-                if(whichfile == 0){
-                    LogUtils.d(TAG, "all maxId="+allUseCaseMaxID);
-                    usecaseID = allUseCaseMaxID + 1;
-                }else{
-                    LogUtils.e(TAG, "error: usecaseID == -1 !!!");
-                }
-            }
+
             serializer.attribute(null, "id", String.valueOf(usecaseID));
             serializer.attribute(null, "classname", uc.getClassName());
 

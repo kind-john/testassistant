@@ -20,18 +20,13 @@ public class CktTestItem extends TestItemBase {
     }
 
     public CktTestItem() {
+        super();
         String className = this.getClass().getName();
         setClassName(className);
     }
 
     public CktTestItem(String mTitle) {
         super(mTitle);
-        String className = this.getClass().getName();
-        setClassName(className);
-    }
-
-    public CktTestItem(int mTimes, String mTitle, boolean mIsChecked) {
-        super(mTimes, mTitle, mIsChecked);
         String className = this.getClass().getName();
         setClassName(className);
     }

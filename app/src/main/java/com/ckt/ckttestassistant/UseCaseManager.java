@@ -109,6 +109,7 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
         }).start();*/
         return true;
     }
+
     public void saveSelectedUseCaseToXml(ArrayList<UseCaseBase> selectedUseCase){
         if(selectedUseCase == null || selectedUseCase.isEmpty()){
             LogUtils.d(TAG, "don't select any testitem,so don't save anything!");
@@ -124,6 +125,55 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
             e.printStackTrace();
         }
     }
+    public void updateUseCaseOfXml(String path, UseCaseBase uc){
+        ArrayList<UseCaseBase> usecases = new ArrayList<UseCaseBase>();
+        try {
+            mXmlHelper.getUseCases(path, usecases);
+            if(updateUsecase(uc)){
+                //mXmlHelper.updateUseCase(path, uc);
+                mXmlHelper.reCreateXml(path, usecases);
+            }
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    private boolean updateUsecase(UseCaseBase uc) {
+        return false;
+    }
+
+    public void updateTestItemOfXml(String path, TestItemBase ti){
+        ArrayList<UseCaseBase> usecases = new ArrayList<UseCaseBase>();
+        try {
+            mXmlHelper.getUseCases(path, usecases);
+            if(updateTestItem(ti)){
+                //mXmlHelper.updateUseCase(path, uc);
+                mXmlHelper.reCreateXml(path, usecases);
+            }
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    private boolean updateTestItem(TestItemBase ti) {
+        return false;
+    }
+
+    public void getSelectedUseCaseFromXml(ArrayList<UseCaseBase> selectedUseCase){
+        if(selectedUseCase == null){
+            LogUtils.d(TAG, "fail selectedUseCase is null!");
+            return;
+        }
+        String path = mContext.getFilesDir()+"/selected_usecases.xml";
+
+        try {
+            mXmlHelper.getUseCases(path, selectedUseCase);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
 
     public void saveUseCaseToXml(ArrayList<TestItemBase> selectedTestItems, String name) {
         if(selectedTestItems == null || selectedTestItems.isEmpty()){
@@ -133,10 +183,12 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
         String path = mContext.getFilesDir()+"/usecases.xml";
         UseCaseBase uc = new CktUseCase(name);
         uc.setTestItems(selectedTestItems);
-        mAllUseCases.add(uc);
-        useCaseChangeNotify(mAllUseCases.size(), 3); //暂时全部刷新
+        //mAllUseCases.add(uc);
         try {
             mXmlHelper.addUseCases(path, uc);
+            mAllUseCases.clear();
+            mXmlHelper.getUseCases(path,mAllUseCases);
+            useCaseChangeNotify(mAllUseCases.size(), 3); //暂时全部刷新
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -170,7 +222,8 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
         b.putInt(MyConstants.UPDATE_USECASEFRAGMENT_POSOTION, 0);
         b.putInt(MyConstants.UPDATE_USECASEFRAGMENT_TYPE, 3);
         mHandler.sendEmptyMessage(MyConstants.UPDATE_USECASEFRAGMENT_USECASELIST);
-        //useCaseChangeNotify(mAllUseCases.size(), 3); //暂时全部刷新
+
+        //getSelectedUseCaseFromXml(mSelectedUseCases);
     }
 
     @Override

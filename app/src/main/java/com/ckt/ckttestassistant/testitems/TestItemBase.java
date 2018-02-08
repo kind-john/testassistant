@@ -21,14 +21,24 @@ import static java.lang.Thread.sleep;
 public abstract class TestItemBase implements CktResultsHelper.ResultCallBack {
     private static final int DEFAULT_TESTITEM_TIMES = 3;
     private static final String TAG = "TestItemBase";
+    private UseCaseManager mUseCaseManager;
     //设置下一个测试项，如果结束则必须将其设置为空
     protected TestItemBase mNextTestItem;
     protected int mTimes = DEFAULT_TESTITEM_TIMES;
     protected int mFailTimes = 0;
+    protected int mCompletedTimes = 0;
     protected String mTitle = "testitem";
     protected  boolean mIsChecked = false;
     protected int ID = -1;
     protected String mClassName = "TestItemBase";
+
+    public int getCompletedTimes() {
+        return mCompletedTimes;
+    }
+
+    public void setCompletedTimes(int completedTimes) {
+        this.mCompletedTimes = completedTimes;
+    }
 
     public String getClassName() {
         return mClassName;
@@ -90,18 +100,13 @@ public abstract class TestItemBase implements CktResultsHelper.ResultCallBack {
     }
 
     public TestItemBase() {
-
+        mUseCaseManager = UseCaseManager.getInstance(null);
     }
-
     public TestItemBase(String mTitle) {
         this.mTitle = mTitle;
+        mUseCaseManager = UseCaseManager.getInstance(null);
     }
 
-    public TestItemBase(int mTimes, String mTitle, boolean mIsChecked) {
-        this.mTimes = mTimes;
-        this.mTitle = mTitle;
-        this.mIsChecked = mIsChecked;
-    }
 
     public void execute(Handler handler, UseCaseManager.ExecuteCallback executeCallback, boolean usecaseFinish){
         for(int times = 0; times < mTimes; times++){
@@ -128,6 +133,7 @@ public abstract class TestItemBase implements CktResultsHelper.ResultCallBack {
             }
             LogUtils.d(TAG, "testItemFinish : "+testItemFinish);
             doExecute(executeCallback, (usecaseFinish && testItemFinish));
+            mCompletedTimes += 1;
             saveResult();
         }
 
