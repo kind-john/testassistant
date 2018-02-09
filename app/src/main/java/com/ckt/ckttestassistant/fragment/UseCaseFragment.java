@@ -30,7 +30,8 @@ import java.util.ArrayList;
  * Created by ckt on 18-1-30.
  */
 
-public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseChangeObserver{
+public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseChangeObserver,
+        UseCaseManager.SelectedUseCaseChangeObserver{
     private static final String TAG = "UseCaseFragment";
     private Handler mHandler = null;
     private RecyclerView mUseCaseList;
@@ -60,6 +61,7 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
         mUseCaseManager = UseCaseManager.getInstance(mContext);
         mUseCaseManager.init(mHandler);
         mUseCaseManager.addUseCaseChangeObserver(this);
+        mUseCaseManager.addSelectedUseCaseChangeObserver(this);
         mShowPanelInfo.append("use case : ");
         mAllItems = mUseCaseManager.getAllItems();
         mSelectedItems = mUseCaseManager.getSelectItems();
@@ -116,8 +118,8 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
         mAdapter = new UseCaseListAdapter(mContext, mAllItems, mSelectedItems);
         mAdapter.setUpdateShowPanelListener(new UseCaseListAdapter.UpdateShowPanelListener() {
             @Override
-            public void updateShowPanel(int index) {
-                setShowPanel(index);
+            public void updateShowPanelForAdd(int index) {
+                setShowPanelForAdd(index);
             }
         });
         mAdapter.setOnItemClickListener(new OnItemClickListener() {
@@ -198,7 +200,7 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
         mUseCaseTestItemList.setAdapter(mTestItemListAdapter);
     }
 
-    public void setShowPanel(int index){
+    public void setShowPanelForAdd(int index){
         mUseCaseManager.updateSelectedUseCases(index);
         generateShowPanelString(mSelectedItems);
         mUseCaseTextView.setText(mShowPanelInfo.toString());
@@ -234,5 +236,11 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
                 break;
 
         }
+    }
+
+    @Override
+    public void selectedUseCaseChangeNofify() {
+        generateShowPanelString(mSelectedItems);
+        mUseCaseTextView.setText(mShowPanelInfo.toString());
     }
 }

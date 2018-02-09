@@ -79,7 +79,9 @@ public class ResultsFragment extends Fragment implements UseCaseManager.Selected
 
     private void updateTestItemView() {
         mCurrentTestItems = mSelectedItems.get(mCurrentUseCase).getTestItems();
-        mTestItemAdapter.notifyDataSetChanged();
+        mTestItemAdapter = new ResultsTestItemAdapter(mContext, mCurrentTestItems);
+        mTestItemListView.setAdapter(mTestItemAdapter);
+        //mTestItemAdapter.notifyDataSetChanged();
     }
 
     private void initTestItemList() {

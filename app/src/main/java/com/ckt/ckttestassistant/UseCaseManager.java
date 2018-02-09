@@ -191,6 +191,7 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
         String path = mContext.getFilesDir()+"/selected_usecases.xml";
 
         try {
+            mSelectedUseCases.clear();
             mXmlHelper.getUseCases(path, mSelectedUseCases);
             selectedUseCaseChangeNotify();
         }catch (Exception e){
@@ -297,7 +298,7 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
         return mSelectedUseCaseChangeObserver;
     }
     public void selectedUseCaseChangeNotify(){
-        mHandler.sendEmptyMessage(MyConstants.UPDATE_USECASEFRAGMENT_USECASELIST);
+        mHandler.sendEmptyMessage(MyConstants.UPDATE_SELECTEDUSECASES_UI);
     }
     public void useCaseChangeNotify(){
         /*if(mUseCaseChangeListener != null && !mUseCaseChangeListener.isEmpty()){
