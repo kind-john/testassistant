@@ -18,7 +18,6 @@ import com.ckt.ckttestassistant.UseCaseManager;
 import com.ckt.ckttestassistant.adapter.CktItemDecoration;
 import com.ckt.ckttestassistant.interfaces.OnItemClickListener;
 import com.ckt.ckttestassistant.testitems.TestItemBase;
-import com.ckt.ckttestassistant.utils.CktXmlHelper2;
 import com.ckt.ckttestassistant.utils.LogUtils;
 import com.ckt.ckttestassistant.R;
 import com.ckt.ckttestassistant.usecases.UseCaseBase;
@@ -75,7 +74,7 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
         LogUtils.d(TAG, "onCreateView");
         View rootView = inflater.inflate(R.layout.fragment_usecase_layout, container, false);
         mUseCaseTextView = (TextView) rootView.findViewById(R.id.usecasetext);
-        mUseCaseManager.getSelectedUseCaseFromXml(mSelectedItems);
+        mUseCaseManager.getSelectedUseCaseFromXml(); //及时与数据同步
         if(needStartTest()){
             mUseCaseManager.startExecute();
         }
@@ -87,7 +86,7 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
                 //保存数据，为了重启或者中断之后能继续执行
                 mUseCaseManager.saveSelectedUseCaseToXml(mSelectedItems);
                 mUseCaseManager.startExecute();
-                //mStartTestButton.setClickable(false);
+                mStartTestButton.setClickable(false);
             }
         });
         mDeleteButton = (Button) rootView.findViewById(R.id.delete);
@@ -117,8 +116,8 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
         mAdapter = new UseCaseListAdapter(mContext, mAllItems, mSelectedItems);
         mAdapter.setUpdateShowPanelListener(new UseCaseListAdapter.UpdateShowPanelListener() {
             @Override
-            public void updateShowPanel() {
-                setShowPanel();
+            public void updateShowPanel(int index) {
+                setShowPanel(index);
             }
         });
         mAdapter.setOnItemClickListener(new OnItemClickListener() {
@@ -140,19 +139,26 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
     }
 
     private boolean needStartTest() {
+        if(!mUseCaseManager.getTestStatus()){
+            return false;
+        }
+        boolean need = false;
         if(mSelectedItems != null && !mSelectedItems.isEmpty()){
             for (UseCaseBase uc : mSelectedItems){
                 if(uc.getTimes() != uc.getCompletedTimes()){
-                    return true;
+                    need = true;
                 }
                 for (TestItemBase ti : uc.getTestItems()){
                     if(ti.getTimes() != ti.getCompletedTimes()){
-                        return true;
+                        need = true;
                     }
                 }
             }
         }
-        return false;
+        if(!need){
+            mUseCaseManager.setTestStatus(false);
+        }
+        return need;
     }
 
     private void initTestItemList() {
@@ -192,7 +198,8 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
         mUseCaseTestItemList.setAdapter(mTestItemListAdapter);
     }
 
-    public void setShowPanel(){
+    public void setShowPanel(int index){
+        mUseCaseManager.updateSelectedUseCases(index);
         generateShowPanelString(mSelectedItems);
         mUseCaseTextView.setText(mShowPanelInfo.toString());
     }

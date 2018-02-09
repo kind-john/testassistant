@@ -4,14 +4,17 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.design.widget.TabLayout;
+import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 import com.ckt.ckttestassistant.fragment.FragmentAdapter;
+import com.ckt.ckttestassistant.fragment.FragmentFactory;
 import com.ckt.ckttestassistant.testitems.TestItemBase;
 import com.ckt.ckttestassistant.utils.LogUtils;
 import com.ckt.ckttestassistant.utils.MyConstants;
@@ -45,12 +48,20 @@ public class CktTestAssistantMainActivity extends AppCompatActivity implements U
                     updateProgressMessage(message);
                     break;
                 case MyConstants.UPDATE_USECASEFRAGMENT_USECASELIST:
-                    ArrayList<UseCaseManager.UseCaseChangeObserver> la = mUseCaseManager.getUseCaseChangeListener();
-                    if(la != null && !la.isEmpty()){
-                        for (UseCaseManager.UseCaseChangeObserver observer : la){
+                    ArrayList<UseCaseManager.UseCaseChangeObserver> ul = mUseCaseManager.getUseCaseChangeListener();
+                    if(ul != null && !ul.isEmpty()){
+                        for (UseCaseManager.UseCaseChangeObserver observer : ul){
                             int position = data.getInt(MyConstants.UPDATE_USECASEFRAGMENT_POSOTION, 0);
                             int type = data.getInt(MyConstants.UPDATE_USECASEFRAGMENT_TYPE, 3);
                             observer.allUseCaseChangeNofify(position, type);
+                        }
+                    }
+                    break;
+                case MyConstants.UPDATE_SELECTEDUSECASES_UI:
+                    ArrayList<UseCaseManager.SelectedUseCaseChangeObserver> sl = mUseCaseManager.getSelectedUseCaseChangeListener();
+                    if(sl != null && !sl.isEmpty()){
+                        for (UseCaseManager.SelectedUseCaseChangeObserver observer : sl){
+                            observer.selectedUseCaseChangeNofify();
                         }
                     }
                     break;
@@ -94,6 +105,10 @@ public class CktTestAssistantMainActivity extends AppCompatActivity implements U
         if(mProgressDialogBuilder != null){
             mProgressDialogBuilder = null;
         }
+        mUseCaseManager.setTestStatus(false);
+        View fgv = FragmentFactory.getFragment(0, mHandler).getView();
+        Button startButton = (Button)fgv.findViewById(R.id.starttest);
+        startButton.setClickable(true);
     }
 
     @Override

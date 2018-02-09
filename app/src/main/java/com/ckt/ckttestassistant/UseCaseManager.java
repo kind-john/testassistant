@@ -2,9 +2,11 @@ package com.ckt.ckttestassistant;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.preference.PreferenceManager;
 
 import com.ckt.ckttestassistant.services.DoTestIntentService;
 import com.ckt.ckttestassistant.testitems.TestItemBase;
@@ -14,6 +16,7 @@ import com.ckt.ckttestassistant.utils.CktXmlHelper2;
 import com.ckt.ckttestassistant.utils.LogUtils;
 import com.ckt.ckttestassistant.utils.MyConstants;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 /**
@@ -26,11 +29,14 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
     private ArrayList<UseCaseBase> mAllUseCases = new ArrayList<UseCaseBase>();
     private ArrayList<UseCaseBase> mSelectedUseCases = new ArrayList<UseCaseBase>();
     private ArrayList<UseCaseChangeObserver> mUseCaseChangeListener = new ArrayList<UseCaseChangeObserver>();
+    private ArrayList<SelectedUseCaseChangeObserver> mSelectedUseCaseChangeObserver = new ArrayList<SelectedUseCaseChangeObserver>();
     private static Context mContext;
     private volatile static UseCaseManager instance;
     private CktXmlHelper2 mXmlHelper;
     private Handler mHandler;
     private ExecuteCallback mExecuteCallback = null;
+    private SharedPreferences mPref;
+    private SharedPreferences.Editor mEditor;
 
 
     private UseCaseManager(){
@@ -65,6 +71,10 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
     }
     public void init(Handler handler){
         mHandler = handler;
+        mXmlHelper = new CktXmlHelper2();
+        mPref = PreferenceManager.getDefaultSharedPreferences(mContext);
+        mEditor = mPref.edit();
+
         Intent it = new Intent(mContext, DoTestIntentService.class);
         it.putExtra(DoTestIntentService.COMMAND, "init");
         mContext.startService(it);
@@ -87,7 +97,18 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
         usecase2.addTestItem(new CktTestItem());
         mAllUseCases.add(usecase2);*/
     }
+
+    public boolean getTestStatus(){
+        boolean status = mPref.getBoolean(MyConstants.PREF_TEST_STATUS, false);
+        return status;
+    }
+
+    public void setTestStatus(boolean status){
+        mEditor.putBoolean(MyConstants.PREF_TEST_STATUS, status);
+        mEditor.commit();
+    }
     public boolean startExecute(){
+        setTestStatus(true);
         Intent it = new Intent(mContext, DoTestIntentService.class);
         it.putExtra(DoTestIntentService.COMMAND, "start");
         mContext.startService(it);
@@ -118,9 +139,7 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
         String path = mContext.getFilesDir()+"/selected_usecases.xml";
 
         try {
-            for (UseCaseBase uc : selectedUseCase){
-                mXmlHelper.addUseCases(path, uc);
-            }
+            mXmlHelper.reCreateXml(path, selectedUseCase);
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -161,21 +180,25 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
         return false;
     }
 
-    public void getSelectedUseCaseFromXml(ArrayList<UseCaseBase> selectedUseCase){
-        if(selectedUseCase == null){
-            LogUtils.d(TAG, "fail selectedUseCase is null!");
-            return;
-        }
+    private void getAllUseCaseFromXml() {
+        String path = mContext.getFilesDir()+"/usecases.xml";
+        mAllUseCases.clear();
+        mXmlHelper.getUseCases(path, mAllUseCases);
+        //refreshUseCaseList();
+        useCaseChangeNotify();
+    }
+    public void getSelectedUseCaseFromXml(){
         String path = mContext.getFilesDir()+"/selected_usecases.xml";
 
         try {
-            mXmlHelper.getUseCases(path, selectedUseCase);
+            mXmlHelper.getUseCases(path, mSelectedUseCases);
+            selectedUseCaseChangeNotify();
         }catch (Exception e){
             e.printStackTrace();
         }
     }
 
-    public void saveUseCaseToXml(ArrayList<TestItemBase> selectedTestItems, String name) {
+    public void saveAllUseCaseToXml(ArrayList<TestItemBase> selectedTestItems, String name) {
         if(selectedTestItems == null || selectedTestItems.isEmpty()){
             LogUtils.d(TAG, "don't select any testitem,so don't save anything!");
             return;
@@ -183,22 +206,13 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
         String path = mContext.getFilesDir()+"/usecases.xml";
         UseCaseBase uc = new CktUseCase(name);
         uc.setTestItems(selectedTestItems);
-        //mAllUseCases.add(uc);
         try {
             mXmlHelper.addUseCases(path, uc);
-            mAllUseCases.clear();
-            mXmlHelper.getUseCases(path,mAllUseCases);
-            useCaseChangeNotify(mAllUseCases.size(), 3); //暂时全部刷新
+            getAllUseCaseFromXml();
+            useCaseChangeNotify();
         }catch (Exception e){
             e.printStackTrace();
         }
-        /*int id = mAllUseCases.size();
-        CktUseCase usecase = new CktUseCase(id);
-        if(FileUtils.isFileExists(path)){
-            CktXmlHelper.updateXML(context, path, usecase);
-        }else{
-            CktXmlHelper.createXML(context, path, mAllUseCases);
-        }*/
     }
 
     public ArrayList<UseCaseBase> getAllItems() {
@@ -212,18 +226,8 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
     @Override
     public void loadDataFromXml() {
         //load from xml
-        mXmlHelper = new CktXmlHelper2();
-        String path = mContext.getFilesDir()+"/usecases.xml";
-        mAllUseCases.clear();
-        mXmlHelper.getUseCases(path, mAllUseCases);
-        Message msg = Message.obtain();
-        msg.what = MyConstants.UPDATE_USECASEFRAGMENT_USECASELIST;
-        Bundle b = new Bundle();
-        b.putInt(MyConstants.UPDATE_USECASEFRAGMENT_POSOTION, 0);
-        b.putInt(MyConstants.UPDATE_USECASEFRAGMENT_TYPE, 3);
-        mHandler.sendEmptyMessage(MyConstants.UPDATE_USECASEFRAGMENT_USECASELIST);
-
-        //getSelectedUseCaseFromXml(mSelectedUseCases);
+        getAllUseCaseFromXml();
+        getSelectedUseCaseFromXml();
     }
 
     @Override
@@ -240,6 +244,11 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
         mSelectedUseCases.get(0).execute(mHandler, mExecuteCallback);
     }
 
+    public void updateSelectedUseCases(int index) {
+        mSelectedUseCases.add(mAllUseCases.get(index));
+        selectedUseCaseChangeNotify();
+    }
+
     /**
      * Created by ckt on 18-2-1.
      */
@@ -248,32 +257,61 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
         public void allUseCaseChangeNofify(int position, int i);
     }
 
+    public static interface SelectedUseCaseChangeObserver {
+        public void selectedUseCaseChangeNofify();
+    }
     public void addUseCaseChangeObserver(UseCaseChangeObserver observer){
         if(observer == null){
-            LogUtils.e(TAG, "observer is null !!!");
+            LogUtils.e(TAG, "UseCaseChangeObserver is null !!!");
             return ;
         }
         if(mUseCaseChangeListener != null){
             if(!mUseCaseChangeListener.contains(observer)){
                 mUseCaseChangeListener.add(observer);
             }else{
-                LogUtils.d(TAG, "Observer :" + observer.getClass().getName() + "has added");
+                LogUtils.d(TAG, "UseCaseChangeObserver :" + observer.getClass().getName() + "has added");
             }
         }else{
             LogUtils.e(TAG, "addUseCaseChangeObserver error!!");
         }
     }
-
     public ArrayList<UseCaseChangeObserver> getUseCaseChangeListener() {
         return mUseCaseChangeListener;
     }
-
-    public void useCaseChangeNotify(int position, int i){
-        if(mUseCaseChangeListener != null && !mUseCaseChangeListener.isEmpty()){
+    public void addSelectedUseCaseChangeObserver(SelectedUseCaseChangeObserver observer){
+        if(observer == null){
+            LogUtils.e(TAG, "SelectedUseCaseChangeObserver is null !!!");
+            return ;
+        }
+        if(mSelectedUseCaseChangeObserver != null){
+            if(!mSelectedUseCaseChangeObserver.contains(observer)){
+                mSelectedUseCaseChangeObserver.add(observer);
+            }else{
+                LogUtils.d(TAG, "SelectedUseCaseChangeObserver :" + observer.getClass().getName() + "has added");
+            }
+        }else{
+            LogUtils.e(TAG, "addSelectedUseCaseChangeObserver error!!");
+        }
+    }
+    public ArrayList<SelectedUseCaseChangeObserver> getSelectedUseCaseChangeListener() {
+        return mSelectedUseCaseChangeObserver;
+    }
+    public void selectedUseCaseChangeNotify(){
+        mHandler.sendEmptyMessage(MyConstants.UPDATE_USECASEFRAGMENT_USECASELIST);
+    }
+    public void useCaseChangeNotify(){
+        /*if(mUseCaseChangeListener != null && !mUseCaseChangeListener.isEmpty()){
             for (UseCaseChangeObserver observer : mUseCaseChangeListener){
                 observer.allUseCaseChangeNofify(position, i);
             }
-        }
+        }*/
+        Message msg = Message.obtain();
+        msg.what = MyConstants.UPDATE_USECASEFRAGMENT_USECASELIST;
+        Bundle b = new Bundle();
+        b.putInt(MyConstants.UPDATE_USECASEFRAGMENT_POSOTION, 0);
+        b.putInt(MyConstants.UPDATE_USECASEFRAGMENT_TYPE, 3);
+        msg.setData(b);
+        mHandler.sendMessage(msg);
     }
 
     public static interface ExecuteCallback{

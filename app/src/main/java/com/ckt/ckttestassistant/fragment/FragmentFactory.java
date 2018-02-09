@@ -9,7 +9,7 @@ import android.util.SparseArray;
  * Created by ckt on 18-1-30.
  */
 
-class FragmentFactory {
+public class FragmentFactory {
     private static SparseArray<Fragment> fragmentSparseArray = new SparseArray<>();
 
     public static Fragment getFragment(int position, Handler handler){

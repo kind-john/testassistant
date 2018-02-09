@@ -148,6 +148,18 @@ public class CktXmlHelper2 {
                                 usecase.setFailTimes(failtimes);
                             }
 
+                        }else if(name.equals("completedtimes")){
+                            int completedtimes = Integer.parseInt(parser.nextText());
+                            LogUtils.d(TAG, "completedtimes : " + completedtimes);
+
+                            if(testitem != null){
+                                LogUtils.d(TAG, "testitem completedtimes : " + completedtimes);
+                                testitem.setCompletedTimes(completedtimes);
+                            }else if(usecase != null){
+                                LogUtils.d(TAG, "usecase completedtimes : " + completedtimes);
+                                usecase.setCompletedTimes(completedtimes);
+                            }
+
                         }else if(name.equals("selected")){
                             boolean isChecked = Boolean.parseBoolean(parser.nextText());
                             LogUtils.d(TAG, "usecase isChecked : " + isChecked);
@@ -342,6 +354,13 @@ public class CktXmlHelper2 {
             serializer.text(String.valueOf(uc.getTimes()));
             serializer.endTag(null, "times");
 
+            serializer.startTag(null, "failtimes");
+            serializer.text(String.valueOf(uc.getFailTimes()));
+            serializer.endTag(null, "failtimes");
+
+            serializer.startTag(null, "completedtimes");
+            serializer.text(String.valueOf(uc.getCompletedTimes()));
+            serializer.endTag(null, "completedtimes");
             for(TestItemBase ti : uc.getTestItems()){
                 serializer.startTag(null, "testitem");
                 serializer.attribute(null, "id", ti.getID()+"");
@@ -351,6 +370,17 @@ public class CktXmlHelper2 {
                 serializer.text(ti.getTitle()+"");
                 serializer.endTag(null, "title");
 
+                serializer.startTag(null, "times");
+                serializer.text(String.valueOf(ti.getTimes()));
+                serializer.endTag(null, "times");
+
+                serializer.startTag(null, "failtimes");
+                serializer.text(String.valueOf(ti.getFailTimes()));
+                serializer.endTag(null, "failtimes");
+
+                serializer.startTag(null, "completedtimes");
+                serializer.text(String.valueOf(ti.getCompletedTimes()));
+                serializer.endTag(null, "completedtimes");
                 ti.saveParametersToXml(serializer);
                 /*
                 serializer.startTag(null, "times");

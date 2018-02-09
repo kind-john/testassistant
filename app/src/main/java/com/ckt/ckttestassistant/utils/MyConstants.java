@@ -18,6 +18,8 @@ public final class MyConstants {
     public static final int UPDATE_PROGRESS_TITLE = 1;
     public static final int UPDATE_PROGRESS_MESSAGE = 2;
     public static final int UPDATE_USECASEFRAGMENT_USECASELIST = 3;
+    public static final int UPDATE_SELECTEDUSECASES_UI = 4;
+    public static final String PREF_TEST_STATUS = "test_status";
 
     /**
      * @Description 私有化构造方法

@@ -7,14 +7,12 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
-import com.ckt.ckttestassistant.CktTestAssistantMainActivity;
 import com.ckt.ckttestassistant.UseCaseManager;
 import com.ckt.ckttestassistant.adapter.CktItemDecoration;
 import com.ckt.ckttestassistant.interfaces.OnItemClickListener;
@@ -112,7 +110,7 @@ public class DefineUseCaseFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 //do something
-                mUseCaseManager.saveUseCaseToXml(mSelectedTestItems, "usecase");
+                mUseCaseManager.saveAllUseCaseToXml(mSelectedTestItems, "usecase");
                 if(mSelectedTestItems != null && !mSelectedTestItems.isEmpty()){
                     mSelectedTestItems.clear();
                     generateShowPanelString(mSelectedTestItems);
