@@ -21,12 +21,6 @@ public class CktUseCase extends UseCaseBase {
         setClassName(className);
     }
 
-    public CktUseCase(String title) {
-        super(title);
-        String className = this.getClass().getName();
-        setClassName(className);
-    }
-
     @Override
     public boolean execute(Handler mHandler, UseCaseManager.ExecuteCallback mExecuteCallback) {
         super.execute(mHandler, mExecuteCallback);

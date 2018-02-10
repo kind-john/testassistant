@@ -22,6 +22,7 @@ public abstract class TestItemBase implements CktResultsHelper.ResultCallBack {
     private static final int DEFAULT_TESTITEM_TIMES = 3;
     private static final String TAG = "TestItemBase";
     private UseCaseManager mUseCaseManager;
+    protected Context mContext;
     //设置下一个测试项，如果结束则必须将其设置为空
     protected TestItemBase mNextTestItem;
     protected int mTimes = DEFAULT_TESTITEM_TIMES;
@@ -30,7 +31,16 @@ public abstract class TestItemBase implements CktResultsHelper.ResultCallBack {
     protected String mTitle = "testitem";
     protected  boolean mIsChecked = false;
     protected int ID = -1;
+    protected int SN = -1;
     protected String mClassName = "TestItemBase";
+
+    public int getSN() {
+        return SN;
+    }
+
+    public void setSN(int sn) {
+        this.SN = sn;
+    }
 
     public int getCompletedTimes() {
         return mCompletedTimes;
@@ -102,11 +112,15 @@ public abstract class TestItemBase implements CktResultsHelper.ResultCallBack {
     public TestItemBase() {
         mUseCaseManager = UseCaseManager.getInstance(null);
     }
-    public TestItemBase(String mTitle) {
-        this.mTitle = mTitle;
-        mUseCaseManager = UseCaseManager.getInstance(null);
+
+    public void setContext(Context context) {
+        this.mContext = context;
     }
 
+    public TestItemBase(Context context) {
+        mContext = context;
+        mUseCaseManager = UseCaseManager.getInstance(null);
+    }
 
     public void execute(Handler handler, UseCaseManager.ExecuteCallback executeCallback, boolean usecaseFinish){
         for(int times = 0; times < mTimes; times++){

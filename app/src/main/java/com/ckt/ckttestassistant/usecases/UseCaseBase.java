@@ -24,12 +24,30 @@ public abstract class UseCaseBase {
     protected ArrayList<TestItemBase> mTestItems = new ArrayList<TestItemBase>();
     protected UseCaseBase mNextUseCase;
     protected int mTimes = DEFAULT_TIMES;
+    protected int mDelay = 0;
     protected int mFailTimes = 0;
     protected int mCompletedTimes = 0;
     protected String mTitle = "case";
     protected  boolean mIsChecked = false;
     protected int ID = -1;
+    protected int SN = -1;
     protected String mClassName = "UseCaseBase";
+
+    public int getDelay() {
+        return mDelay;
+    }
+
+    public void setDelay(int delay) {
+        this.mDelay = delay;
+    }
+
+    public int getSN() {
+        return SN;
+    }
+
+    public void setSN(int sn) {
+        this.SN = sn;
+    }
 
     public int getCompletedTimes() {
         return mCompletedTimes;
@@ -40,11 +58,6 @@ public abstract class UseCaseBase {
     }
 
     public UseCaseBase() {
-        mUseCaseManager = UseCaseManager.getInstance(null);
-    }
-
-    public UseCaseBase(String title) {
-        this.mTitle = mTitle;
         mUseCaseManager = UseCaseManager.getInstance(null);
     }
 

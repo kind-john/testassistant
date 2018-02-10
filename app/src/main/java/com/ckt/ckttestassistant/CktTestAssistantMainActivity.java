@@ -79,6 +79,7 @@ public class CktTestAssistantMainActivity extends AppCompatActivity implements U
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        LogUtils.d(TAG, "onCreate");
         setContentView(R.layout.activity_ckt_test_assistant_main);
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tab);
@@ -90,6 +91,13 @@ public class CktTestAssistantMainActivity extends AppCompatActivity implements U
         FragmentAdapter adapter = new FragmentAdapter(getSupportFragmentManager(), getTabTitles(), mHandler);
         viewPager.setAdapter(adapter);
         tabLayout.setupWithViewPager(viewPager);
+    }
+
+    @Override
+    protected void onDestroy() {
+        LogUtils.d(TAG, "onDestroy");
+        mUseCaseManager.saveDataWhenExit();
+        super.onDestroy();
     }
 
     private String[] getTabTitles() {

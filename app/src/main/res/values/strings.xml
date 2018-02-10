@@ -5,4 +5,6 @@
     <string name="add_testitem">add</string>
     <string name="add_usecase">add</string>
     <string name="starttest">start</string>
+    <string name="settingsdelay">delay : </string>
+    <string name="settingstimes">times : </string>
 </resources>

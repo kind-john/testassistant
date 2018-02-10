@@ -15,20 +15,22 @@ public class CktTestItem extends TestItemBase {
     public static final int ID = 0;
     private static final String TAG = "CktTestItem";
 
-    public CktTestItem(TestItemBase mNextTestItem) {
-        super(mNextTestItem);
-    }
-
     public CktTestItem() {
         super();
         String className = this.getClass().getName();
         setClassName(className);
+        setID(ID);
     }
 
-    public CktTestItem(String mTitle) {
-        super(mTitle);
+    public CktTestItem(TestItemBase mNextTestItem) {
+        super(mNextTestItem);
+    }
+
+    public CktTestItem(Context context) {
+        super(context);
         String className = this.getClass().getName();
         setClassName(className);
+        setID(ID);
     }
 
     @Override

@@ -2,6 +2,7 @@ package com.ckt.ckttestassistant.testitems;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.os.PowerManager;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,35 +16,26 @@ import com.ckt.ckttestassistant.utils.MyConstants;
 import org.xmlpull.v1.XmlSerializer;
 
 /**
- * Created by ckt on 18-1-31.
+ * Created by ckt on 18-2-9.
  */
 
-public class WifiSwitchOn extends TestItemBase {
-    public static final int ID = 1;
-    private static final String TAG = "WifiSwitchOn";
-
+public class Reboot extends TestItemBase {
+    private static final String TAG = "Reboot";
+    public static final int ID = 2;
     private int mDelay = 0;
 
-    public WifiSwitchOn() {
+    public Reboot() {
         super();
         String className = this.getClass().getName();
         setClassName(className);
         setID(ID);
     }
 
-    public WifiSwitchOn(Context context) {
+    public Reboot(Context context) {
         super(context);
         String className = this.getClass().getName();
         setClassName(className);
         setID(ID);
-    }
-
-    public int getDelay() {
-        return mDelay;
-    }
-
-    public void setDelay(int delay) {
-        this.mDelay = delay;
     }
 
     @Override
@@ -56,10 +48,18 @@ public class WifiSwitchOn extends TestItemBase {
 
     }
 
+    public int getDelay() {
+        return mDelay;
+    }
+
+    public void setDelay(int delay) {
+        this.mDelay = delay;
+    }
+
     @Override
     public boolean doExecute(UseCaseManager.ExecuteCallback executeCallback, boolean finish) {
-        LogUtils.d(TAG, "WifiSwitchOn doExecute");
-        //do test,then close progressview
+        PowerManager pm = (PowerManager) mContext.getSystemService(Context.POWER_SERVICE);
+        pm.reboot("reboot");
         if(finish && executeCallback != null){
             LogUtils.d(TAG, "closeProgressView");
             executeCallback.closeProgressView();
@@ -73,6 +73,19 @@ public class WifiSwitchOn extends TestItemBase {
     }
 
     @Override
+    public void saveParametersToXml(XmlSerializer serializer) throws Exception {
+        try{
+            //eg. start
+            serializer.startTag(null, MyConstants.XMLTAG_TESTITEM_DELAY);
+            serializer.text("100");
+            serializer.endTag(null, MyConstants.XMLTAG_TESTITEM_DELAY);
+            //eg. end
+        }catch (Exception e) {
+            throw new Exception();
+        }
+    }
+
+    @Override
     public void showPropertyDialog(Context context) {
         LogUtils.d(TAG, "showPropertyDialog :"+this.getClass().getName());
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
@@ -82,7 +95,7 @@ public class WifiSwitchOn extends TestItemBase {
         final EditText timesEditText = (EditText)v.findViewById(R.id.times);
         timesEditText.setText(String.valueOf(getTimes()));
 
-        builder.setTitle("Wifi settings")
+        builder.setTitle("Reboot settings")
                 .setView(v)
                 .setMessage("for test")
                 .setPositiveButton("OK", new DialogInterface.OnClickListener() {
@@ -91,7 +104,6 @@ public class WifiSwitchOn extends TestItemBase {
                         LogUtils.d(TAG, "Positive onClick");
                         int delay = Integer.parseInt(delayEditText.getText().toString());
                         int times = Integer.parseInt(timesEditText.getText().toString());
-                        LogUtils.d(TAG, "delay = "+delay+"; times = "+times);
                         if(delay >= 0 && times > 0){
                             setDelay(delay);
                             setTimes(times);
@@ -110,18 +122,5 @@ public class WifiSwitchOn extends TestItemBase {
                         LogUtils.d(TAG, "onDismiss");
                     }
                 }).create().show();
-    }
-
-    @Override
-    public void saveParametersToXml(XmlSerializer serializer) throws Exception {
-        try{
-            //eg. start
-            serializer.startTag(null, MyConstants.XMLTAG_TESTITEM_DELAY);
-            serializer.text("100");
-            serializer.endTag(null, MyConstants.XMLTAG_TESTITEM_DELAY);
-            //eg. end
-        }catch (Exception e) {
-            throw new Exception();
-        }
     }
 }

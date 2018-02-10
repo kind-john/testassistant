@@ -1,6 +1,7 @@
 package com.ckt.ckttestassistant.fragment;
 
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
@@ -48,6 +49,7 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
     private Button mSaveButton;
     private TestItemListAdapter mTestItemListAdapter;
     private Button mStartTestButton;
+    private Activity mActivity;
 
     public void setHandler(Handler handler) {
         this.mHandler = handler;
@@ -57,7 +59,8 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         LogUtils.d(TAG, "onCreate");
-        mContext = getActivity().getApplicationContext();
+        mActivity = getActivity();
+        mContext = mActivity.getApplicationContext();
         mUseCaseManager = UseCaseManager.getInstance(mContext);
         mUseCaseManager.init(mHandler);
         mUseCaseManager.addUseCaseChangeObserver(this);
@@ -86,7 +89,7 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
             @Override
             public void onClick(View v) {
                 //保存数据，为了重启或者中断之后能继续执行
-                mUseCaseManager.saveSelectedUseCaseToXml(mSelectedItems);
+                mUseCaseManager.saveSelectedUseCaseToXml();
                 mUseCaseManager.startExecute();
                 mStartTestButton.setClickable(false);
             }
@@ -173,7 +176,7 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
             public void onItemClick(int pos) {
                 TestItemBase ti = mCurrentUseCase.getTestItems().get(pos);
                 LogUtils.d(TAG, "test item title clicked :"+pos+" : "+ti.getClass().getName());
-                ti.showPropertyDialog(mContext);
+                ti.showPropertyDialog(mActivity);
             }
         });
         mUseCaseTestItemList.setHasFixedSize(true);
@@ -194,7 +197,7 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
             public void onItemClick(int pos) {
                 TestItemBase ti = mCurrentUseCase.getTestItems().get(pos);
                 LogUtils.d(TAG, "test item title clicked :"+pos+" : "+ti.getClass().getName());
-                ti.showPropertyDialog(getActivity());
+                ti.showPropertyDialog(mActivity);
             }
         });
         mUseCaseTestItemList.setAdapter(mTestItemListAdapter);

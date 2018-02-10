@@ -1,29 +1,34 @@
 package com.ckt.ckttestassistant.fragment;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 
-import com.ckt.ckttestassistant.UseCaseManager;
-import com.ckt.ckttestassistant.adapter.CktItemDecoration;
-import com.ckt.ckttestassistant.interfaces.OnItemClickListener;
-import com.ckt.ckttestassistant.testitems.CktTestItem;
-import com.ckt.ckttestassistant.testitems.WifiSwitchOn;
-import com.ckt.ckttestassistant.utils.LogUtils;
 import com.ckt.ckttestassistant.R;
 import com.ckt.ckttestassistant.TestCategory;
-import com.ckt.ckttestassistant.testitems.TestItemBase;
+import com.ckt.ckttestassistant.UseCaseManager;
+import com.ckt.ckttestassistant.adapter.CktItemDecoration;
 import com.ckt.ckttestassistant.adapter.TestCategoryListAdapter;
 import com.ckt.ckttestassistant.adapter.TestItemListAdapter;
+import com.ckt.ckttestassistant.interfaces.OnItemClickListener;
+import com.ckt.ckttestassistant.testitems.CktTestItem;
+import com.ckt.ckttestassistant.testitems.Reboot;
+import com.ckt.ckttestassistant.testitems.TestItemBase;
+import com.ckt.ckttestassistant.testitems.WifiSwitchOn;
+import com.ckt.ckttestassistant.utils.LogUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -57,6 +62,7 @@ public class DefineUseCaseFragment extends Fragment {
     private Button mSaveButton;
     private TextView mTestItemTextView;
     private UseCaseManager mUseCaseManager;
+    private Activity mActivity;
 
     public void setHandler(Handler handler) {
         this.mHandler = handler;
@@ -66,20 +72,33 @@ public class DefineUseCaseFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         LogUtils.d(TAG, "onCreate");
-        mContext = getActivity().getApplicationContext();
+        mActivity = getActivity();
+        mContext = mActivity.getApplicationContext();
         mUseCaseManager = UseCaseManager.getInstance(mContext);
         mShowPanelInfo.append("test item : ");
         for (int i = 0; i < mTestCategory.length; i++){
             mTestCategoryItems.add(new TestCategory(mTestCategory[i]));
-            ArrayList<TestItemBase> itemList = new ArrayList<TestItemBase>();
-
-            CktTestItem item1 = new CktTestItem("ckt test item");
-            itemList.add(item1);
-            WifiSwitchOn item2 = new WifiSwitchOn("wifi switch on");
-            itemList.add(item2);
-
-            mAllTestItems.put(mTestCategory[i], itemList);
         }
+        ArrayList<TestItemBase> itemList1 = new ArrayList<TestItemBase>();
+
+        CktTestItem item1 = new CktTestItem(mContext);
+        item1.setTitle("ckt test item");
+        itemList1.add(item1);
+        mAllTestItems.put(mTestCategory[0], itemList1);
+
+        ArrayList<TestItemBase> itemList2 = new ArrayList<TestItemBase>();
+        WifiSwitchOn item2 = new WifiSwitchOn(mContext);
+        item2.setTitle("wifi switch on");
+        itemList2.clear();
+        itemList2.add(item2);
+        mAllTestItems.put(mTestCategory[1], itemList2);
+
+        ArrayList<TestItemBase> itemList3 = new ArrayList<TestItemBase>();
+        Reboot item3 = new Reboot(mContext);
+        item3.setTitle("reboot");
+        itemList3.clear();
+        itemList3.add(item3);
+        mAllTestItems.put(mTestCategory[2], itemList3);
     }
 
     @Nullable
@@ -110,12 +129,33 @@ public class DefineUseCaseFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 //do something
-                mUseCaseManager.saveAllUseCaseToXml(mSelectedTestItems, "usecase");
-                if(mSelectedTestItems != null && !mSelectedTestItems.isEmpty()){
-                    mSelectedTestItems.clear();
-                    generateShowPanelString(mSelectedTestItems);
-                    mTestItemTextView.setText(mShowPanelInfo.toString());
-                }
+                View dialogView = LayoutInflater.from(mContext).inflate(R.layout.usecase_title_setting, null);
+                final EditText titleView = dialogView.findViewById(R.id.titlesetting);
+                titleView.setText("default name");
+                AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);
+                builder.setTitle("set usecase title:")
+                        .setView(dialogView)
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                String title = titleView.getText().toString();
+                                LogUtils.d(TAG, "usecase title = "+ title);
+                                mUseCaseManager.addUsecaseToAllUseCaseXml(mSelectedTestItems, title);
+                                if(mSelectedTestItems != null && !mSelectedTestItems.isEmpty()){
+                                    mSelectedTestItems.clear();
+                                    generateShowPanelString(mSelectedTestItems);
+                                    mTestItemTextView.setText(mShowPanelInfo.toString());
+                                }
+                            }
+                        })
+                        .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                //do nothing
+                            }
+                        }).create().show();
+
+
             }
         });
         mTestCategoryList = (RecyclerView) rootView.findViewById(R.id.testcategorylist);
@@ -154,6 +194,7 @@ public class DefineUseCaseFragment extends Fragment {
             public void onItemClick(int pos) {
                 TestItemBase ti = mAllTestItems.get(mTestCategory[mCurrentType]).get(pos);
                 LogUtils.d(TAG, "test item title clicked :"+pos+" : "+ti.getClass().getName());
+                ti.showPropertyDialog(mActivity);
             }
         });
         mTestItemList.setAdapter(adapter);
@@ -173,6 +214,7 @@ public class DefineUseCaseFragment extends Fragment {
             public void onItemClick(int pos) {
                 TestItemBase ti = mAllTestItems.get(mTestCategory[mCurrentType]).get(pos);
                 LogUtils.d(TAG, "test item title clicked :"+pos+" : "+ti.getClass().getName());
+                ti.showPropertyDialog(mActivity);
             }
         });
         mTestItemList.setHasFixedSize(true);

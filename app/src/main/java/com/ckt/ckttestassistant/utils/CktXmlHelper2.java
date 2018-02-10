@@ -1,9 +1,12 @@
 package com.ckt.ckttestassistant.utils;
 
+import android.content.Context;
 import android.util.Xml;
 
 import com.ckt.ckttestassistant.testitems.CktTestItem;
+import com.ckt.ckttestassistant.testitems.Reboot;
 import com.ckt.ckttestassistant.testitems.TestItemBase;
+import com.ckt.ckttestassistant.testitems.WifiSwitchOn;
 import com.ckt.ckttestassistant.usecases.CktUseCase;
 import com.ckt.ckttestassistant.usecases.UseCaseBase;
 
@@ -61,7 +64,7 @@ public class CktXmlHelper2 {
             return num;
         }
     }
-    public void getUseCases(String path, ArrayList<UseCaseBase> allUseCases){
+    public void getUseCases(Context context, String path, ArrayList<UseCaseBase> allUseCases){
         try {
             File file = new File(path);
             if(!file.exists()){
@@ -85,7 +88,7 @@ public class CktXmlHelper2 {
                         String name = parser.getName();
                         LogUtils.d(TAG,"XmlPullParser.START_TAG name:"+name);
 
-                        if (name.equals("usecase")) { // 判断开始标签元素是否是student
+                        if (name.equals(MyConstants.XMLTAG_USECASE)) { // 判断开始标签元素是否是student
                             int id = Integer.parseInt(parser.getAttributeValue(0));
                             String className = parser.getAttributeValue(1);
                             LogUtils.d(TAG, "usecase id : " + id + "; className = " + className);
@@ -113,60 +116,96 @@ public class CktXmlHelper2 {
                             } else {
                                 LogUtils.e(TAG, "error: id < -1 ,from "+path);
                             }
-                        }else if(name.equals("title")){
+                        }else if(name.equals(MyConstants.XMLTAG_USECASE_TITLE)){
+                            String title = parser.nextText();
+                            LogUtils.d(TAG, "title : " + title);
+
+                            if(usecase != null){
+                                LogUtils.d(TAG, "usecase title : " + title);
+                                usecase.setTitle(title);
+                            }
+                        }else if(name.equals(MyConstants.XMLTAG_USECASE_TIMES)){
+                            int times = Integer.parseInt(parser.nextText());
+                            LogUtils.d(TAG, "times : " + times);
+
+                            if(usecase != null){
+                                LogUtils.d(TAG, "usecase times : " + times);
+                                usecase.setTimes(times);
+                            }
+
+                        }else if(name.equals(MyConstants.XMLTAG_USECASE_FAILTIMES)){
+                            int failtimes = Integer.parseInt(parser.nextText());
+                            LogUtils.d(TAG, "failtimes : " + failtimes);
+
+                            if(usecase != null){
+                                LogUtils.d(TAG, "usecase failtimes : " + failtimes);
+                                usecase.setFailTimes(failtimes);
+                            }
+
+                        }else if(name.equals(MyConstants.XMLTAG_USECASE_COMPLETEDTIMES)){
+                            int completedtimes = Integer.parseInt(parser.nextText());
+                            LogUtils.d(TAG, "completedtimes : " + completedtimes);
+
+                            if(usecase != null){
+                                LogUtils.d(TAG, "usecase completedtimes : " + completedtimes);
+                                usecase.setCompletedTimes(completedtimes);
+                            }
+
+                        }else if(name.equals(MyConstants.XMLTAG_USECASE_SELECTED)){
+                            boolean isChecked = Boolean.parseBoolean(parser.nextText());
+                            LogUtils.d(TAG, "usecase isChecked : " + isChecked);
+                            if(usecase != null){
+                                usecase.setIsChecked(isChecked);
+                            }
+                        }else if(name.equals(MyConstants.XMLTAG_USECASE_DELAY)){
+                            int delay = Integer.parseInt(parser.nextText());
+                            LogUtils.d(TAG, "delay : " + delay);
+                            if(usecase != null){
+                                LogUtils.d(TAG, "usecase delay : " + delay);
+                                usecase.setDelay(delay);
+                            }
+                        }else if(name.equals(MyConstants.XMLTAG_TESTITEM_TITLE)){
                             String title = parser.nextText();
                             LogUtils.d(TAG, "title : " + title);
 
                             if(testitem != null){
                                 LogUtils.d(TAG, "testitem title : " + title);
                                 testitem.setTitle(title);
-                            }else if(usecase != null){
-                                LogUtils.d(TAG, "usecase title : " + title);
-                                usecase.setTitle(title);
                             }
-                        }else if(name.equals("times")){
+                        }else if(name.equals(MyConstants.XMLTAG_TESTITEM_TIMES)){
                             int times = Integer.parseInt(parser.nextText());
                             LogUtils.d(TAG, "times : " + times);
 
                             if(testitem != null){
                                 LogUtils.d(TAG, "testitem times : " + times);
                                 testitem.setTimes(times);
-                            }else if(usecase != null){
-                                LogUtils.d(TAG, "usecase times : " + times);
-                                usecase.setTimes(times);
                             }
 
-                        }else if(name.equals("failtimes")){
+                        }else if(name.equals(MyConstants.XMLTAG_TESTITEM_FAILTIMES)){
                             int failtimes = Integer.parseInt(parser.nextText());
                             LogUtils.d(TAG, "failtimes : " + failtimes);
 
                             if(testitem != null){
                                 LogUtils.d(TAG, "testitem failtimes : " + failtimes);
                                 testitem.setFailTimes(failtimes);
-                            }else if(usecase != null){
-                                LogUtils.d(TAG, "usecase failtimes : " + failtimes);
-                                usecase.setFailTimes(failtimes);
                             }
 
-                        }else if(name.equals("completedtimes")){
+                        }else if(name.equals(MyConstants.XMLTAG_TESTITEM_COMPLETEDTIMES)){
                             int completedtimes = Integer.parseInt(parser.nextText());
                             LogUtils.d(TAG, "completedtimes : " + completedtimes);
 
                             if(testitem != null){
                                 LogUtils.d(TAG, "testitem completedtimes : " + completedtimes);
                                 testitem.setCompletedTimes(completedtimes);
-                            }else if(usecase != null){
-                                LogUtils.d(TAG, "usecase completedtimes : " + completedtimes);
-                                usecase.setCompletedTimes(completedtimes);
                             }
 
-                        }else if(name.equals("selected")){
+                        }else if(name.equals(MyConstants.XMLTAG_TESTITEM_SELECTED)){
                             boolean isChecked = Boolean.parseBoolean(parser.nextText());
-                            LogUtils.d(TAG, "usecase isChecked : " + isChecked);
-                            if(usecase != null){
-                                usecase.setIsChecked(isChecked);
+                            LogUtils.d(TAG, "testitem isChecked : " + isChecked);
+                            if(testitem != null){
+                                testitem.setIsChecked(isChecked);
                             }
-                        }else if(name.equals("testitem")){
+                        }else if(name.equals(MyConstants.XMLTAG_TESTITEM)){
                             if (usecase != null) {
                                 int id2 = Integer.parseInt(parser.getAttributeValue(0));
                                 String className2 = parser.getAttributeValue(1);
@@ -176,6 +215,7 @@ public class CktXmlHelper2 {
                                     Class catClass = Class.forName(className2);
                                     // 实例化这个类
                                     testitem = (TestItemBase) catClass.newInstance();
+                                    testitem.setContext(context);
                                     testitem.setID(id2);
                                 }catch (IllegalAccessException e) {
                                     e.printStackTrace();
@@ -186,25 +226,18 @@ public class CktXmlHelper2 {
                                 }
 
                             }
-                        }else if(name.equals("delay")){
+                        }else if(name.equals(MyConstants.XMLTAG_TESTITEM_DELAY)){
                             int delay = Integer.parseInt(parser.nextText());
                             LogUtils.d(TAG, "delay : " + delay);
                             if(testitem != null){
                                 LogUtils.d(TAG, "testitem delay : " + delay);
-                                testitem.setTimes(delay);
-                            }else if(usecase != null){
-                                LogUtils.d(TAG, "usecase delay : " + delay);
-                                usecase.setTimes(delay);
-                            }
-                        }else if(name.equals("total")){
-                            int total = Integer.parseInt(parser.nextText());
-                            LogUtils.d(TAG, "total : " + total);
-                            if(testitem != null){
-                                LogUtils.d(TAG, "testitem total : " + total);
-                                testitem.setTimes(total);
-                            }else if(usecase != null){
-                                LogUtils.d(TAG, "usecase total : " + total);
-                                usecase.setTimes(total);
+                                if(testitem instanceof WifiSwitchOn){
+                                    ((WifiSwitchOn)testitem).setDelay(delay);
+                                }else if(testitem instanceof Reboot){
+                                    ((Reboot)testitem).setDelay(delay);
+                                }else{
+                                    LogUtils.d(TAG, "there is no "+MyConstants.XMLTAG_TESTITEM_DELAY);
+                                }
                             }
                         }else{
                             LogUtils.e(TAG, "error: some new tag has not parser!!! name = " + name);
@@ -214,10 +247,10 @@ public class CktXmlHelper2 {
                     case XmlPullParser.END_TAG:
                         String endName = parser.getName();
                         LogUtils.d(TAG,"XmlPullParser.END_TAG name:"+endName);
-                        if (endName.equals("usecase")) {
+                        if (endName.equals(MyConstants.XMLTAG_USECASE)) {
                             allUseCases.add(usecase);
                             usecase = null;
-                        }else if (endName.equals("testitem")) {
+                        }else if (endName.equals(MyConstants.XMLTAG_TESTITEM)) {
                             usecase.addTestItem(testitem);
                             testitem = null;
                         }else{
@@ -245,13 +278,13 @@ public class CktXmlHelper2 {
         NewXML(path, usecases);
     }
 
-    public void addUseCases(String path, UseCaseBase usecase) throws Exception{
+    public void addUseCases(Context context, String path, UseCaseBase usecase) throws Exception{
         ArrayList<UseCaseBase> usecases = new ArrayList<UseCaseBase>();
 
         File file=new File(path);
         try {
             if(file != null && file.exists()){
-                getUseCases(path, usecases);
+                getUseCases(context, path, usecases);
                 //3、生成新的XML
                 file.delete();
             }
@@ -271,12 +304,12 @@ public class CktXmlHelper2 {
      * @param path
      * @throws Exception
      */
-    public void deletePerson(int id,String path) throws Exception{
+    public void deletePerson(Context context, int id,String path) throws Exception{
         ArrayList<UseCaseBase> usecases = new ArrayList<UseCaseBase>();
         //1、先解析xml数据
         File file=new File(path);
         try {
-            getUseCases(path, usecases);
+            getUseCases(context, path, usecases);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -293,12 +326,12 @@ public class CktXmlHelper2 {
         NewXML(path, usecases);
     }
 
-    public void updatePerson(UseCaseBase uc,String path) throws Exception{
+    public void updatePerson(Context context, UseCaseBase uc,String path) throws Exception{
         ArrayList<UseCaseBase> usecases = new ArrayList<UseCaseBase>();
         //1、先解析xml数据
         File file=new File(path);
         try {
-            getUseCases(path, usecases);
+            getUseCases(context, path, usecases);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -339,48 +372,56 @@ public class CktXmlHelper2 {
         serializer.startTag(null, "usecases");
         int usecaseID = -1;
         for(UseCaseBase uc : ucs){
-            serializer.startTag(null, "usecase");
+            serializer.startTag(null, MyConstants.XMLTAG_USECASE);
             usecaseID = uc.getID();
             LogUtils.d(TAG, "usecaseID="+usecaseID);
 
             serializer.attribute(null, "id", String.valueOf(usecaseID));
             serializer.attribute(null, "classname", uc.getClassName());
 
-            serializer.startTag(null, "title");
+            serializer.startTag(null, MyConstants.XMLTAG_USECASE_SN);
+            serializer.text(uc.getSN()+"");
+            serializer.endTag(null, MyConstants.XMLTAG_USECASE_SN);
+
+            serializer.startTag(null, MyConstants.XMLTAG_USECASE_TITLE);
             serializer.text(uc.getTitle()+"");
-            serializer.endTag(null, "title");
+            serializer.endTag(null, MyConstants.XMLTAG_USECASE_TITLE);
 
-            serializer.startTag(null, "times");
+            serializer.startTag(null, MyConstants.XMLTAG_USECASE_TIMES);
             serializer.text(String.valueOf(uc.getTimes()));
-            serializer.endTag(null, "times");
+            serializer.endTag(null, MyConstants.XMLTAG_USECASE_TIMES);
 
-            serializer.startTag(null, "failtimes");
+            serializer.startTag(null, MyConstants.XMLTAG_USECASE_FAILTIMES);
             serializer.text(String.valueOf(uc.getFailTimes()));
-            serializer.endTag(null, "failtimes");
+            serializer.endTag(null, MyConstants.XMLTAG_USECASE_FAILTIMES);
 
-            serializer.startTag(null, "completedtimes");
+            serializer.startTag(null, MyConstants.XMLTAG_USECASE_COMPLETEDTIMES);
             serializer.text(String.valueOf(uc.getCompletedTimes()));
-            serializer.endTag(null, "completedtimes");
+            serializer.endTag(null, MyConstants.XMLTAG_USECASE_COMPLETEDTIMES);
             for(TestItemBase ti : uc.getTestItems()){
-                serializer.startTag(null, "testitem");
+                serializer.startTag(null, MyConstants.XMLTAG_TESTITEM);
                 serializer.attribute(null, "id", ti.getID()+"");
                 serializer.attribute(null, "classname", ti.getClassName());
 
-                serializer.startTag(null, "title");
+                serializer.startTag(null, MyConstants.XMLTAG_TESTITEM_SN);
+                serializer.text(ti.getSN()+"");
+                serializer.endTag(null, MyConstants.XMLTAG_TESTITEM_SN);
+
+                serializer.startTag(null, MyConstants.XMLTAG_TESTITEM_TITLE);
                 serializer.text(ti.getTitle()+"");
-                serializer.endTag(null, "title");
+                serializer.endTag(null, MyConstants.XMLTAG_TESTITEM_TITLE);
 
-                serializer.startTag(null, "times");
+                serializer.startTag(null, MyConstants.XMLTAG_TESTITEM_TIMES);
                 serializer.text(String.valueOf(ti.getTimes()));
-                serializer.endTag(null, "times");
+                serializer.endTag(null, MyConstants.XMLTAG_TESTITEM_TIMES);
 
-                serializer.startTag(null, "failtimes");
+                serializer.startTag(null, MyConstants.XMLTAG_TESTITEM_FAILTIMES);
                 serializer.text(String.valueOf(ti.getFailTimes()));
-                serializer.endTag(null, "failtimes");
+                serializer.endTag(null, MyConstants.XMLTAG_TESTITEM_FAILTIMES);
 
-                serializer.startTag(null, "completedtimes");
+                serializer.startTag(null, MyConstants.XMLTAG_TESTITEM_COMPLETEDTIMES);
                 serializer.text(String.valueOf(ti.getCompletedTimes()));
-                serializer.endTag(null, "completedtimes");
+                serializer.endTag(null, MyConstants.XMLTAG_TESTITEM_COMPLETEDTIMES);
                 ti.saveParametersToXml(serializer);
                 /*
                 serializer.startTag(null, "times");
@@ -392,10 +433,10 @@ public class CktXmlHelper2 {
                 serializer.endTag(null, "selected");
                 */
 
-                serializer.endTag(null, "testitem");
+                serializer.endTag(null, MyConstants.XMLTAG_TESTITEM);
             }
 
-            serializer.endTag(null, "usecase");
+            serializer.endTag(null, MyConstants.XMLTAG_USECASE);
         }
         serializer.endTag(null, "usecases");
         serializer.endDocument();

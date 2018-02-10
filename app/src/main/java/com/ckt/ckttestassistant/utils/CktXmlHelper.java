@@ -120,7 +120,7 @@ public class CktXmlHelper {
                         }
                         if (usecase != null) {
                             if (name.equals("testitem")) {
-                                testitem = new CktTestItem();
+                                testitem = new CktTestItem(context);
                                 int id2 = Integer.parseInt(parser.getAttributeValue(0));
                                 testitem.setID(id2);
                                 if(name.equals("title")){
