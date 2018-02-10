@@ -12,6 +12,9 @@ import com.ckt.ckttestassistant.UseCaseManager;
 import com.ckt.ckttestassistant.utils.LogUtils;
 import com.ckt.ckttestassistant.utils.MyConstants;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.xmlpull.v1.XmlSerializer;
 
 /**
@@ -110,6 +113,14 @@ public class WifiSwitchOn extends TestItemBase {
                         LogUtils.d(TAG, "onDismiss");
                     }
                 }).create().show();
+    }
+
+    @Override
+    public void saveParameters(Document doc, Element element) {
+        Element e1 = doc.createElement(MyConstants.XMLTAG_TESTITEM_DELAY);
+        Node n1 = doc.createTextNode("100");
+        e1.appendChild(n1);
+        element.appendChild(e1);
     }
 
     @Override

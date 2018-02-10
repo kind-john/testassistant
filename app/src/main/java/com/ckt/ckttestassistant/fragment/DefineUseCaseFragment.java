@@ -118,7 +118,9 @@ public class DefineUseCaseFragment extends Fragment {
                 LogUtils.d(TAG, "start = "+start+ "; end = "+end);
                 mShowPanelInfo.delete(start, end);*/
                 if(mSelectedTestItems != null && !mSelectedTestItems.isEmpty()){
-                    mSelectedTestItems.remove(mSelectedTestItems.size() - 1);
+                    TestItemBase ti = mSelectedTestItems.get(mSelectedTestItems.size() - 1);
+                    ti.setSN(-1);
+                    mSelectedTestItems.remove(ti);
                 }
                 generateShowPanelString(mSelectedTestItems);
                 mTestItemTextView.setText(mShowPanelInfo.toString());
@@ -227,6 +229,12 @@ public class DefineUseCaseFragment extends Fragment {
 
     public void setShowPanel(ArrayList<TestItemBase> selectItems){
         mSelectedTestItems = selectItems;
+        if(mSelectedTestItems != null && !mSelectedTestItems.isEmpty()){
+            int sn = mSelectedTestItems.size() - 1;
+            LogUtils.d(TAG, "set TestItem SN : "+sn);
+            mSelectedTestItems.get(mSelectedTestItems.size() - 1).setSN(sn);
+        }
+
         generateShowPanelString(mSelectedTestItems);
         mTestItemTextView.setText(mShowPanelInfo.toString());
     }
@@ -236,6 +244,8 @@ public class DefineUseCaseFragment extends Fragment {
             mShowPanelInfo.delete(12, mShowPanelInfo.length());
             for (int i = 0; i < selectItems.size(); i++){
                 mShowPanelInfo.append(" > " + selectItems.get(i).getTitle());
+                mShowPanelInfo.append(" x ");
+                mShowPanelInfo.append(selectItems.get(i).getTimes());
             }
         } else {
             //处理最后一个删除不了的问题

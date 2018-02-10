@@ -10,6 +10,8 @@ import com.ckt.ckttestassistant.UseCaseManager;
 import com.ckt.ckttestassistant.utils.LogUtils;
 import com.ckt.ckttestassistant.utils.MyConstants;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.xmlpull.v1.XmlSerializer;
 
 import static java.lang.Thread.sleep;
@@ -159,4 +161,5 @@ public abstract class TestItemBase implements CktResultsHelper.ResultCallBack {
     public abstract void saveResult();
     public abstract void saveParametersToXml(XmlSerializer serializer) throws Exception;
     public abstract void showPropertyDialog(Context context);
+    public abstract void saveParameters(Document doc, Element element);
 }

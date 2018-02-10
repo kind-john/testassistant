@@ -12,10 +12,12 @@ import com.ckt.ckttestassistant.services.DoTestIntentService;
 import com.ckt.ckttestassistant.testitems.TestItemBase;
 import com.ckt.ckttestassistant.usecases.CktUseCase;
 import com.ckt.ckttestassistant.usecases.UseCaseBase;
+import com.ckt.ckttestassistant.utils.CktXmlHelper;
 import com.ckt.ckttestassistant.utils.CktXmlHelper2;
 import com.ckt.ckttestassistant.utils.LogUtils;
 import com.ckt.ckttestassistant.utils.MyConstants;
 
+import java.io.File;
 import java.util.ArrayList;
 
 /**
@@ -31,7 +33,8 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
     private ArrayList<SelectedUseCaseChangeObserver> mSelectedUseCaseChangeObserver = new ArrayList<SelectedUseCaseChangeObserver>();
     private static Context mContext;
     private volatile static UseCaseManager instance;
-    private CktXmlHelper2 mXmlHelper;
+    private CktXmlHelper mXmlHelper;
+    private CktXmlHelper2 mXmlHelper2;
     private Handler mHandler;
     private ExecuteCallback mExecuteCallback = null;
     private SharedPreferences mPref;
@@ -82,7 +85,8 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
      */
     public void init(Handler handler){
         mHandler = handler;
-        mXmlHelper = new CktXmlHelper2();
+        mXmlHelper = new CktXmlHelper();
+        mXmlHelper2 = new CktXmlHelper2();
         mPref = PreferenceManager.getDefaultSharedPreferences(mContext);
         mEditor = mPref.edit();
         mStatus = getTestStatus();
@@ -168,7 +172,8 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
         String path = mContext.getFilesDir()+"/usecases.xml";
 
         try {
-            mXmlHelper.reCreateXml(path, mAllUseCases);
+            mXmlHelper.addUsecase(path,mAllUseCases);
+            //mXmlHelper2.reCreateXml(path, mAllUseCases);
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -183,9 +188,13 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
             return;
         }
         String path = mContext.getFilesDir()+"/selected_usecases.xml";
-
+        File file = new File(path);
+        if(file != null && file.exists()){
+            file.delete();
+        }
         try {
-            mXmlHelper.reCreateXml(path, mSelectedUseCases);
+            mXmlHelper.addUsecase(path, mSelectedUseCases);
+            //mXmlHelper2.reCreateXml(path, mSelectedUseCases);
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -193,10 +202,12 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
     public void updateUseCaseOfXml(String path, UseCaseBase uc){
         ArrayList<UseCaseBase> usecases = new ArrayList<UseCaseBase>();
         try {
-            mXmlHelper.getUseCases(mContext, path, usecases);
+            mXmlHelper.updateUseCase(path, uc);
+            //mXmlHelper.readxml(mContext, path, usecases);
+            //mXmlHelper2.getUseCases(mContext, path, usecases);
             if(updateUsecase(uc)){
                 //mXmlHelper.updateUseCase(path, uc);
-                mXmlHelper.reCreateXml(path, usecases);
+                //mXmlHelper2.reCreateXml(path, usecases);
             }
 
         }catch (Exception e){
@@ -211,10 +222,11 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
     public void updateTestItemOfXml(String path, TestItemBase ti){
         ArrayList<UseCaseBase> usecases = new ArrayList<UseCaseBase>();
         try {
-            mXmlHelper.getUseCases(mContext, path, usecases);
+            mXmlHelper.readxml(mContext, path, usecases);
+            //mXmlHelper2.getUseCases(mContext, path, usecases);
             if(updateTestItem(ti)){
                 //mXmlHelper.updateUseCase(path, uc);
-                mXmlHelper.reCreateXml(path, usecases);
+                //mXmlHelper2.reCreateXml(path, usecases);
             }
 
         }catch (Exception e){
@@ -232,7 +244,8 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
     private void getAllUseCaseFromXml() {
         String path = mContext.getFilesDir()+"/usecases.xml";
         mAllUseCases.clear();
-        mXmlHelper.getUseCases(mContext, path, mAllUseCases);
+        mXmlHelper.readxml(mContext, path, mAllUseCases);
+        //mXmlHelper2.getUseCases(mContext, path, mAllUseCases);
         //refreshUseCaseList();
         useCaseChangeNotify();
     }
@@ -245,7 +258,8 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
 
         try {
             mSelectedUseCases.clear();
-            mXmlHelper.getUseCases(mContext, path, mSelectedUseCases);
+            mXmlHelper.readxml(mContext, path, mSelectedUseCases);
+            //mXmlHelper2.getUseCases(mContext, path, mSelectedUseCases);
             selectedUseCaseChangeNotify();
         }catch (Exception e){
             e.printStackTrace();
@@ -271,11 +285,14 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
             return;
         }
         String path = mContext.getFilesDir()+"/usecases.xml";
-        UseCaseBase uc = new CktUseCase();
+        UseCaseBase uc = new CktUseCase(mContext);
         uc.setTitle(name);
         uc.setTestItems(selectedTestItems);
+        ArrayList<UseCaseBase> ucs = new ArrayList<UseCaseBase>();
+        ucs.add(uc);
         try {
-            mXmlHelper.addUseCases(mContext, path, uc);
+            mXmlHelper.addUsecase(path, ucs);
+            //mXmlHelper2.addUseCases(mContext, path, uc);
             getAllUseCaseFromXml();
             useCaseChangeNotify();
         }catch (Exception e){
@@ -327,7 +344,11 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
     }
 
     public void updateSelectedUseCases(int index) {
-        mSelectedUseCases.add(mAllUseCases.get(index));
+        UseCaseBase uc = mAllUseCases.get(index);
+        uc.setIsChecked(true);
+        int sn = mSelectedUseCases == null ? 0 : mSelectedUseCases.size();
+        uc.setSN(sn);
+        mSelectedUseCases.add(uc);
         selectedUseCaseChangeNotify();
     }
 

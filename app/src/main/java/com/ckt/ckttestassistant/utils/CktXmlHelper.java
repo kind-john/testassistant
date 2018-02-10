@@ -5,7 +5,9 @@ import android.util.Xml;
 import android.widget.Toast;
 
 import com.ckt.ckttestassistant.testitems.CktTestItem;
+import com.ckt.ckttestassistant.testitems.Reboot;
 import com.ckt.ckttestassistant.testitems.TestItemBase;
+import com.ckt.ckttestassistant.testitems.WifiSwitchOn;
 import com.ckt.ckttestassistant.usecases.CktUseCase;
 import com.ckt.ckttestassistant.usecases.UseCaseBase;
 
@@ -24,10 +26,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Properties;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -45,60 +49,196 @@ import javax.xml.xpath.XPathFactory;
 
 public class CktXmlHelper {
     private static final String TAG = "CktXmlHelper";
+    private static int allUseCaseMaxID = -1;
 
-    /**
-     * 根据节点code以及对于的属性值删除对应的节点
-     *
-     * @param code
-     * @param property
-     * @param value
-     */
-    private void delete(String path, String code, String property, String value) {
+    public void addUsecase(String path, ArrayList<UseCaseBase> usecases) {
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder bulider = factory.newDocumentBuilder();
-            Document doc = bulider.parse(path);
-            doc.normalize();
-            Element root = doc.getDocumentElement();// 得到根节点
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            Document doc;
+            Element root;
+            File file = new File(path);
+            if (!file.exists()) {
+                LogUtils.d(TAG, path + " not exists, so create it");
+                //file.createNewFile();
+                doc = builder.newDocument();
+                root = doc.createElement(MyConstants.XMLTAG_ROOT);
+                doc.appendChild(root);
+            }else{
+                InputStream is = new FileInputStream(path);
+                doc = builder.parse(is);
+                doc.normalize();
+                root = doc.getDocumentElement();
+            }
 
-            NodeList listnode = doc.getElementsByTagName(code);
+            for (UseCaseBase uc : usecases) {
+                createUseCaseElement(doc, root, uc);
+            }
+            /*Properties properties = new Properties();
+            properties.setProperty(OutputKeys.INDENT, "yes");
+            properties.setProperty(OutputKeys.MEDIA_TYPE, "xml");
+            properties.setProperty(OutputKeys.VERSION, "1.0");
+            properties.setProperty(OutputKeys.ENCODING, "utf-8");
+            properties.setProperty(OutputKeys.METHOD, "xml");
+            properties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");*/
+
+            TransformerFactory tfactory = TransformerFactory.newInstance();
+            Transformer transformer = tfactory.newTransformer();
+            //transformer.setOutputProperties(properties);
+
+            DOMSource source = new DOMSource(doc);
+            StreamResult result = new StreamResult(path);
+            transformer.transform(source, result);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private Element createUseCaseElement(Document doc, Element root, UseCaseBase uc) {
+        Element usecaseE = doc.createElement(MyConstants.XMLTAG_USECASE);
+
+        int maxID = getMaxID(doc, MyConstants.XMLTAG_USECASE, MyConstants.XMLTAG_ID);
+        LogUtils.d(TAG, "max maxID = "+maxID);
+        int usecaseID = uc.getID();
+        if(usecaseID == -1){
+            usecaseID = maxID + 1;
+        }
+        usecaseE.setAttribute(MyConstants.XMLTAG_ID, String.valueOf(usecaseID));
+        usecaseE.setAttribute(MyConstants.XMLTAG_USECASE_CLASSNAME, uc.getClassName());
+
+        createTextElement(doc, usecaseE, MyConstants.XMLTAG_USECASE_SN, String.valueOf(uc.getSN()));
+
+        createTextElement(doc, usecaseE, MyConstants.XMLTAG_USECASE_TITLE, uc.getTitle());
+
+        createTextElement(doc, usecaseE, MyConstants.XMLTAG_USECASE_TIMES, String.valueOf(uc.getTimes()));
+
+        createTextElement(doc, usecaseE, MyConstants.XMLTAG_USECASE_FAILTIMES, String.valueOf(uc.getFailTimes()));
+
+        createTextElement(doc, usecaseE, MyConstants.XMLTAG_USECASE_COMPLETEDTIMES, String.valueOf(uc.getCompletedTimes()));
+
+
+        for (TestItemBase ti : uc.getTestItems()) {
+            Element testitemE = doc.createElement(MyConstants.XMLTAG_TESTITEM);
+            testitemE.setAttribute(MyConstants.XMLTAG_ID, String.valueOf(ti.getID()));
+            testitemE.setAttribute(MyConstants.XMLTAG_TESTITEM_CLASSNAME, ti.getClassName());
+
+            createTextElement(doc, testitemE, MyConstants.XMLTAG_TESTITEM_SN, String.valueOf(ti.getSN()));
+
+            createTextElement(doc, testitemE, MyConstants.XMLTAG_TESTITEM_TITLE, ti.getTitle());
+
+            createTextElement(doc, testitemE, MyConstants.XMLTAG_TESTITEM_TIMES, String.valueOf(ti.getTimes()));
+
+            createTextElement(doc, testitemE, MyConstants.XMLTAG_TESTITEM_FAILTIMES, String.valueOf(ti.getFailTimes()));
+
+            createTextElement(doc, testitemE, MyConstants.XMLTAG_TESTITEM_COMPLETEDTIMES, String.valueOf(ti.getCompletedTimes()));
+
+            ti.saveParameters(doc, testitemE);
+
+            usecaseE.appendChild(testitemE);
+        }
+        root.appendChild(usecaseE);
+        return usecaseE;
+    }
+
+    public void updateUseCase(String path, UseCaseBase uc) {
+        try {
+            File file = new File(path);
+            if (!file.exists()) {
+                LogUtils.d(TAG, path + " not exists,do nothing");
+                return;
+            }
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder bulider = factory.newDocumentBuilder();
+            InputStream is = new FileInputStream(path);
+            Document doc = bulider.parse(is);
+            doc.normalize();
+            Element root = doc.getDocumentElement();
+            NodeList listnode = doc.getElementsByTagName(MyConstants.XMLTAG_USECASE);
             for (int i = 0; i < listnode.getLength(); i++) {
                 Element elink = (Element) listnode.item(i);
-                String prop = elink.getAttribute(property);
-                if (prop.equals(value)) {
-                    if (listnode.getLength() == 1) {
-                        //如果只有一条数据，那么这条数据删除之后，大节点也应该被删除
-                        root.removeChild(elink.getParentNode());
-                    } else {
-                        elink.getParentNode().removeChild(elink);
-                    }
+                int id = Integer.parseInt(elink.getAttribute(MyConstants.XMLTAG_ID));
+                int sn = Integer.parseInt(elink.getAttribute(MyConstants.XMLTAG_USECASE_SN));
+                if ((id == uc.getID()) && (sn == uc.getSN())) {
+                    Element oldNode = elink;
+                    Element newNode = createUseCaseElement(doc, root, uc);
+                    elink.getParentNode().replaceChild(newNode, oldNode);
                 }
-
             }
             TransformerFactory tfactory = TransformerFactory.newInstance();
             Transformer trans = tfactory.newTransformer();
             DOMSource source = new DOMSource(doc);
             StreamResult result = new StreamResult(path);
             trans.transform(source, result);// 将原文件覆盖
-
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
+    private void createTextElement(Document doc, Element element, String nodeName, String nodeValue) {
+        Element e = doc.createElement(nodeName);
+        Node n = doc.createTextNode(nodeValue);
+        e.appendChild(n);
+        element.appendChild(e);
+    }
+
+    private void deleteUseCase(String path, ArrayList<UseCaseBase> ucs) {
+        try {
+            File file = new File(path);
+            if (!file.exists()) {
+                LogUtils.d(TAG, path + " not exists,do nothing");
+                return;
+            }
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder bulider = factory.newDocumentBuilder();
+            InputStream is = new FileInputStream(path);
+            Document doc = bulider.parse(is);
+            doc.normalize();
+            Element root = doc.getDocumentElement();
+            for (UseCaseBase uc : ucs) {
+                NodeList listnode = doc.getElementsByTagName(MyConstants.XMLTAG_USECASE);
+                for (int i = 0; i < listnode.getLength(); i++) {
+                    Element elink = (Element) listnode.item(i);
+                    int id = Integer.parseInt(elink.getAttribute(MyConstants.XMLTAG_ID));
+                    int sn = Integer.parseInt(elink.getAttribute(MyConstants.XMLTAG_USECASE_SN));
+                    if ((id == uc.getID()) && (sn == uc.getSN())) {
+                        if (listnode.getLength() == 1) {
+                            //如果只有一条数据，那么这条数据删除之后，大节点也应该被删除
+                            root.removeChild(elink.getParentNode());
+                        } else {
+                            elink.getParentNode().removeChild(elink);
+                        }
+                    }
+                }
+            }
+            TransformerFactory tfactory = TransformerFactory.newInstance();
+            Transformer trans = tfactory.newTransformer();
+            DOMSource source = new DOMSource(doc);
+            StreamResult result = new StreamResult(path);
+            trans.transform(source, result);// 将原文件覆盖
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     /**
      * pull 解析读取xml文件
      */
-    public static void readxml(Context context, String fileName, ArrayList<UseCaseBase> allUseCases) {
+    public static void readxml(Context context, String path, ArrayList<UseCaseBase> allUseCases) {
         try {
-
-            InputStream is = context.getAssets().open(fileName);// 打开assets下的文件
+            File file = new File(path);
+            if (!file.exists()) {
+                LogUtils.d(TAG, path + " not exists, so create it");
+                //file.createNewFile();
+                return;
+            }
+            InputStream is = new FileInputStream(path);
             XmlPullParser parser = Xml.newPullParser();
             parser.setInput(is, "utf-8");
             int eventtype = parser.getEventType();// 产生第一个事件
             UseCaseBase usecase = null;
             TestItemBase testitem = null;
-            StringBuffer str1 = new StringBuffer();
-            StringBuffer str2 = new StringBuffer();
+            allUseCaseMaxID = -1;
+            LogUtils.d(TAG, "set allUseCaseMaxID = -1");
             while (eventtype != XmlPullParser.END_DOCUMENT) {
                 switch (eventtype) {
                     case XmlPullParser.START_DOCUMENT:// 判断当前事件是否为文档开始事件
@@ -106,38 +246,194 @@ public class CktXmlHelper {
                         break;
                     case XmlPullParser.START_TAG:// 判断当前事件是否为标签元素开始事件
                         String name = parser.getName();
-                        if (name.equals("usecases")) {
+                        LogUtils.d(TAG, "XmlPullParser.START_TAG name:" + name);
 
-                        }
-                        if (name.equals("usecase")) { // 判断开始标签元素是否是student
+                        if (name.equals(MyConstants.XMLTAG_USECASE)) { // 判断开始标签元素是否是student
                             int id = Integer.parseInt(parser.getAttributeValue(0));
-                            LogUtils.d(TAG, "usecase id : " + id);
+                            String ttt = parser.getAttributeValue(null, MyConstants.XMLTAG_USECASE_CLASSNAME);
+                            LogUtils.d(TAG, "ttt = "+ttt);
+                            String className = parser.getAttributeValue(1);
+                            LogUtils.d(TAG, "usecase id : " + id + "; className = " + className);
+
+                            if (allUseCaseMaxID < id) {
+                                allUseCaseMaxID = id;
+                                LogUtils.d(TAG, "set allUseCaseMaxID = " + id);
+                            }
+                            LogUtils.d(TAG, "getUseCases : allUseCaseMaxID = " + allUseCaseMaxID);
+                            if (id >= 0) {
+                                try {
+                                    // 根据给定的类名初始化类
+                                    Class catClass = Class.forName(className);
+                                    // 实例化这个类
+                                    usecase = (UseCaseBase) catClass.newInstance();
+                                    usecase.setContext(context);
+                                    usecase.setID(id);
+
+                                } catch (IllegalAccessException e) {
+                                    e.printStackTrace();
+                                } catch (InstantiationException e) {
+                                    e.printStackTrace();
+                                } catch (ClassNotFoundException e) {
+                                    e.printStackTrace();
+                                }
+                            } else {
+                                LogUtils.e(TAG, "error: id < -1 ,from " + path);
+                            }
+                        } else if (name.equals(MyConstants.XMLTAG_USECASE_SN)) {
+                            int ucsn = Integer.parseInt(parser.nextText());
+                            LogUtils.d(TAG, "ucsn : " + ucsn);
+
+                            if (usecase != null) {
+                                LogUtils.d(TAG, "usecase ucsn : " + ucsn);
+                                usecase.setSN(ucsn);
+                            }
+                        } else if (name.equals(MyConstants.XMLTAG_USECASE_TITLE)) {
                             String title = parser.nextText();
-                            String isChecked = parser.nextText();
-                            int total = Integer.parseInt(parser.nextText());
-                            usecase = new CktUseCase();//do something
-                            usecase.setID(id);
-                        }
-                        if (usecase != null) {
-                            if (name.equals("testitem")) {
-                                testitem = new CktTestItem(context);
+                            LogUtils.d(TAG, "title : " + title);
+
+                            if (usecase != null) {
+                                LogUtils.d(TAG, "usecase title : " + title);
+                                usecase.setTitle(title);
+                            }
+                        } else if (name.equals(MyConstants.XMLTAG_USECASE_TIMES)) {
+                            int times = Integer.parseInt(parser.nextText());
+                            LogUtils.d(TAG, "times : " + times);
+
+                            if (usecase != null) {
+                                LogUtils.d(TAG, "usecase times : " + times);
+                                usecase.setTimes(times);
+                            }
+
+                        } else if (name.equals(MyConstants.XMLTAG_USECASE_FAILTIMES)) {
+                            int failtimes = Integer.parseInt(parser.nextText());
+                            LogUtils.d(TAG, "failtimes : " + failtimes);
+
+                            if (usecase != null) {
+                                LogUtils.d(TAG, "usecase failtimes : " + failtimes);
+                                usecase.setFailTimes(failtimes);
+                            }
+
+                        } else if (name.equals(MyConstants.XMLTAG_USECASE_COMPLETEDTIMES)) {
+                            int completedtimes = Integer.parseInt(parser.nextText());
+                            LogUtils.d(TAG, "completedtimes : " + completedtimes);
+
+                            if (usecase != null) {
+                                LogUtils.d(TAG, "usecase completedtimes : " + completedtimes);
+                                usecase.setCompletedTimes(completedtimes);
+                            }
+
+                        } else if (name.equals(MyConstants.XMLTAG_USECASE_SELECTED)) {
+                            boolean isChecked = Boolean.parseBoolean(parser.nextText());
+                            LogUtils.d(TAG, "usecase isChecked : " + isChecked);
+                            if (usecase != null) {
+                                usecase.setIsChecked(isChecked);
+                            }
+                        } else if (name.equals(MyConstants.XMLTAG_USECASE_DELAY)) {
+                            int delay = Integer.parseInt(parser.nextText());
+                            LogUtils.d(TAG, "delay : " + delay);
+                            if (usecase != null) {
+                                LogUtils.d(TAG, "usecase delay : " + delay);
+                                usecase.setDelay(delay);
+                            }
+                        } else if (name.equals(MyConstants.XMLTAG_TESTITEM_SN)) {
+                            int tisn = Integer.parseInt(parser.nextText());
+                            LogUtils.d(TAG, "tisn : " + tisn);
+
+                            if (testitem != null) {
+                                LogUtils.d(TAG, "testitem tisn : " + tisn);
+                                testitem.setSN(tisn);
+                            }
+                        } else if (name.equals(MyConstants.XMLTAG_TESTITEM_TITLE)) {
+                            String title = parser.nextText();
+                            LogUtils.d(TAG, "title : " + title);
+
+                            if (testitem != null) {
+                                LogUtils.d(TAG, "testitem title : " + title);
+                                testitem.setTitle(title);
+                            }
+                        } else if (name.equals(MyConstants.XMLTAG_TESTITEM_TIMES)) {
+                            int times = Integer.parseInt(parser.nextText());
+                            LogUtils.d(TAG, "times : " + times);
+
+                            if (testitem != null) {
+                                LogUtils.d(TAG, "testitem times : " + times);
+                                testitem.setTimes(times);
+                            }
+
+                        } else if (name.equals(MyConstants.XMLTAG_TESTITEM_FAILTIMES)) {
+                            int failtimes = Integer.parseInt(parser.nextText());
+                            LogUtils.d(TAG, "failtimes : " + failtimes);
+
+                            if (testitem != null) {
+                                LogUtils.d(TAG, "testitem failtimes : " + failtimes);
+                                testitem.setFailTimes(failtimes);
+                            }
+
+                        } else if (name.equals(MyConstants.XMLTAG_TESTITEM_COMPLETEDTIMES)) {
+                            int completedtimes = Integer.parseInt(parser.nextText());
+                            LogUtils.d(TAG, "completedtimes : " + completedtimes);
+
+                            if (testitem != null) {
+                                LogUtils.d(TAG, "testitem completedtimes : " + completedtimes);
+                                testitem.setCompletedTimes(completedtimes);
+                            }
+
+                        } else if (name.equals(MyConstants.XMLTAG_TESTITEM_SELECTED)) {
+                            boolean isChecked = Boolean.parseBoolean(parser.nextText());
+                            LogUtils.d(TAG, "testitem isChecked : " + isChecked);
+                            if (testitem != null) {
+                                testitem.setIsChecked(isChecked);
+                            }
+                        } else if (name.equals(MyConstants.XMLTAG_TESTITEM)) {
+                            if (usecase != null) {
                                 int id2 = Integer.parseInt(parser.getAttributeValue(0));
-                                testitem.setID(id2);
-                                if(name.equals("title")){
-                                    testitem.setTitle(parser.nextText());
+                                String className2 = parser.getAttributeValue(1);
+                                LogUtils.d(TAG, "testitem id : " + id2 + "; className = " + className2);
+                                try {
+                                    // 根据给定的类名初始化类
+                                    Class catClass = Class.forName(className2);
+                                    // 实例化这个类
+                                    testitem = (TestItemBase) catClass.newInstance();
+                                    testitem.setContext(context);
+                                    testitem.setID(id2);
+                                } catch (IllegalAccessException e) {
+                                    e.printStackTrace();
+                                } catch (InstantiationException e) {
+                                    e.printStackTrace();
+                                } catch (ClassNotFoundException e) {
+                                    e.printStackTrace();
+                                }
+
+                            }
+                        } else if (name.equals(MyConstants.XMLTAG_TESTITEM_DELAY)) {
+                            int delay = Integer.parseInt(parser.nextText());
+                            LogUtils.d(TAG, "delay : " + delay);
+                            if (testitem != null) {
+                                LogUtils.d(TAG, "testitem delay : " + delay);
+                                if (testitem instanceof WifiSwitchOn) {
+                                    ((WifiSwitchOn) testitem).setDelay(delay);
+                                } else if (testitem instanceof Reboot) {
+                                    ((Reboot) testitem).setDelay(delay);
+                                } else {
+                                    LogUtils.d(TAG, "there is no " + MyConstants.XMLTAG_TESTITEM_DELAY);
                                 }
                             }
+                        } else {
+                            LogUtils.e(TAG, "error: some new tag has not parser!!! name = " + name);
                         }
                         break;
 
                     case XmlPullParser.END_TAG:
-                        if (parser.getName().equals("usecase")) {
+                        String endName = parser.getName();
+                        LogUtils.d(TAG, "XmlPullParser.END_TAG name:" + endName);
+                        if (endName.equals(MyConstants.XMLTAG_USECASE)) {
                             allUseCases.add(usecase);
                             usecase = null;
-                        }
-                        if (parser.getName().equals("testitem")) {
+                        } else if (endName.equals(MyConstants.XMLTAG_TESTITEM)) {
                             usecase.addTestItem(testitem);
                             testitem = null;
+                        } else {
+                            LogUtils.d(TAG, "ignored endName = " + endName);
                         }
                         break;
 
@@ -151,10 +447,24 @@ public class CktXmlHelper {
         } catch (XmlPullParserException e) {
             e.printStackTrace();
         }
+
     }
 
-    private int getMaxId(String fileName, String code, String idnum) {
-        int num = 0;
+    private int getMaxID(Document doc, String elementName, String idPropertyName){
+        int num = -1;
+        NodeList listnode = doc.getElementsByTagName(elementName);
+        for (int i = 0; i < listnode.getLength(); i++) {
+            Element elink = (Element) listnode.item(i);
+            String id = elink.getAttribute(idPropertyName);
+            if (Integer.valueOf(id) > num) {
+                num = Integer.valueOf(id);
+            }
+        }
+        return num;
+    }
+
+    /*private int getMaxId(String fileName, String code, String idnum) {
+        int num = -1;
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder bulider = factory.newDocumentBuilder();
@@ -180,49 +490,13 @@ public class CktXmlHelper {
             e.printStackTrace();
             return num;
         }
-    }
+    }*/
 
-
-    private void addUsecasetoxml(String fileName, ArrayList<UseCaseBase> usecases) {
-        FileOutputStream out = null;
-        XmlSerializer xsl = Xml.newSerializer();
+    /*private void updateUsecasetoxml(String path, ArrayList<UseCaseBase> usecases) {
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder bulider = factory.newDocumentBuilder();
-            Document doc = bulider.parse(fileName);
-            doc.normalize();
-            Element root = doc.getDocumentElement();
-            for (UseCaseBase usecase : usecases){
-                Element usecaseE = doc.createElement("usecase");
-                int usecaseID = getMaxId(fileName, "usecase", "0") + 1;
-                usecaseE.setAttributeNS("", "id", String.valueOf(usecaseID));
-                usecase.setID(usecaseID);
-                for (TestItemBase item : usecase.getTestItems()) {
-                    Element testitemE = doc.createElement("testitem");
-                    testitemE.setAttributeNS("", "id", String.valueOf(getMaxId(fileName, "usecase", "0") + 1));
-                    Element titleE = doc.createElement("title");
-                    titleE.setNodeValue(item.getTitle());
-                    testitemE.appendChild(titleE);
-                }
-                root.appendChild(usecaseE);
-            }
-
-            TransformerFactory tfactory = TransformerFactory.newInstance();
-            Transformer trans = tfactory.newTransformer();
-            DOMSource source = new DOMSource(doc);
-            StreamResult result = new StreamResult(fileName);
-            trans.transform(source, result);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-
-    /*private void updateUsecasetoxml(String fileName, ArrayList<UseCaseBase> usecases) {
-        try {
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder bulider = factory.newDocumentBuilder();
-            Document doc = bulider.parse(fileName);
+            Document doc = bulider.parse(path);
             doc.normalize();
             Element root = doc.getDocumentElement();
             for (UseCaseBase usecase : usecases){
@@ -249,7 +523,7 @@ public class CktXmlHelper {
                 }
 
                 if (flag == 0) {
-                    addUsecasetoxml(fileName, usecases);
+                    addUsecasetoxml(path, usecases);
                     return;
                 }
 
@@ -258,7 +532,7 @@ public class CktXmlHelper {
             TransformerFactory tfactory = TransformerFactory.newInstance();
             Transformer trans = tfactory.newTransformer();
             DOMSource source = new DOMSource(doc);
-            StreamResult result = new StreamResult(fileName);
+            StreamResult result = new StreamResult(path);
             trans.transform(source, result);
         } catch (ParserConfigurationException e) {
             LogUtils.d(TAG, "ParserConfigurationException");
@@ -280,8 +554,6 @@ public class CktXmlHelper {
 
     /**
      * 选择具体某一结点
-     *
-     *
      */
     public static Node selectSingleNode(String express, Element source) {
         Node result = null;
@@ -294,6 +566,7 @@ public class CktXmlHelper {
         }
         return result;
     }
+
     public static void createXML(Context context, String path, ArrayList<UseCaseBase> list) {
         XmlSerializer serializer = Xml.newSerializer();
         File file = new File(path);

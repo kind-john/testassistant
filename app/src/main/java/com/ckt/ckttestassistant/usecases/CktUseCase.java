@@ -1,6 +1,7 @@
 package com.ckt.ckttestassistant.usecases;
 
 
+import android.content.Context;
 import android.os.Handler;
 
 import com.ckt.ckttestassistant.UseCaseManager;
@@ -16,7 +17,12 @@ import java.util.ArrayList;
 
 public class CktUseCase extends UseCaseBase {
     public CktUseCase() {
-        super();
+        String className = this.getClass().getName();
+        setClassName(className);
+    }
+
+    public CktUseCase(Context context) {
+        super(context);
         String className = this.getClass().getName();
         setClassName(className);
     }

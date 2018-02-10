@@ -1,5 +1,6 @@
 package com.ckt.ckttestassistant.usecases;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -11,6 +12,7 @@ import com.ckt.ckttestassistant.utils.MyConstants;
 
 import org.xmlpull.v1.XmlSerializer;
 
+import java.io.File;
 import java.util.ArrayList;
 
 /**
@@ -32,6 +34,7 @@ public abstract class UseCaseBase {
     protected int ID = -1;
     protected int SN = -1;
     protected String mClassName = "UseCaseBase";
+    private Context mContext;
 
     public int getDelay() {
         return mDelay;
@@ -58,7 +61,16 @@ public abstract class UseCaseBase {
     }
 
     public UseCaseBase() {
+
+    }
+
+    public UseCaseBase(Context context) {
+        mContext = context;
         mUseCaseManager = UseCaseManager.getInstance(null);
+    }
+
+    public void setContext(Context context) {
+        this.mContext = context;
     }
 
     public int getFailTimes() {
@@ -109,6 +121,12 @@ public abstract class UseCaseBase {
             }
             mTestItems.get(0).execute(handler, executeCallback, usecaseFinish);
             mCompletedTimes += 1;
+            String path = mContext.getFilesDir()+"/selected_usecases.xml";
+            File file = new File(path);
+            if(file != null && file.exists()){
+                file.delete();
+            }
+            mUseCaseManager.updateUseCaseOfXml(path, this);
 
         }
         if(mNextUseCase != null){
