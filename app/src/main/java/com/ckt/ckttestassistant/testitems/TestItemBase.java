@@ -35,6 +35,24 @@ public abstract class TestItemBase implements CktResultsHelper.ResultCallBack {
     protected int ID = -1;
     protected int SN = -1;
     protected String mClassName = "TestItemBase";
+    protected int mUseCaseID = -1;
+    protected int mUseCaseSN = -1;
+
+    public int getUseCaseID() {
+        return mUseCaseID;
+    }
+
+    public void setUseCaseID(int useCaseID) {
+        this.mUseCaseID = useCaseID;
+    }
+
+    public int getUseCaseSN() {
+        return mUseCaseSN;
+    }
+
+    public void setUseCaseSN(int useCaseSN) {
+        this.mUseCaseSN = useCaseSN;
+    }
 
     public int getSN() {
         return SN;
@@ -125,6 +143,7 @@ public abstract class TestItemBase implements CktResultsHelper.ResultCallBack {
     }
 
     public void execute(Handler handler, UseCaseManager.ExecuteCallback executeCallback, boolean usecaseFinish){
+        mCompletedTimes = 0;
         for(int times = 0; times < mTimes; times++){
             String className = this.getClass().getSimpleName();
             boolean testItemFinish = false;
@@ -150,6 +169,8 @@ public abstract class TestItemBase implements CktResultsHelper.ResultCallBack {
             LogUtils.d(TAG, "testItemFinish : "+testItemFinish);
             doExecute(executeCallback, (usecaseFinish && testItemFinish));
             mCompletedTimes += 1;
+            String path = mContext.getFilesDir()+"/selected_usecases.xml";
+            mUseCaseManager.updateTestItemOfXml(path, this);
             saveResult();
         }
 

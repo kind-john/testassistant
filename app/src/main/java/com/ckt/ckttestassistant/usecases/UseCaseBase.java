@@ -61,7 +61,7 @@ public abstract class UseCaseBase {
     }
 
     public UseCaseBase() {
-
+        mUseCaseManager = UseCaseManager.getInstance(null);
     }
 
     public UseCaseBase(Context context) {
@@ -103,6 +103,7 @@ public abstract class UseCaseBase {
         }
         mTestItems.get(mTestItems.size() - 1).setNextTestItem(null);
 
+        mCompletedTimes = 0;
         for (int times = 0; times < mTimes; times++) {
             boolean usecaseFinish = false;
             String className = this.getClass().getSimpleName();
@@ -122,13 +123,14 @@ public abstract class UseCaseBase {
             mTestItems.get(0).execute(handler, executeCallback, usecaseFinish);
             mCompletedTimes += 1;
             String path = mContext.getFilesDir()+"/selected_usecases.xml";
-            File file = new File(path);
+            /*File file = new File(path);
             if(file != null && file.exists()){
                 file.delete();
-            }
+            }*/
             mUseCaseManager.updateUseCaseOfXml(path, this);
 
         }
+
         if(mNextUseCase != null){
             mNextUseCase.execute(handler, executeCallback);
         }

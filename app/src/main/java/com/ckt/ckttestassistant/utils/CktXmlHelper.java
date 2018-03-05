@@ -51,8 +51,9 @@ public class CktXmlHelper {
     private static final String TAG = "CktXmlHelper";
     private static int allUseCaseMaxID = -1;
 
-    public void addUsecase(String path, ArrayList<UseCaseBase> usecases) {
-        try {
+    public void addUsecase(String path, ArrayList<UseCaseBase> usecases) throws Exception{
+        LogUtils.d(TAG, "entry addUsecase!");
+        try{
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();
             Document doc;
@@ -64,7 +65,7 @@ public class CktXmlHelper {
                 doc = builder.newDocument();
                 root = doc.createElement(MyConstants.XMLTAG_ROOT);
                 doc.appendChild(root);
-            }else{
+            } else {
                 InputStream is = new FileInputStream(path);
                 doc = builder.parse(is);
                 doc.normalize();
@@ -89,12 +90,39 @@ public class CktXmlHelper {
             DOMSource source = new DOMSource(doc);
             StreamResult result = new StreamResult(path);
             transformer.transform(source, result);
-        } catch (Exception e) {
-            e.printStackTrace();
+        }catch (Exception e){
+            throw e;
         }
+    }
+    private Element createTestItemElement(Document doc, Element root, TestItemBase ti) {
+        LogUtils.d(TAG, "entry createTestItemElement!");
+        Element testitemE = doc.createElement(MyConstants.XMLTAG_TESTITEM);
+        testitemE.setAttribute(MyConstants.XMLTAG_ID, String.valueOf(ti.getID()));
+        testitemE.setAttribute(MyConstants.XMLTAG_TESTITEM_CLASSNAME, ti.getClassName());
+
+        createTextElement(doc, testitemE, MyConstants.XMLTAG_TESTITEM_SN, String.valueOf(ti.getSN()));
+
+        createTextElement(doc, testitemE, MyConstants.XMLTAG_TESTITEM_USECASEID, String.valueOf(ti.getUseCaseID()));
+
+        createTextElement(doc, testitemE, MyConstants.XMLTAG_TESTITEM_USECASESN, String.valueOf(ti.getUseCaseSN()));
+
+        createTextElement(doc, testitemE, MyConstants.XMLTAG_TESTITEM_TITLE, ti.getTitle());
+
+        createTextElement(doc, testitemE, MyConstants.XMLTAG_TESTITEM_TIMES, String.valueOf(ti.getTimes()));
+
+        createTextElement(doc, testitemE, MyConstants.XMLTAG_TESTITEM_FAILTIMES, String.valueOf(ti.getFailTimes()));
+
+        createTextElement(doc, testitemE, MyConstants.XMLTAG_TESTITEM_COMPLETEDTIMES, String.valueOf(ti.getCompletedTimes()));
+
+        ti.saveParameters(doc, testitemE);
+
+        root.appendChild(testitemE);
+
+        return testitemE;
     }
 
     private Element createUseCaseElement(Document doc, Element root, UseCaseBase uc) {
+        LogUtils.d(TAG, "entry createUseCaseElement!");
         Element usecaseE = doc.createElement(MyConstants.XMLTAG_USECASE);
 
         int maxID = getMaxID(doc, MyConstants.XMLTAG_USECASE, MyConstants.XMLTAG_ID);
@@ -102,6 +130,16 @@ public class CktXmlHelper {
         int usecaseID = uc.getID();
         if(usecaseID == -1){
             usecaseID = maxID + 1;
+            ArrayList<TestItemBase> tis = uc.getTestItems();
+            if(tis != null && !tis.isEmpty()){
+                for(TestItemBase ti : tis){
+                    int uc_id = uc.getID(); //可以删除
+                    int uc_sn = uc.getSN();
+                    LogUtils.d(TAG, "uc_id = "+uc_id+"; uc_sn = "+uc_sn);
+                    ti.setUseCaseID(uc_id);
+                    ti.setUseCaseSN(uc_sn);
+                }
+            }
         }
         usecaseE.setAttribute(MyConstants.XMLTAG_ID, String.valueOf(usecaseID));
         usecaseE.setAttribute(MyConstants.XMLTAG_USECASE_CLASSNAME, uc.getClassName());
@@ -116,31 +154,14 @@ public class CktXmlHelper {
 
         createTextElement(doc, usecaseE, MyConstants.XMLTAG_USECASE_COMPLETEDTIMES, String.valueOf(uc.getCompletedTimes()));
 
-
         for (TestItemBase ti : uc.getTestItems()) {
-            Element testitemE = doc.createElement(MyConstants.XMLTAG_TESTITEM);
-            testitemE.setAttribute(MyConstants.XMLTAG_ID, String.valueOf(ti.getID()));
-            testitemE.setAttribute(MyConstants.XMLTAG_TESTITEM_CLASSNAME, ti.getClassName());
-
-            createTextElement(doc, testitemE, MyConstants.XMLTAG_TESTITEM_SN, String.valueOf(ti.getSN()));
-
-            createTextElement(doc, testitemE, MyConstants.XMLTAG_TESTITEM_TITLE, ti.getTitle());
-
-            createTextElement(doc, testitemE, MyConstants.XMLTAG_TESTITEM_TIMES, String.valueOf(ti.getTimes()));
-
-            createTextElement(doc, testitemE, MyConstants.XMLTAG_TESTITEM_FAILTIMES, String.valueOf(ti.getFailTimes()));
-
-            createTextElement(doc, testitemE, MyConstants.XMLTAG_TESTITEM_COMPLETEDTIMES, String.valueOf(ti.getCompletedTimes()));
-
-            ti.saveParameters(doc, testitemE);
-
-            usecaseE.appendChild(testitemE);
+            createTestItemElement(doc, usecaseE, ti);
         }
         root.appendChild(usecaseE);
         return usecaseE;
     }
-
-    public void updateUseCase(String path, UseCaseBase uc) {
+    public void updateTestItem(String path, TestItemBase ti) {
+        LogUtils.d(TAG, "entry updateTestItem!");
         try {
             File file = new File(path);
             if (!file.exists()) {
@@ -157,11 +178,55 @@ public class CktXmlHelper {
             for (int i = 0; i < listnode.getLength(); i++) {
                 Element elink = (Element) listnode.item(i);
                 int id = Integer.parseInt(elink.getAttribute(MyConstants.XMLTAG_ID));
-                int sn = Integer.parseInt(elink.getAttribute(MyConstants.XMLTAG_USECASE_SN));
+                String str_sn = elink.getElementsByTagName(MyConstants.XMLTAG_USECASE_SN).item(0).getTextContent();
+                int sn = Integer.parseInt(str_sn);
+                if ((id == ti.getUseCaseID()) && (sn == ti.getUseCaseSN())) {
+                    NodeList ti_listnode = elink.getElementsByTagName(MyConstants.XMLTAG_TESTITEM);
+                    for (int j = 0; j < ti_listnode.getLength(); j++){
+                        Element ti_element = (Element) ti_listnode.item(i);
+                        int ti_id = Integer.parseInt(ti_element.getAttribute(MyConstants.XMLTAG_ID));
+                        String ti_str_sn = ti_element.getElementsByTagName(MyConstants.XMLTAG_TESTITEM_SN).item(0).getTextContent();
+                        int ti_sn = Integer.parseInt(ti_str_sn);
+                        if(ti_id == ti.getID() && ti_sn == ti.getSN()){
+                            Element newNode = createTestItemElement(doc, elink, ti);
+                            elink.getParentNode().replaceChild(newNode, ti_element);
+                        }
+                    }
+                }
+            }
+            TransformerFactory tfactory = TransformerFactory.newInstance();
+            Transformer trans = tfactory.newTransformer();
+            DOMSource source = new DOMSource(doc);
+            StreamResult result = new StreamResult(path);
+            trans.transform(source, result);// 将原文件覆盖
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    public void updateUseCase(String path, UseCaseBase uc) {
+        LogUtils.d(TAG, "entry updateUseCase!");
+        try {
+            File file = new File(path);
+            if (!file.exists()) {
+                LogUtils.d(TAG, path + " not exists,do nothing");
+                return;
+            }
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder bulider = factory.newDocumentBuilder();
+            InputStream is = new FileInputStream(path);
+            Document doc = bulider.parse(is);
+            doc.normalize();
+            Element root = doc.getDocumentElement();
+            NodeList listnode = doc.getElementsByTagName(MyConstants.XMLTAG_USECASE);
+            for (int i = 0; i < listnode.getLength(); i++) {
+                Element elink = (Element) listnode.item(i);
+                int id = Integer.parseInt(elink.getAttribute(MyConstants.XMLTAG_ID));
+                String str_sn = elink.getElementsByTagName(MyConstants.XMLTAG_USECASE_SN).item(0).getTextContent();
+
+                int sn = Integer.parseInt(str_sn);
                 if ((id == uc.getID()) && (sn == uc.getSN())) {
-                    Element oldNode = elink;
                     Element newNode = createUseCaseElement(doc, root, uc);
-                    elink.getParentNode().replaceChild(newNode, oldNode);
+                    elink.getParentNode().replaceChild(newNode, elink);
                 }
             }
             TransformerFactory tfactory = TransformerFactory.newInstance();
@@ -175,6 +240,7 @@ public class CktXmlHelper {
     }
 
     private void createTextElement(Document doc, Element element, String nodeName, String nodeValue) {
+        LogUtils.d(TAG, "entry createTextElement!");
         Element e = doc.createElement(nodeName);
         Node n = doc.createTextNode(nodeValue);
         e.appendChild(n);
@@ -182,6 +248,7 @@ public class CktXmlHelper {
     }
 
     private void deleteUseCase(String path, ArrayList<UseCaseBase> ucs) {
+        LogUtils.d(TAG, "entry deleteUseCase!");
         try {
             File file = new File(path);
             if (!file.exists()) {
@@ -198,8 +265,10 @@ public class CktXmlHelper {
                 NodeList listnode = doc.getElementsByTagName(MyConstants.XMLTAG_USECASE);
                 for (int i = 0; i < listnode.getLength(); i++) {
                     Element elink = (Element) listnode.item(i);
+                    elink.getElementsByTagName(MyConstants.XMLTAG_USECASE_SN).item(0).getNodeValue();
                     int id = Integer.parseInt(elink.getAttribute(MyConstants.XMLTAG_ID));
-                    int sn = Integer.parseInt(elink.getAttribute(MyConstants.XMLTAG_USECASE_SN));
+                    //int sn = Integer.parseInt(elink.getAttribute(MyConstants.XMLTAG_USECASE_SN));
+                    int sn = Integer.parseInt(elink.getElementsByTagName(MyConstants.XMLTAG_USECASE_SN).item(0).getTextContent());
                     if ((id == uc.getID()) && (sn == uc.getSN())) {
                         if (listnode.getLength() == 1) {
                             //如果只有一条数据，那么这条数据删除之后，大节点也应该被删除
@@ -223,7 +292,8 @@ public class CktXmlHelper {
     /**
      * pull 解析读取xml文件
      */
-    public static void readxml(Context context, String path, ArrayList<UseCaseBase> allUseCases) {
+    public static void readxml(Context context, String path, ArrayList<UseCaseBase> allUseCases) throws XmlPullParserException,IOException{
+        LogUtils.d(TAG, "entry readxml!");
         try {
             File file = new File(path);
             if (!file.exists()) {
@@ -343,6 +413,22 @@ public class CktXmlHelper {
                                 LogUtils.d(TAG, "testitem tisn : " + tisn);
                                 testitem.setSN(tisn);
                             }
+                        } else if (name.equals(MyConstants.XMLTAG_TESTITEM_USECASEID)) {
+                            int ti_ucid = Integer.parseInt(parser.nextText());
+                            LogUtils.d(TAG, "ti_ucid : " + ti_ucid);
+
+                            if (testitem != null) {
+                                LogUtils.d(TAG, "testitem ti_ucid : " + ti_ucid);
+                                testitem.setUseCaseID(ti_ucid);
+                            }
+                        } else if (name.equals(MyConstants.XMLTAG_TESTITEM_USECASESN)) {
+                            int ti_ucsn = Integer.parseInt(parser.nextText());
+                            LogUtils.d(TAG, "ti_ucsn : " + ti_ucsn);
+
+                            if (testitem != null) {
+                                LogUtils.d(TAG, "testitem ti_ucsn : " + ti_ucsn);
+                                testitem.setUseCaseSN(ti_ucsn);
+                            }
                         } else if (name.equals(MyConstants.XMLTAG_TESTITEM_TITLE)) {
                             String title = parser.nextText();
                             LogUtils.d(TAG, "title : " + title);
@@ -443,14 +529,15 @@ public class CktXmlHelper {
                 eventtype = parser.next();// 不断的去更新，持续的解析XML文件直到文件的尾部。
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            throw e;
         } catch (XmlPullParserException e) {
-            e.printStackTrace();
+            throw e;
         }
 
     }
 
     private int getMaxID(Document doc, String elementName, String idPropertyName){
+        LogUtils.d(TAG, "entry getMaxID!");
         int num = -1;
         NodeList listnode = doc.getElementsByTagName(elementName);
         for (int i = 0; i < listnode.getLength(); i++) {

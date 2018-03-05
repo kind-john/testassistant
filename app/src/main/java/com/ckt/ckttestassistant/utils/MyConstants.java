@@ -43,6 +43,8 @@ public final class MyConstants {
     public static final String XMLTAG_TESTITEM_COMPLETEDTIMES = "testitem_completedtimes";
     public static final String XMLTAG_TESTITEM_SELECTED = "testitem_selected";
     public static final String XMLTAG_TESTITEM_DELAY = "testitem_delay";
+    public static final String XMLTAG_TESTITEM_USECASESN = "testitem_usecase_sn";
+    public static final String XMLTAG_TESTITEM_USECASEID = "testitem_usecase_id";
 
 
     /**

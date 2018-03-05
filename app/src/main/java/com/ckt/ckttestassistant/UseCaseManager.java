@@ -17,7 +17,10 @@ import com.ckt.ckttestassistant.utils.CktXmlHelper2;
 import com.ckt.ckttestassistant.utils.LogUtils;
 import com.ckt.ckttestassistant.utils.MyConstants;
 
+import org.xmlpull.v1.XmlPullParserException;
+
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 
 /**
@@ -65,18 +68,37 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
         return instance;
     }
     boolean importUseCaseConfig(String path){
-        return true;
+        boolean result = false;
+        ArrayList<UseCaseBase> ucs = new ArrayList<UseCaseBase>();
+        try{
+            //从配置文件中读取用例信息
+            mXmlHelper.readxml(mContext, path, ucs);
+            //将读取的配置文件写入xml
+            String target_path = mContext.getFilesDir()+"/usecases.xml";
+            mXmlHelper.addUsecase(target_path, ucs);
+            result = true;
+        }catch(Exception e){
+            result = false;
+            e.printStackTrace();
+        }
+        return result;
     }
 
     boolean outputUseCaseConfig(String path){
-        return true;
-    }
-
-    boolean addUseCaseToConfigureFile(UseCaseBase usecase){
-        if(!mSelectedUseCases.contains(usecase)){
-            mSelectedUseCases.add(usecase);
+        boolean result = false;
+        ArrayList<UseCaseBase> ucs = new ArrayList<UseCaseBase>();
+        try{
+            //从本地xml文件中读取用例信息
+            String source_path = mContext.getFilesDir()+"/usecases.xml";
+            mXmlHelper.readxml(mContext, source_path, ucs);
+            //将用例信息写入制定文件
+            mXmlHelper.addUsecase(path, ucs);
+            result = true;
+        }catch(Exception e){
+            result = false;
+            e.printStackTrace();
         }
-        return true;
+        return result;
     }
 
     /**
@@ -143,21 +165,6 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
         it.putExtra(DoTestIntentService.COMMAND, "start");
         mContext.startService(it);
 
-        /*new Thread(new Runnable() {
-            @Override
-            public void run() {
-                int size = 0;
-                if(mSelectedUseCases == null || mSelectedUseCases.isEmpty()){
-                    return;
-                }
-                for (int index = 0; index < mSelectedUseCases.size() - 1; index++){
-                    UseCaseBase tmp = mSelectedUseCases.get(index);
-                    tmp.setNextUseCase(mSelectedUseCases.get(index + 1));
-                }
-                mSelectedUseCases.get(mSelectedUseCases.size() - 1).setNextUseCase(null);
-                mSelectedUseCases.get(0).execute(mHandler, mExecuteCallback);
-            }
-        }).start();*/
         return true;
     }
 
@@ -220,13 +227,9 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
     }
 
     public void updateTestItemOfXml(String path, TestItemBase ti){
-        ArrayList<UseCaseBase> usecases = new ArrayList<UseCaseBase>();
         try {
-            mXmlHelper.readxml(mContext, path, usecases);
-            //mXmlHelper2.getUseCases(mContext, path, usecases);
+            mXmlHelper.updateTestItem(path, ti);
             if(updateTestItem(ti)){
-                //mXmlHelper.updateUseCase(path, uc);
-                //mXmlHelper2.reCreateXml(path, usecases);
             }
 
         }catch (Exception e){
@@ -244,7 +247,11 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
     private void getAllUseCaseFromXml() {
         String path = mContext.getFilesDir()+"/usecases.xml";
         mAllUseCases.clear();
-        mXmlHelper.readxml(mContext, path, mAllUseCases);
+        try{
+            mXmlHelper.readxml(mContext, path, mAllUseCases);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
         //mXmlHelper2.getUseCases(mContext, path, mAllUseCases);
         //refreshUseCaseList();
         useCaseChangeNotify();
@@ -348,7 +355,18 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
         uc.setIsChecked(true);
         int sn = mSelectedUseCases == null ? 0 : mSelectedUseCases.size();
         uc.setSN(sn);
+        ArrayList<TestItemBase> tis = uc.getTestItems();
+        if(tis != null && !tis.isEmpty()){
+            for(TestItemBase ti : tis){
+                int uc_id = uc.getID(); //可以删除
+                int uc_sn = uc.getSN();
+                LogUtils.d(TAG, "uc_id = "+uc_id+"; uc_sn = "+uc_sn);
+                ti.setUseCaseID(uc_id);
+                ti.setUseCaseSN(uc_sn);
+            }
+        }
         mSelectedUseCases.add(uc);
+        //saveSelectedUseCaseToXml();
         selectedUseCaseChangeNotify();
     }
 

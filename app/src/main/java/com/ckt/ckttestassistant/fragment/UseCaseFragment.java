@@ -196,11 +196,17 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
         boolean need = false;
         if(mSelectedItems != null && !mSelectedItems.isEmpty()){
             for (UseCaseBase uc : mSelectedItems){
-                if(uc.getTimes() != uc.getCompletedTimes()){
+                int uc_alltimes = uc.getTimes();
+                int uc_completedTimes = uc.getCompletedTimes();
+                LogUtils.d(TAG, "uc_alltimes = "+uc_alltimes+"; uc_completedTimes = "+uc_completedTimes);
+                if(uc_alltimes > uc_completedTimes){
                     need = true;
                 }
                 for (TestItemBase ti : uc.getTestItems()){
-                    if(ti.getTimes() != ti.getCompletedTimes()){
+                    int ti_alltimes = ti.getTimes();
+                    int ti_completedTimes = ti.getCompletedTimes();
+                    LogUtils.d(TAG, "ti_alltimes = "+ti_alltimes+"; ti_completedTimes = "+ti_completedTimes);
+                    if(ti_alltimes > ti_completedTimes){
                         need = true;
                     }
                 }
