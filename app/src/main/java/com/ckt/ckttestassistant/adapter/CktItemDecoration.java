@@ -77,10 +77,10 @@ public class CktItemDecoration extends RecyclerView.ItemDecoration {
                 padding_bottom = 5;
                 break;
             case DECORATION_TYPE_TESTCATEGORY:
-                padding_left = 15;
-                padding_top = 15;
+                padding_left = 5;
+                padding_top = 5;
                 padding_right = 0;
-                padding_bottom = 15;
+                padding_bottom = 5;
                 break;
             case DECORATION_TYPE_TESTCATEGORY_TESTITEM:
                 padding_left = 4;

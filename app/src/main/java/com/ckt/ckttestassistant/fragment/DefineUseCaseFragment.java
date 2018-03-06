@@ -28,10 +28,13 @@ import com.ckt.ckttestassistant.testitems.CktTestItem;
 import com.ckt.ckttestassistant.testitems.Reboot;
 import com.ckt.ckttestassistant.testitems.TestItemBase;
 import com.ckt.ckttestassistant.testitems.WifiSwitchOn;
+import com.ckt.ckttestassistant.usecases.UseCaseBase;
 import com.ckt.ckttestassistant.utils.LogUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+
+import static android.R.attr.id;
 
 /**
  * Created by ckt on 18-1-30.
@@ -49,13 +52,116 @@ public class DefineUseCaseFragment extends Fragment {
     private ArrayList<TestItemBase> mSelectedTestItems = new ArrayList<TestItemBase>();
     private StringBuilder mShowPanelInfo = new StringBuilder();
     private String[] mTestCategory = {
-            "camera",
-            "switch",
-            "system",
-            "telecom",
-            "time length",
-            "HW test",
-            "current"
+        "camera",
+        "switch",
+        "system",
+        "telecom",
+        "launch app",
+        "HW test",
+        "current"
+    };
+    private String[][]mTestItems = {
+        {
+            "com.ckt.ckttestassistant.testitems.CameraCapture",
+            "com.ckt.ckttestassistant.testitems.CameraContinuousCapture",
+            "com.ckt.ckttestassistant.testitems.CameraEnterPhotoMode",
+            "com.ckt.ckttestassistant.testitems.CameraEnterPreview",
+            "com.ckt.ckttestassistant.testitems.CameraEnterVideoMode",
+            "com.ckt.ckttestassistant.testitems.CameraFlashlight",
+            "com.ckt.ckttestassistant.testitems.CameraFocus",
+            "com.ckt.ckttestassistant.testitems.CameraHDR",
+            "com.ckt.ckttestassistant.testitems.CameraPanorama",
+            "com.ckt.ckttestassistant.testitems.CameraRecordVideo",
+            "com.ckt.ckttestassistant.testitems.CameraSetBackground",
+            "com.ckt.ckttestassistant.testitems.CameraSetFront",
+            "com.ckt.ckttestassistant.testitems.CameraSettings",
+            "com.ckt.ckttestassistant.testitems.CameraSwitchFrontBack",
+            "com.ckt.ckttestassistant.testitems.CameraViewPhotos",
+            "com.ckt.ckttestassistant.testitems.CameraZoomIn",
+            "com.ckt.ckttestassistant.testitems.CameraZoomMax",
+            "com.ckt.ckttestassistant.testitems.CameraZoomOut"
+        },
+        {
+            "com.ckt.ckttestassistant.testitems.AirPlaneSwitchOff",
+            "com.ckt.ckttestassistant.testitems.AirPlaneSwitchOn",
+            "com.ckt.ckttestassistant.testitems.BTSwitchOff",
+            "com.ckt.ckttestassistant.testitems.BTSwitchOn",
+            "com.ckt.ckttestassistant.testitems.DataUsageSwitchOff",
+            "com.ckt.ckttestassistant.testitems.DataUsageSwitchOn",
+            "com.ckt.ckttestassistant.testitems.FlashlightSwitchOff",
+            "com.ckt.ckttestassistant.testitems.FlashlightSwitchOn",
+            "com.ckt.ckttestassistant.testitems.GpsSwitchOff",
+            "com.ckt.ckttestassistant.testitems.GpsSwitchOn",
+            "com.ckt.ckttestassistant.testitems.NFCSwitchOff",
+            "com.ckt.ckttestassistant.testitems.NFCSwitchOn",
+            "com.ckt.ckttestassistant.testitems.ScreenSaverSwitchOff",
+            "com.ckt.ckttestassistant.testitems.ScreenSaverSwitchOn",
+            "com.ckt.ckttestassistant.testitems.SharedNetSwitchOff",
+            "com.ckt.ckttestassistant.testitems.SharedNetSwitchOn",
+            "com.ckt.ckttestassistant.testitems.TorchSwitchOff",
+            "com.ckt.ckttestassistant.testitems.TorchSwitchOn",
+            "com.ckt.ckttestassistant.testitems.WifiSwitchOff",
+            "com.ckt.ckttestassistant.testitems.WifiSwitchOn"
+        },
+        {
+            "com.ckt.ckttestassistant.testitems.AutoScreenOff",
+            "com.ckt.ckttestassistant.testitems.AutoScreenOn",
+            "com.ckt.ckttestassistant.testitems.AutoUnlockScreen",
+            "com.ckt.ckttestassistant.testitems.BrightnessSetting",
+            "com.ckt.ckttestassistant.testitems.GetNetworkStatus",
+            "com.ckt.ckttestassistant.testitems.GotoSleep",
+            "com.ckt.ckttestassistant.testitems.RemoveRecentApp",
+            "com.ckt.ckttestassistant.testitems.SimulateBackKey",
+            "com.ckt.ckttestassistant.testitems.SimulateHomeKey",
+            "com.ckt.ckttestassistant.testitems.SimulateMenuKey",
+            "com.ckt.ckttestassistant.testitems.SimulatePowerKey",
+            "com.ckt.ckttestassistant.testitems.WakeUp",
+            "com.ckt.ckttestassistant.testitems.Reboot",
+            "com.ckt.ckttestassistant.testitems.CheckMMIInformation"
+        },
+        {
+            "com.ckt.ckttestassistant.testitems.AutoGenerateContacts",
+            "com.ckt.ckttestassistant.testitems.AutoGenerateSMS",
+            "com.ckt.ckttestassistant.testitems.ClickCallLog",
+            "com.ckt.ckttestassistant.testitems.MMSAutoReceive",
+            "com.ckt.ckttestassistant.testitems.MMSAutoSend",
+            "com.ckt.ckttestassistant.testitems.ReadSms",
+            "com.ckt.ckttestassistant.testitems.SMSAutoReceive",
+            "com.ckt.ckttestassistant.testitems.SMSAutosend",
+            "com.ckt.ckttestassistant.testitems.VoicecallAutoAnswer",
+            "com.ckt.ckttestassistant.testitems.VoicecallAutoDial",
+            "com.ckt.ckttestassistant.testitems.VoicecallAutoHangup"
+        },
+        {
+            "com.ckt.ckttestassistant.testitems.LaunchBrowser",
+            "com.ckt.ckttestassistant.testitems.LaunchCamera",
+            "com.ckt.ckttestassistant.testitems.LaunchChrome",
+            "com.ckt.ckttestassistant.testitems.LaunchContacts",
+            "com.ckt.ckttestassistant.testitems.LaunchDialPlate",
+            "com.ckt.ckttestassistant.testitems.LaunchEmail",
+            "com.ckt.ckttestassistant.testitems.LaunchFacebook",
+            "com.ckt.ckttestassistant.testitems.LaunchGallery",
+            "com.ckt.ckttestassistant.testitems.LaunchGoogleMap",
+            "com.ckt.ckttestassistant.testitems.LaunchMMITest",
+            "com.ckt.ckttestassistant.testitems.LaunchSettings",
+            "com.ckt.ckttestassistant.testitems.LaunchSMS",
+            "com.ckt.ckttestassistant.testitems.LaunchTwitter"
+        },
+        {
+            "com.ckt.ckttestassistant.testitems.CktTestItem",
+            "com.ckt.ckttestassistant.testitems.CktTestItem",
+            "com.ckt.ckttestassistant.testitems.CktTestItem",
+            "com.ckt.ckttestassistant.testitems.CktTestItem",
+            "com.ckt.ckttestassistant.testitems.CktTestItem"
+        },
+        {
+            "com.ckt.ckttestassistant.testitems.CktTestItem",
+            "com.ckt.ckttestassistant.testitems.CktTestItem",
+            "com.ckt.ckttestassistant.testitems.CktTestItem",
+            "com.ckt.ckttestassistant.testitems.CktTestItem",
+            "com.ckt.ckttestassistant.testitems.CktTestItem"
+        }
+
     };
     private int mCurrentType = 0;
     private Button mDeleteButton;
@@ -79,6 +185,30 @@ public class DefineUseCaseFragment extends Fragment {
         for (int i = 0; i < mTestCategory.length; i++){
             mTestCategoryItems.add(new TestCategory(mTestCategory[i]));
         }
+        for (int j = 0; j < mTestItems.length; j++){
+            ArrayList<TestItemBase> itemList = new ArrayList<TestItemBase>();
+            for(int k = 0; k < mTestItems[j].length; k++){
+                try {
+                    Class tiClassName = Class.forName(mTestItems[j][k]);
+                    // 实例化这个类
+                    TestItemBase ti = (TestItemBase) tiClassName.newInstance();
+                    ti.setContext(mContext);
+                    itemList.add(ti);
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
+                } catch (java.lang.InstantiationException e) {
+                    e.printStackTrace();
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+            }
+            mAllTestItems.put(mTestCategory[j], itemList);
+        }
+        /*CktTestItem item1 = new CktTestItem(mContext);
+        item1.setTitle("ckt test item");
+        itemList.add(item1);
+        mAllTestItems.put(mTestCategory[0], itemList);
+
         ArrayList<TestItemBase> itemList1 = new ArrayList<TestItemBase>();
 
         CktTestItem item1 = new CktTestItem(mContext);
@@ -98,7 +228,7 @@ public class DefineUseCaseFragment extends Fragment {
         item3.setTitle("reboot");
         itemList3.clear();
         itemList3.add(item3);
-        mAllTestItems.put(mTestCategory[2], itemList3);
+        mAllTestItems.put(mTestCategory[2], itemList3);*/
     }
 
     @Nullable
@@ -132,7 +262,7 @@ public class DefineUseCaseFragment extends Fragment {
             public void onClick(View v) {
                 //do something
                 View dialogView = LayoutInflater.from(mContext).inflate(R.layout.usecase_title_setting, null);
-                final EditText titleView = dialogView.findViewById(R.id.titlesetting);
+                final EditText titleView = (EditText) dialogView.findViewById(R.id.titlesetting);
                 titleView.setText("default name");
                 AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);
                 builder.setTitle("set usecase title:")

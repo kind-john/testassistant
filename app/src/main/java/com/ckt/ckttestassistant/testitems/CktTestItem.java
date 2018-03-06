@@ -18,12 +18,14 @@ import org.xmlpull.v1.XmlSerializer;
 public class CktTestItem extends TestItemBase {
     public static final int ID = 0;
     private static final String TAG = "CktTestItem";
+    private static final String TITLE = "Ckt TestItem";
 
     public CktTestItem() {
         super();
         String className = this.getClass().getName();
         setClassName(className);
         setID(ID);
+        setTitle(TITLE);
     }
 
     public CktTestItem(TestItemBase mNextTestItem) {
@@ -35,6 +37,7 @@ public class CktTestItem extends TestItemBase {
         String className = this.getClass().getName();
         setClassName(className);
         setID(ID);
+        setTitle(TITLE);
     }
 
     @Override

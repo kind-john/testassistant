@@ -67,7 +67,7 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
         }
         return instance;
     }
-    boolean importUseCaseConfig(String path){
+    public boolean importUseCaseConfig(String path){
         boolean result = false;
         ArrayList<UseCaseBase> ucs = new ArrayList<UseCaseBase>();
         try{
@@ -84,7 +84,7 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
         return result;
     }
 
-    boolean outputUseCaseConfig(String path){
+    public boolean exportUseCaseConfig(String path){
         boolean result = false;
         ArrayList<UseCaseBase> ucs = new ArrayList<UseCaseBase>();
         try{
@@ -144,6 +144,20 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
         return status;
     }
 
+    public boolean isTestCompleted() {
+        boolean result = true;
+        for (UseCaseBase uc : mSelectedUseCases){
+            if(uc.getCompletedTimes() < uc.getTimes()){
+                return false;
+            }
+            for (TestItemBase ti : uc.getTestItems()){
+                if (ti.getCompletedTimes() < ti.getTimes()){
+                    return false;
+                }
+            }
+        }
+        return result;
+    }
     /**
      * 记录测试任务是否完成
      * @param status
@@ -368,6 +382,15 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
         mSelectedUseCases.add(uc);
         //saveSelectedUseCaseToXml();
         selectedUseCaseChangeNotify();
+    }
+
+    public void setCurrentExcelFile(String fileName) {
+        mEditor.putString(MyConstants.PREF_CURRENT_EXCEL_FILR, fileName);
+        mEditor.commit();
+    }
+
+    public String getCurrentExcelFile(){
+        return mPref.getString(MyConstants.PREF_CURRENT_EXCEL_FILR, "error");
     }
 
     /**

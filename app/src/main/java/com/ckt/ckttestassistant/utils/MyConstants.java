@@ -14,12 +14,17 @@ public final class MyConstants {
     public static final String PROGRESS_MESSAGE = "progressmessage";
     public static final String UPDATE_USECASEFRAGMENT_POSOTION = "usecaselistitem";
     public static final String UPDATE_USECASEFRAGMENT_TYPE = "usecaselisttype";
+
+    public static final String TEST_RESULT_EXCEL_DIR = "/mnt/sdcard/ckttestassistant";
+
     public static final int UPDATE_PROGRESS = 0;
     public static final int UPDATE_PROGRESS_TITLE = 1;
     public static final int UPDATE_PROGRESS_MESSAGE = 2;
-    public static final int UPDATE_USECASEFRAGMENT_USECASELIST = 3;
-    public static final int UPDATE_SELECTEDUSECASES_UI = 4;
+    public static final int UPDATE_PROGRESS_CLOSE = 3;
+    public static final int UPDATE_USECASEFRAGMENT_USECASELIST = 4;
+    public static final int UPDATE_SELECTEDUSECASES_UI = 5;
     public static final String PREF_TEST_STATUS = "test_status";
+    public static final String PREF_CURRENT_EXCEL_FILR = "current_excel";
 
     public static final String XMLTAG_ROOT = "usecases";
     public static final String XMLTAG_ID = "id";

@@ -7,4 +7,7 @@
     <string name="starttest">start</string>
     <string name="settingsdelay">delay : </string>
     <string name="settingstimes">times : </string>
+    <string name="importusecaseconfig">import</string>
+    <string name="outputusecaseconfig">export</string>
+    <string name="createresultfail">create excel fail!</string>
 </resources>

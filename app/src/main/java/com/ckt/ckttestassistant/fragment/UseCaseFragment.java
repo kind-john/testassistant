@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -17,6 +18,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.ckt.ckttestassistant.UseCaseManager;
 import com.ckt.ckttestassistant.adapter.CktItemDecoration;
@@ -27,8 +29,13 @@ import com.ckt.ckttestassistant.R;
 import com.ckt.ckttestassistant.usecases.UseCaseBase;
 import com.ckt.ckttestassistant.adapter.TestItemListAdapter;
 import com.ckt.ckttestassistant.adapter.UseCaseListAdapter;
+import com.ckt.ckttestassistant.utils.MyConstants;
 
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 /**
  * Created by ckt on 18-1-30.
@@ -53,6 +60,8 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
     private TestItemListAdapter mTestItemListAdapter;
     private Button mStartTestButton;
     private Activity mActivity;
+    private Button mImportButton;
+    private Button mExportButton;
 
     public void setHandler(Handler handler) {
         this.mHandler = handler;
@@ -91,10 +100,14 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
         mStartTestButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //保存数据，为了重启或者中断之后能继续执行
-                mUseCaseManager.saveSelectedUseCaseToXml();
-                mUseCaseManager.startExecute();
-                mStartTestButton.setClickable(false);
+                if(createResultExcel()){
+                    //保存数据，为了重启或者中断之后能继续执行
+                    mUseCaseManager.saveSelectedUseCaseToXml();
+                    mUseCaseManager.startExecute();
+                    mStartTestButton.setClickable(false);
+                }else{
+                    Toast.makeText(mContext, R.string.createresultfail,Toast.LENGTH_LONG);
+                }
             }
         });
         mDeleteButton = (Button) rootView.findViewById(R.id.delete);
@@ -122,6 +135,51 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
                 mUseCaseManager.saveSelectedUseCaseToXml();
             }
         });
+        mImportButton = (Button) rootView.findViewById(R.id.importusecaseconfig);
+        mImportButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                /*AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);
+                View v = LayoutInflater.from(mContext).inflate(R.layout.settings_usecase, null);
+                builder.setTitle(R.string.importusecaseconfig)
+                        .setView(v)
+                        .setMessage("set properties")
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                LogUtils.d(TAG, "Positive onClick");
+                                int delay = Integer.parseInt(delayEditText.getText().toString());
+                                int times = Integer.parseInt(timesEditText.getText().toString());
+                                LogUtils.d(TAG, "delay = "+delay+"; times = "+times);
+                                if(delay >= 0 && times > 0){
+                                    uc.setDelay(delay);
+                                    uc.setTimes(times);
+                                    setShowPanelForAdd(index);
+                                }
+                            }
+                        })
+                        .setNegativeButton("cancel", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                LogUtils.d(TAG, "Negative onClick");
+                            }
+                        })
+                        .setOnDismissListener(new DialogInterface.OnDismissListener() {
+                            @Override
+                            public void onDismiss(DialogInterface dialog) {
+                                LogUtils.d(TAG, "onDismiss");
+                            }
+                        }).create().show();*/
+                mUseCaseManager.importUseCaseConfig("/sdcard/config.cml");
+            }
+        });
+        mExportButton = (Button) rootView.findViewById(R.id.importusecaseconfig);
+        mExportButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mUseCaseManager.exportUseCaseConfig("/sdcard/config.cml");
+            }
+        });
         mUseCaseList = (RecyclerView) rootView.findViewById(R.id.usecaselist);
         mUseCaseTestItemList = (RecyclerView) rootView.findViewById(R.id.testitemlist);
         mAdapter = new UseCaseListAdapter(mContext, mAllItems, mSelectedItems);
@@ -147,6 +205,48 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
         mUseCaseList.setAdapter(mAdapter);
         initTestItemList();
         return rootView;
+    }
+
+    private boolean createResultExcel() {
+        boolean result = false;
+        if(isNeedCreateNewFile()){
+            try {
+                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
+                Date date = new Date(System.currentTimeMillis());
+                String fileName = simpleDateFormat.format(date)+".xls";
+                LogUtils.d(TAG, "fileName = "+fileName);
+                String path1 = Environment.getExternalStorageDirectory().getAbsolutePath() + "/ckttestassistant";
+                String path2 = Environment.getExternalStorageDirectory().getParent();
+
+                //File dir = new File(MyConstants.TEST_RESULT_EXCEL_DIR);
+                File dir = new File(path1);
+                if(!dir.exists()){
+                    if(!dir.mkdir()){
+                        return false;
+                    }
+                }
+                File excelfile = new File(path1+"/"+fileName);
+                excelfile.createNewFile();
+                mUseCaseManager.setCurrentExcelFile(fileName);
+                result = true;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }else{
+            result = true;
+        }
+        return result;
+    }
+
+    private boolean isNeedCreateNewFile() {
+        boolean result = true;
+        boolean status = mUseCaseManager.getTestStatus();
+        if(status){
+            result = false;
+        }else{
+            result = mUseCaseManager.isTestCompleted();
+        }
+        return result;
     }
 
     private void showPropertySetting(final UseCaseBase uc, final int index) {

@@ -20,7 +20,7 @@ import java.util.ArrayList;
  */
 
 public abstract class UseCaseBase {
-    private static final int DEFAULT_TIMES = 3;
+    private static final int DEFAULT_TIMES = 1;
     private static final String TAG = "UseCaseBase";
     private UseCaseManager mUseCaseManager;
     protected ArrayList<TestItemBase> mTestItems = new ArrayList<TestItemBase>();
@@ -103,32 +103,37 @@ public abstract class UseCaseBase {
         }
         mTestItems.get(mTestItems.size() - 1).setNextTestItem(null);
 
-        mCompletedTimes = 0;
-        for (int times = 0; times < mTimes; times++) {
-            boolean usecaseFinish = false;
-            String className = this.getClass().getSimpleName();
-            LogUtils.d(TAG, "UseCase : " + className + " extends UseCaseBase execute times = " + times);
-            Message msg = Message.obtain();
-            msg.what = MyConstants.UPDATE_PROGRESS_TITLE;
-            Bundle data = new Bundle();
-            data.putString(MyConstants.PROGRESS_TITLE, className+" : "+times);
-            msg.setData(data);
-            handler.sendMessage(msg);
-            if(executeCallback != null){
-                //executeCallback.updateProgressTitle(className+" : "+times);
-            }
-            if((mNextUseCase == null) && (times == mTimes - 1)){
-                usecaseFinish = true;
-            }
-            mTestItems.get(0).execute(handler, executeCallback, usecaseFinish);
-            mCompletedTimes += 1;
-            String path = mContext.getFilesDir()+"/selected_usecases.xml";
+        int needTimes = mTimes - mCompletedTimes;
+        LogUtils.d(TAG, "mCompletedTimes = "+mCompletedTimes);
+        LogUtils.d(TAG, "mTimes = "+mTimes);
+        LogUtils.d(TAG, "needTimes = "+needTimes);
+        if(needTimes > 0){
+            for (int times = 0; times < needTimes; times++) {
+                boolean usecaseFinish = false;
+                String className = this.getClass().getSimpleName();
+                LogUtils.d(TAG, "UseCase : " + className + " extends UseCaseBase execute times = " + times);
+                Message msg = Message.obtain();
+                msg.what = MyConstants.UPDATE_PROGRESS_TITLE;
+                Bundle data = new Bundle();
+                data.putString(MyConstants.PROGRESS_TITLE, className+" : "+times);
+                msg.setData(data);
+                handler.sendMessage(msg);
+                if(executeCallback != null){
+                    //executeCallback.updateProgressTitle(className+" : "+times);
+                }
+                if((mNextUseCase == null) && (times == needTimes - 1)){
+                    usecaseFinish = true;
+                }
+                mTestItems.get(0).execute(handler, executeCallback, usecaseFinish);
+                mCompletedTimes += 1;
+                String path = mContext.getFilesDir()+"/selected_usecases.xml";
             /*File file = new File(path);
             if(file != null && file.exists()){
                 file.delete();
             }*/
-            mUseCaseManager.updateUseCaseOfXml(path, this);
+                mUseCaseManager.updateUseCaseOfXml(path, this);
 
+            }
         }
 
         if(mNextUseCase != null){

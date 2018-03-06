@@ -24,7 +24,8 @@ import org.xmlpull.v1.XmlSerializer;
 
 public class Reboot extends TestItemBase {
     private static final String TAG = "Reboot";
-    public static final int ID = 2;
+    private static final String TITLE = "Reboot";
+    public static final int ID = 5;
     private int mDelay = 0;
 
     public Reboot() {
@@ -32,6 +33,7 @@ public class Reboot extends TestItemBase {
         String className = this.getClass().getName();
         setClassName(className);
         setID(ID);
+        setTitle(TITLE);
     }
 
     public Reboot(Context context) {
@@ -39,6 +41,7 @@ public class Reboot extends TestItemBase {
         String className = this.getClass().getName();
         setClassName(className);
         setID(ID);
+        setTitle(TITLE);
     }
 
     @Override

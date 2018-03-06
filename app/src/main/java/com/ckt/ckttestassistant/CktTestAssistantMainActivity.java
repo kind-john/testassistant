@@ -47,6 +47,10 @@ public class CktTestAssistantMainActivity extends AppCompatActivity implements U
                     String message = data.getString(MyConstants.PROGRESS_MESSAGE);
                     updateProgressMessage(message);
                     break;
+                case MyConstants.UPDATE_PROGRESS_CLOSE:
+                    LogUtils.d(TAG,"MyConstants.UPDATE_PROGRESS_CLOSE");
+                    closeProgressView();
+                    break;
                 case MyConstants.UPDATE_USECASEFRAGMENT_USECASELIST:
                     ArrayList<UseCaseManager.UseCaseChangeObserver> ul = mUseCaseManager.getUseCaseChangeListener();
                     if(ul != null && !ul.isEmpty()){

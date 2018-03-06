@@ -22,7 +22,8 @@ import org.xmlpull.v1.XmlSerializer;
  */
 
 public class WifiSwitchOn extends TestItemBase {
-    public static final int ID = 1;
+    public static final int ID = 6;
+    private static final String TITLE = "Wifi Switch On";
     private static final String TAG = "WifiSwitchOn";
 
     private int mDelay = 0;
@@ -32,6 +33,7 @@ public class WifiSwitchOn extends TestItemBase {
         String className = this.getClass().getName();
         setClassName(className);
         setID(ID);
+        setTitle(TITLE);
     }
 
     public WifiSwitchOn(Context context) {
@@ -39,6 +41,7 @@ public class WifiSwitchOn extends TestItemBase {
         String className = this.getClass().getName();
         setClassName(className);
         setID(ID);
+        setTitle(TITLE);
     }
 
     public int getDelay() {

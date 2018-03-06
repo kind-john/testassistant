@@ -21,7 +21,7 @@ import static java.lang.Thread.sleep;
  */
 
 public abstract class TestItemBase implements CktResultsHelper.ResultCallBack {
-    private static final int DEFAULT_TESTITEM_TIMES = 3;
+    private static final int DEFAULT_TESTITEM_TIMES = 1;
     private static final String TAG = "TestItemBase";
     private UseCaseManager mUseCaseManager;
     protected Context mContext;
@@ -143,35 +143,41 @@ public abstract class TestItemBase implements CktResultsHelper.ResultCallBack {
     }
 
     public void execute(Handler handler, UseCaseManager.ExecuteCallback executeCallback, boolean usecaseFinish){
-        mCompletedTimes = 0;
-        for(int times = 0; times < mTimes; times++){
-            String className = this.getClass().getSimpleName();
-            boolean testItemFinish = false;
-            LogUtils.d(TAG, "  testItem : " + className + " extends TestItemBase execute times = " + times);
-            LogUtils.d(TAG, "usecaseFinish : "+usecaseFinish);
-            try{
-                Message msg = Message.obtain();
-                msg.what = MyConstants.UPDATE_PROGRESS_MESSAGE;
-                Bundle data = new Bundle();
-                data.putString(MyConstants.PROGRESS_MESSAGE, className+" : "+times);
-                msg.setData(data);
-                handler.sendMessage(msg);
-                if(executeCallback != null){
-                    //executeCallback.updateProgressMessage(className+" : "+times);
+        int needTimes = mTimes - mCompletedTimes;
+        LogUtils.d(TAG, "mCompletedTimes = "+mCompletedTimes);
+        LogUtils.d(TAG, "mTimes = "+mTimes);
+        LogUtils.d(TAG, "needTimes = "+needTimes);
+        if(needTimes > 0){
+            for(int times = 0; times < needTimes; times++){
+                String className = this.getClass().getSimpleName();
+                boolean testItemFinish = false;
+                LogUtils.d(TAG, "  testItem : " + className + " extends TestItemBase execute times = " + times);
+                LogUtils.d(TAG, "usecaseFinish : "+usecaseFinish);
+                try{
+                    Message msg = Message.obtain();
+                    msg.what = MyConstants.UPDATE_PROGRESS_MESSAGE;
+                    Bundle data = new Bundle();
+                    data.putString(MyConstants.PROGRESS_MESSAGE, className+" : "+times);
+                    msg.setData(data);
+                    handler.sendMessage(msg);
+                    if(executeCallback != null){
+                        //executeCallback.updateProgressMessage(className+" : "+times);
+                    }
+                    sleep(2000);
+                }catch (Exception e){
+                    e.printStackTrace();
                 }
-                sleep(2000);
-            }catch (Exception e){
-                e.printStackTrace();
+                if((mNextTestItem == null) && (times == needTimes - 1)){
+                    testItemFinish = true;
+                }
+                LogUtils.d(TAG, "usecaseFinish : "+usecaseFinish);
+                LogUtils.d(TAG, "testItemFinish : "+testItemFinish);
+                doExecute(executeCallback, (usecaseFinish && testItemFinish));
+                mCompletedTimes += 1;
+                String path = mContext.getFilesDir()+"/selected_usecases.xml";
+                mUseCaseManager.updateTestItemOfXml(path, this);
+                saveResult();
             }
-            if((mNextTestItem == null) && (times == mTimes - 1)){
-                testItemFinish = true;
-            }
-            LogUtils.d(TAG, "testItemFinish : "+testItemFinish);
-            doExecute(executeCallback, (usecaseFinish && testItemFinish));
-            mCompletedTimes += 1;
-            String path = mContext.getFilesDir()+"/selected_usecases.xml";
-            mUseCaseManager.updateTestItemOfXml(path, this);
-            saveResult();
         }
 
         if(mNextTestItem != null){
