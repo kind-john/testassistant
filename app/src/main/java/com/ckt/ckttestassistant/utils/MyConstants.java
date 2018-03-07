@@ -50,6 +50,8 @@ public final class MyConstants {
     public static final String XMLTAG_TESTITEM_DELAY = "testitem_delay";
     public static final String XMLTAG_TESTITEM_USECASESN = "testitem_usecase_sn";
     public static final String XMLTAG_TESTITEM_USECASEID = "testitem_usecase_id";
+    public static final String SUCCESS = "pass";
+    public static final String FAIL = "fail";
 
 
     /**

@@ -23,6 +23,11 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import jxl.Workbook;
+import jxl.write.WritableSheet;
+import jxl.write.WritableWorkbook;
+import jxl.write.WriteException;
+
 /**
  * Created by ckt on 18-1-26.
  */
@@ -393,6 +398,20 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
         return mPref.getString(MyConstants.PREF_CURRENT_EXCEL_FILR, "error");
     }
 
+    public void createExcel(String path) {
+        LogUtils.d(TAG, "createExcel path : " + path);
+        try {
+            WritableWorkbook book = Workbook.createWorkbook(new File(getCurrentExcelFile()));
+            book.createSheet(mSelectedUseCases.get(0).getTitle(), 0);
+            book.write();
+            book.close();
+        } catch (WriteException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     /**
      * Created by ckt on 18-2-1.
      * 需要监听所有用例数据变化的类，必需实现此接口
@@ -492,6 +511,7 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
         public void closeProgressView();
         public void updateProgressTitle(String title);
         public void updateProgressMessage(String message);
+        //public void clearSelectedUseCase();
     }
 
     /**

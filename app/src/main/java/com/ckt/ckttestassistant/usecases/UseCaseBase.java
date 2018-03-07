@@ -22,7 +22,7 @@ import java.util.ArrayList;
 public abstract class UseCaseBase {
     private static final int DEFAULT_TIMES = 1;
     private static final String TAG = "UseCaseBase";
-    private UseCaseManager mUseCaseManager;
+    protected UseCaseManager mUseCaseManager;
     protected ArrayList<TestItemBase> mTestItems = new ArrayList<TestItemBase>();
     protected UseCaseBase mNextUseCase;
     protected int mTimes = DEFAULT_TIMES;
@@ -34,7 +34,7 @@ public abstract class UseCaseBase {
     protected int ID = -1;
     protected int SN = -1;
     protected String mClassName = "UseCaseBase";
-    private Context mContext;
+    protected Context mContext;
 
     public int getDelay() {
         return mDelay;
@@ -94,53 +94,59 @@ public abstract class UseCaseBase {
     }
 
     public boolean execute(Handler handler, UseCaseManager.ExecuteCallback executeCallback){
-        if(mTestItems == null || mTestItems.isEmpty()){
-            return true;
-        }
-
-        for (int index = 0; index < mTestItems.size() - 1; index++){
-            mTestItems.get(index).setNextTestItem(mTestItems.get(index + 1));
-        }
-        mTestItems.get(mTestItems.size() - 1).setNextTestItem(null);
-
-        int needTimes = mTimes - mCompletedTimes;
-        LogUtils.d(TAG, "mCompletedTimes = "+mCompletedTimes);
-        LogUtils.d(TAG, "mTimes = "+mTimes);
-        LogUtils.d(TAG, "needTimes = "+needTimes);
-        if(needTimes > 0){
-            for (int times = 0; times < needTimes; times++) {
-                boolean usecaseFinish = false;
-                String className = this.getClass().getSimpleName();
-                LogUtils.d(TAG, "UseCase : " + className + " extends UseCaseBase execute times = " + times);
-                Message msg = Message.obtain();
-                msg.what = MyConstants.UPDATE_PROGRESS_TITLE;
-                Bundle data = new Bundle();
-                data.putString(MyConstants.PROGRESS_TITLE, className+" : "+times);
-                msg.setData(data);
-                handler.sendMessage(msg);
-                if(executeCallback != null){
-                    //executeCallback.updateProgressTitle(className+" : "+times);
-                }
-                if((mNextUseCase == null) && (times == needTimes - 1)){
-                    usecaseFinish = true;
-                }
-                mTestItems.get(0).execute(handler, executeCallback, usecaseFinish);
-                mCompletedTimes += 1;
-                String path = mContext.getFilesDir()+"/selected_usecases.xml";
-            /*File file = new File(path);
-            if(file != null && file.exists()){
-                file.delete();
-            }*/
-                mUseCaseManager.updateUseCaseOfXml(path, this);
-
+        boolean isPassed = false;
+        try{
+            if(mTestItems == null || mTestItems.isEmpty()){
+                return true;
             }
-        }
 
-        if(mNextUseCase != null){
-            mNextUseCase.execute(handler, executeCallback);
+            for (int index = 0; index < mTestItems.size() - 1; index++){
+                mTestItems.get(index).setNextTestItem(mTestItems.get(index + 1));
+            }
+            mTestItems.get(mTestItems.size() - 1).setNextTestItem(null);
+
+            int needTimes = mTimes - mCompletedTimes;
+            LogUtils.d(TAG, "mCompletedTimes = "+mCompletedTimes);
+            LogUtils.d(TAG, "mTimes = "+mTimes);
+            LogUtils.d(TAG, "needTimes = "+needTimes);
+            createExcelSheet();
+            if(needTimes > 0){
+                for (int times = 0; times < needTimes; times++) {
+                    boolean usecaseFinish = false;
+                    updateWaitProgress(handler, times);
+
+                    if((mNextUseCase == null) && (times == needTimes - 1)){
+                        usecaseFinish = true;
+                    }
+                    //writeUsecaseLabelToExcel(mCompletedTimes + 1);
+                    initTestItems(mTestItems);
+                    isPassed = mTestItems.get(0).execute(handler, executeCallback, usecaseFinish);
+                    mCompletedTimes += 1;
+                    if(!isPassed){
+                        mFailTimes++;
+                    }
+                    String path = mContext.getFilesDir()+"/selected_usecases.xml";
+                    mUseCaseManager.updateUseCaseOfXml(path, this);
+                }
+            }
+
+            if(mNextUseCase != null){
+                mNextUseCase.execute(handler, executeCallback);
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+            isPassed = false;
         }
         return true;
     }
+
+    protected abstract void initTestItems(ArrayList<TestItemBase> testItems);
+
+    protected abstract void writeUsecaseLabelToExcel(int times);
+
+    protected abstract void updateWaitProgress(Handler handler, int times);
+
+    protected abstract void createExcelSheet();
 
     public void addTestItem(TestItemBase testItem){
         mTestItems.add(testItem);

@@ -101,6 +101,7 @@ public class CktTestAssistantMainActivity extends AppCompatActivity implements U
     protected void onDestroy() {
         LogUtils.d(TAG, "onDestroy");
         mUseCaseManager.saveDataWhenExit();
+        closeProgressView();
         super.onDestroy();
     }
 

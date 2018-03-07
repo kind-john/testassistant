@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import jxl.Cell;
 import jxl.Workbook;
 import jxl.WorkbookSettings;
 import jxl.format.Alignment;
@@ -54,6 +55,28 @@ public final class ExcelUtils {
     public ExcelUtils(String excelPath) {
         File excelFile = new File(excelPath);
         createExcel(excelFile);
+    }
+
+    public static int findEmptyRowFromSheet(WritableSheet sheet, int continuousEmpty, int wide) {
+        Cell cell;
+        int sum = 0;
+        for (int row = 0; row < 99999; row++){
+            for (int col = 0; col < wide; col++){
+                cell = sheet.getCell(col, row);
+                if(cell.getContents() != null){
+                    break;
+                }
+                if(col == wide - 1){
+                    sum++;
+                }
+            }
+            if(sum == continuousEmpty){
+                LogUtils.d(TAG, "has found "+continuousEmpty+ " empty row = "+row);
+                return row;
+            }
+        }
+        LogUtils.d(TAG, "don't found empty line");
+        return 0;
     }
 
     /**

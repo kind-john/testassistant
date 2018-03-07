@@ -7,6 +7,7 @@ import android.os.Message;
 
 import com.ckt.ckttestassistant.CktResultsHelper;
 import com.ckt.ckttestassistant.UseCaseManager;
+import com.ckt.ckttestassistant.usecases.UseCaseBase;
 import com.ckt.ckttestassistant.utils.LogUtils;
 import com.ckt.ckttestassistant.utils.MyConstants;
 
@@ -23,7 +24,17 @@ import static java.lang.Thread.sleep;
 public abstract class TestItemBase implements CktResultsHelper.ResultCallBack {
     private static final int DEFAULT_TESTITEM_TIMES = 1;
     private static final String TAG = "TestItemBase";
-    private UseCaseManager mUseCaseManager;
+    protected UseCaseManager mUseCaseManager;
+
+    public UseCaseBase getParentUseCase() {
+        return mParentUseCase;
+    }
+
+    public void setParentUseCase(UseCaseBase parentUseCase) {
+        this.mParentUseCase = parentUseCase;
+    }
+
+    protected UseCaseBase mParentUseCase = null;
     protected Context mContext;
     //设置下一个测试项，如果结束则必须将其设置为空
     protected TestItemBase mNextTestItem;
@@ -37,6 +48,15 @@ public abstract class TestItemBase implements CktResultsHelper.ResultCallBack {
     protected String mClassName = "TestItemBase";
     protected int mUseCaseID = -1;
     protected int mUseCaseSN = -1;
+    protected boolean mPassed = false;
+
+    public boolean isPassed() {
+        return mPassed;
+    }
+
+    public void setPassed(boolean passed) {
+        this.mPassed = passed;
+    }
 
     public int getUseCaseID() {
         return mUseCaseID;
@@ -142,48 +162,77 @@ public abstract class TestItemBase implements CktResultsHelper.ResultCallBack {
         mUseCaseManager = UseCaseManager.getInstance(null);
     }
 
-    public void execute(Handler handler, UseCaseManager.ExecuteCallback executeCallback, boolean usecaseFinish){
+    public boolean execute(Handler handler, UseCaseManager.ExecuteCallback executeCallback, boolean usecaseFinish){
         int needTimes = mTimes - mCompletedTimes;
+        boolean testItemFinish = false;
+        boolean isPassed = false;
         LogUtils.d(TAG, "mCompletedTimes = "+mCompletedTimes);
         LogUtils.d(TAG, "mTimes = "+mTimes);
         LogUtils.d(TAG, "needTimes = "+needTimes);
-        if(needTimes > 0){
-            for(int times = 0; times < needTimes; times++){
-                String className = this.getClass().getSimpleName();
-                boolean testItemFinish = false;
-                LogUtils.d(TAG, "  testItem : " + className + " extends TestItemBase execute times = " + times);
-                LogUtils.d(TAG, "usecaseFinish : "+usecaseFinish);
-                try{
-                    Message msg = Message.obtain();
-                    msg.what = MyConstants.UPDATE_PROGRESS_MESSAGE;
-                    Bundle data = new Bundle();
-                    data.putString(MyConstants.PROGRESS_MESSAGE, className+" : "+times);
-                    msg.setData(data);
-                    handler.sendMessage(msg);
-                    if(executeCallback != null){
-                        //executeCallback.updateProgressMessage(className+" : "+times);
+        try{
+            if(needTimes > 0){
+                for(int times = 0; times < needTimes; times++){
+                    LogUtils.d(TAG, "usecaseFinish : "+usecaseFinish);
+                    try{
+                        updateWaitProgress(handler, times);
+                        if(executeCallback != null){
+                            //executeCallback.updateProgressMessage(className+" : "+times);
+                        }
+                        sleep(2000);
+                    }catch (Exception e){
+                        e.printStackTrace();
                     }
-                    sleep(2000);
-                }catch (Exception e){
-                    e.printStackTrace();
+                    if((mNextTestItem == null) && (times == needTimes - 1)){
+                        testItemFinish = true;
+                    }
+                    LogUtils.d(TAG, "usecaseFinish : "+usecaseFinish);
+                    LogUtils.d(TAG, "testItemFinish : "+testItemFinish);
+                    isPassed = doExecute(executeCallback, (usecaseFinish && testItemFinish));
+                    mCompletedTimes += 1;
+                    String path = mContext.getFilesDir()+"/selected_usecases.xml";
+                    if(!isPassed){
+                        mFailTimes++;
+                    }
+                    mUseCaseManager.updateTestItemOfXml(path, this);
+                    saveResult();
                 }
-                if((mNextTestItem == null) && (times == needTimes - 1)){
-                    testItemFinish = true;
-                }
-                LogUtils.d(TAG, "usecaseFinish : "+usecaseFinish);
-                LogUtils.d(TAG, "testItemFinish : "+testItemFinish);
-                doExecute(executeCallback, (usecaseFinish && testItemFinish));
-                mCompletedTimes += 1;
-                String path = mContext.getFilesDir()+"/selected_usecases.xml";
-                mUseCaseManager.updateTestItemOfXml(path, this);
-                saveResult();
+            }else{
+                testItemFinish = true;
             }
-        }
+            closeWaitProgress(handler, (usecaseFinish && testItemFinish));
 
-        if(mNextTestItem != null){
-            mNextTestItem.execute(handler, executeCallback, usecaseFinish);
+            if(mNextTestItem != null){
+                mNextTestItem.execute(handler, executeCallback, usecaseFinish);
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+            isPassed = false;
+        }
+        return isPassed;
+    }
+
+    private void updateWaitProgress(Handler handler, int times) {
+        //String className = this.getClass().getSimpleName();
+        //LogUtils.d(TAG, "  testItem : " + className + " extends TestItemBase execute times = " + times);
+
+        Message msg = Message.obtain();
+        msg.what = MyConstants.UPDATE_PROGRESS_MESSAGE;
+        Bundle data = new Bundle();
+        data.putString(MyConstants.PROGRESS_MESSAGE, mTitle + " : "+times);
+        msg.setData(data);
+        handler.sendMessage(msg);
+    }
+
+    private void closeWaitProgress(Handler handler, boolean finish) {
+        if(finish){
+            Message msg = Message.obtain();
+            msg.what = MyConstants.UPDATE_PROGRESS_CLOSE;
+            handler.sendMessage(msg);
+        }else{
+            LogUtils.e(TAG, "error: progress close fail!!!");
         }
     }
+
     public abstract boolean doExecute(UseCaseManager.ExecuteCallback executeCallback, boolean finish);
     public abstract void saveResult();
     public abstract void saveParametersToXml(XmlSerializer serializer) throws Exception;

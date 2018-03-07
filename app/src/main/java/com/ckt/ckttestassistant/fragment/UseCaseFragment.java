@@ -216,18 +216,20 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
                 String fileName = simpleDateFormat.format(date)+".xls";
                 LogUtils.d(TAG, "fileName = "+fileName);
                 String path1 = Environment.getExternalStorageDirectory().getAbsolutePath() + "/ckttestassistant";
-                String path2 = Environment.getExternalStorageDirectory().getParent();
+                String path2 = Environment.getExternalStorageDirectory().getAbsolutePath();
+                String path3 = mContext.getFilesDir()+"/"+fileName;
 
                 //File dir = new File(MyConstants.TEST_RESULT_EXCEL_DIR);
-                File dir = new File(path1);
+                /*File dir = new File(path2);
                 if(!dir.exists()){
                     if(!dir.mkdir()){
                         return false;
                     }
-                }
-                File excelfile = new File(path1+"/"+fileName);
+                }*/
+                File excelfile = new File(path3);
                 excelfile.createNewFile();
-                mUseCaseManager.setCurrentExcelFile(fileName);
+                mUseCaseManager.setCurrentExcelFile(path3);
+                mUseCaseManager.createExcel(path3);
                 result = true;
             } catch (IOException e) {
                 e.printStackTrace();
@@ -246,7 +248,8 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
         }else{
             result = mUseCaseManager.isTestCompleted();
         }
-        return result;
+        //return result;   //后续要优化，暂时返回true测试excel读写
+        return true;
     }
 
     private void showPropertySetting(final UseCaseBase uc, final int index) {

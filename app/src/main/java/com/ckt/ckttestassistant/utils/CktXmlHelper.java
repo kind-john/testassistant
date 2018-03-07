@@ -174,22 +174,22 @@ public class CktXmlHelper {
             Document doc = bulider.parse(is);
             doc.normalize();
             Element root = doc.getDocumentElement();
-            NodeList listnode = doc.getElementsByTagName(MyConstants.XMLTAG_USECASE);
-            for (int i = 0; i < listnode.getLength(); i++) {
-                Element elink = (Element) listnode.item(i);
-                int id = Integer.parseInt(elink.getAttribute(MyConstants.XMLTAG_ID));
-                String str_sn = elink.getElementsByTagName(MyConstants.XMLTAG_USECASE_SN).item(0).getTextContent();
+            NodeList uc_listnode = doc.getElementsByTagName(MyConstants.XMLTAG_USECASE);
+            for (int i = 0; i < uc_listnode.getLength(); i++) {
+                Element uc_node = (Element) uc_listnode.item(i);
+                int id = Integer.parseInt(uc_node.getAttribute(MyConstants.XMLTAG_ID));
+                String str_sn = uc_node.getElementsByTagName(MyConstants.XMLTAG_USECASE_SN).item(0).getTextContent();
                 int sn = Integer.parseInt(str_sn);
                 if ((id == ti.getUseCaseID()) && (sn == ti.getUseCaseSN())) {
-                    NodeList ti_listnode = elink.getElementsByTagName(MyConstants.XMLTAG_TESTITEM);
+                    NodeList ti_listnode = uc_node.getElementsByTagName(MyConstants.XMLTAG_TESTITEM);
                     for (int j = 0; j < ti_listnode.getLength(); j++){
-                        Element ti_element = (Element) ti_listnode.item(i);
+                        Element ti_element = (Element) ti_listnode.item(j);
                         int ti_id = Integer.parseInt(ti_element.getAttribute(MyConstants.XMLTAG_ID));
                         String ti_str_sn = ti_element.getElementsByTagName(MyConstants.XMLTAG_TESTITEM_SN).item(0).getTextContent();
                         int ti_sn = Integer.parseInt(ti_str_sn);
                         if(ti_id == ti.getID() && ti_sn == ti.getSN()){
-                            Element newNode = createTestItemElement(doc, elink, ti);
-                            elink.getParentNode().replaceChild(newNode, ti_element);
+                            Element newNode = createTestItemElement(doc, uc_node, ti);
+                            ti_element.getParentNode().replaceChild(newNode, ti_element);
                         }
                     }
                 }
@@ -482,6 +482,9 @@ public class CktXmlHelper {
                                     testitem = (TestItemBase) catClass.newInstance();
                                     testitem.setContext(context);
                                     testitem.setID(id2);
+                                    if(usecase != null){
+                                        testitem.setParentUseCase(usecase);
+                                    }
                                 } catch (IllegalAccessException e) {
                                     e.printStackTrace();
                                 } catch (InstantiationException e) {
