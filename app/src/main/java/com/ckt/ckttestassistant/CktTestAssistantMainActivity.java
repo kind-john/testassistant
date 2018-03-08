@@ -155,10 +155,13 @@ public class CktTestAssistantMainActivity extends AppCompatActivity implements U
         if(mProgressDialogBuilder != null){
             mProgressDialogBuilder = null;
         }
-        mUseCaseManager.setTestStatus(false);
-        View fgv = FragmentFactory.getFragment(0, mHandler).getView();
-        Button startButton = (Button)fgv.findViewById(R.id.starttest);
-        startButton.setClickable(true);
+        if(mProgressTitleTextView != null){
+            mProgressTitleTextView = null;
+        }
+        if(mProgressMessageTextView != null){
+            mProgressMessageTextView = null;
+        }
+        //mUseCaseManager.setTestStatus(false);
     }
 
     private void updateProgressMessage(String message) {

@@ -29,6 +29,7 @@ public class TestCategoryListAdapter extends RecyclerView.Adapter<TestCategoryLi
     private final Context mContext;
     private final ArrayList<TestCategory> mItems;
     private OnItemClickListener mItemClickListener;
+    private int mOldCheckedPosition = 0;
 
     public void setOnItemClickListener(OnItemClickListener listener){
         this.mItemClickListener = listener;
@@ -49,17 +50,30 @@ public class TestCategoryListAdapter extends RecyclerView.Adapter<TestCategoryLi
     }
 
     @Override
-    public void onBindViewHolder(TestCategoryListAdapter.TestCategoryListHolder holder, int position) {
+    public void onBindViewHolder(TestCategoryListAdapter.TestCategoryListHolder holder, final int position) {
         LogUtils.d(TAG,"onBindViewHolder");
 
         if(mItems != null && position < mItems.size()){
             holder.mTitle.setText(mItems.get(position).getTitle());
-            //holder.mTitle.setBackgroundResource(R.drawable.bm_selector_btn_back);
+            if(mItems.get(position).isChecked()){
+                holder.mTitle.setBackgroundColor(Color.GREEN);
+            }else{
+                holder.mTitle.setBackgroundColor(Color.TRANSPARENT);
+            }
             final int index = position;
-            holder.mTitle.setOnClickListener(new View.OnClickListener() {
+            holder.mItemView.setOnClickListener(new View.OnClickListener() {
 
                 @Override
                 public void onClick(final View v) {
+                    if(position != mOldCheckedPosition){
+                        if(mOldCheckedPosition > -1){
+                            mItems.get(mOldCheckedPosition).setIsChecked(false);
+                            notifyItemChanged(mOldCheckedPosition);
+                        }
+                        mItems.get(position).setIsChecked(true);
+                        notifyItemChanged(position);
+                        mOldCheckedPosition = position;
+                    }
                     if(mItemClickListener != null){
                         mItemClickListener.onItemClick(index);
                         //v.setBackgroundColor(Color.BLUE);
@@ -76,10 +90,12 @@ public class TestCategoryListAdapter extends RecyclerView.Adapter<TestCategoryLi
 
     public class TestCategoryListHolder extends RecyclerView.ViewHolder {
         private TextView mTitle;
+        private View mItemView;
         public TestCategoryListHolder(View itemView) {
             super(itemView);
+            mItemView = itemView;
             LogUtils.d(TAG,"TestCategoryListHolder construction");
-            mTitle = (TextView) itemView.findViewById(R.id.title);
+            mTitle = (TextView) mItemView.findViewById(R.id.title);
         }
     }
 }

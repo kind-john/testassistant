@@ -211,7 +211,7 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
             }
         });
         mUseCaseList = (RecyclerView) rootView.findViewById(R.id.usecaselist);
-        mUseCaseTestItemList = (RecyclerView) rootView.findViewById(R.id.testitemlist);
+        initUseCaseListFocus(mAllItems);
         mAdapter = new UseCaseListAdapter(mContext, mAllItems, mSelectedItems);
         mAdapter.setUpdateShowPanelListener(new UseCaseListAdapter.UpdateShowPanelListener() {
             @Override
@@ -233,8 +233,25 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
                 LinearLayoutManager.VERTICAL,
                 CktItemDecoration.DECORATION_TYPE_USECASELIST));
         mUseCaseList.setAdapter(mAdapter);
+        mUseCaseTestItemList = (RecyclerView) rootView.findViewById(R.id.testitemlist);
         initTestItemList();
         return rootView;
+    }
+
+    private void initUseCaseListFocus(ArrayList<UseCaseBase> ucs) {
+        if(ucs != null && !ucs.isEmpty()){
+            UseCaseBase uc;
+            for (int i = 0; i< ucs.size(); i++){
+                uc = ucs.get(i);
+                if(i == 0){
+                    LogUtils.d(TAG, "initUseCaseListFocus : 0");
+                    uc.setIsChecked(true);
+                }else{
+                    LogUtils.d(TAG, "initUseCaseListFocus : "+i);
+                    uc.setIsChecked(false);
+                }
+            }
+        }
     }
 
     private boolean createResultExcel() {
@@ -247,7 +264,7 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
                 LogUtils.d(TAG, "fileName = "+fileName);
                 String dirPath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/ckttestassistant";
                 //String path2 = Environment.getExternalStorageDirectory().getAbsolutePath();
-                //String path3 = mContext.getFilesDir()+"/"+fileName;
+                //String dirPath = mContext.getFilesDir()+"/ckttestassistant";
 
                 //File dir = new File(MyConstants.TEST_RESULT_EXCEL_DIR);
                 File dir = new File(dirPath);
@@ -355,9 +372,9 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
 
     private void initTestItemList() {
         LogUtils.d(TAG, "initTestItemList");
-        mTestItemListAdapter = new TestItemListAdapter(
-                mCurrentUseCase == null ? null : mCurrentUseCase.getTestItems(),
-                null, false);
+        ArrayList<TestItemBase> tis = mCurrentUseCase == null ? null : mCurrentUseCase.getTestItems();
+        //initTestItemListFocus(tis);
+        mTestItemListAdapter = new TestItemListAdapter(tis, null, false);
         mTestItemListAdapter.setOnItemClickListener(new OnItemClickListener() {
             @Override
             public void onItemClick(int pos) {
@@ -374,11 +391,25 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
         mUseCaseTestItemList.setAdapter(mTestItemListAdapter);
     }
 
+    private void initTestItemListFocus(ArrayList<TestItemBase> tis) {
+        if(tis != null && !tis.isEmpty()){
+            TestItemBase ti;
+            for (int i = 0; i< tis.size(); i++){
+                ti = tis.get(i);
+                if(i == 0){
+                    ti.setIsChecked(true);
+                }else{
+                    ti.setIsChecked(false);
+                }
+            }
+        }
+    }
+
     private void updateTestItemList() {
         LogUtils.d(TAG, "updateTestItemList");
-        mTestItemListAdapter = new TestItemListAdapter(
-                mCurrentUseCase == null ? null : mCurrentUseCase.getTestItems(),
-                null, false);
+        ArrayList<TestItemBase> tis = mCurrentUseCase == null ? null : mCurrentUseCase.getTestItems();
+        //initTestItemListFocus(tis);
+        mTestItemListAdapter = new TestItemListAdapter(tis, null, false);
         mTestItemListAdapter.setOnItemClickListener(new OnItemClickListener() {
             @Override
             public void onItemClick(int pos) {
@@ -413,6 +444,11 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
     @Override
     public void allUseCaseChangeNofify(int position, int i) {
         LogUtils.d(TAG, "allUseCaseChangeNofify position = "+position+"; i="+i);
+        if(mAllItems != null && !mAllItems.isEmpty()){
+            mCurrentUseCase = mAllItems.get(0);
+            initUseCaseListFocus(mAllItems);
+        }
+
         switch (i){
             case 0:
                 mAdapter.notifyItemInserted(position);

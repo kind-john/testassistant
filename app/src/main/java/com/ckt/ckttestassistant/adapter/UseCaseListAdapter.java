@@ -29,7 +29,7 @@ public class UseCaseListAdapter extends RecyclerView.Adapter<UseCaseListAdapter.
     private final ArrayList<UseCaseBase> mSelectedItems;
     private UpdateShowPanelListener mUpdateShowPanelListener;
     private OnItemClickListener mItemClickListener;
-    private int mSelectedPosition = -1;
+    private int mOldCheckedPosition = 0;
 
     public interface UpdateShowPanelListener{
         /**
@@ -69,16 +69,25 @@ public class UseCaseListAdapter extends RecyclerView.Adapter<UseCaseListAdapter.
         if(mAllItems != null && position < mAllItems.size()){
             holder.mTitle.setText(mAllItems.get(position).getTitle());
             holder.mTimes.setText(String.valueOf(mAllItems.get(position).getTimes()));
-            if(mSelectedPosition == position){
+            if(mAllItems.get(position).isChecked()){
                 holder.mTitle.setBackgroundColor(Color.GREEN);
+            }else{
+                holder.mTitle.setBackgroundColor(Color.TRANSPARENT);
             }
             final int index = position;
-            holder.mTitle.setOnClickListener(new View.OnClickListener() {
-
+            holder.mItemView.setOnClickListener(new View.OnClickListener() {
                 @Override
-                public void onClick(final View v) {
-                    mSelectedPosition = position;
-                    notifyItemChanged(mSelectedPosition);
+                public void onClick(View v) {
+                    LogUtils.d(TAG, "mItemView clicked");
+                    if(position != mOldCheckedPosition){
+                        if(mOldCheckedPosition > -1){
+                            mAllItems.get(mOldCheckedPosition).setIsChecked(false);
+                            notifyItemChanged(mOldCheckedPosition);
+                        }
+                        mAllItems.get(position).setIsChecked(true);
+                        notifyItemChanged(position);
+                        mOldCheckedPosition = position;
+                    }
                     if(mItemClickListener != null){
                         mItemClickListener.onItemClick(index);
                     }
@@ -107,12 +116,14 @@ public class UseCaseListAdapter extends RecyclerView.Adapter<UseCaseListAdapter.
         private TextView mTitle;
         private EditText mTimes;
         private Button mAdd;
+        private View mItemView;
         public UseCaseListHolder(View itemView) {
             super(itemView);
             LogUtils.d(TAG,"UseCaseListHolder construction");
-            mTitle = (TextView) itemView.findViewById(R.id.title);
-            mTimes = (EditText) itemView.findViewById(R.id.times);
-            mAdd = (Button) itemView.findViewById(R.id.addusecase);
+            mItemView = itemView;
+            mTitle = (TextView) mItemView.findViewById(R.id.title);
+            mTimes = (EditText) mItemView.findViewById(R.id.times);
+            mAdd = (Button) mItemView.findViewById(R.id.addusecase);
 
         }
     }

@@ -291,7 +291,7 @@ public class DefineUseCaseFragment extends Fragment {
             }
         });
         mTestCategoryList = (RecyclerView) rootView.findViewById(R.id.testcategorylist);
-        mTestItemList = (RecyclerView) rootView.findViewById(R.id.testitemlist);
+        initTestCategoryListFocus(mTestCategoryItems);
         mAdapter = new TestCategoryListAdapter(mContext, mTestCategoryItems);
         mAdapter.setOnItemClickListener(new OnItemClickListener() {
             @Override
@@ -308,10 +308,26 @@ public class DefineUseCaseFragment extends Fragment {
                 LinearLayoutManager.VERTICAL,
                 CktItemDecoration.DECORATION_TYPE_TESTCATEGORY));
         mTestCategoryList.setAdapter(mAdapter);
+        mTestItemList = (RecyclerView) rootView.findViewById(R.id.testitemlist);
         initTestItemList();
         return rootView;
     }
 
+    private void initTestCategoryListFocus(ArrayList<TestCategory> tcs) {
+        if(tcs != null && !tcs.isEmpty()){
+            TestCategory tc;
+            for (int i = 0; i< tcs.size(); i++){
+                tc = tcs.get(i);
+                if(i == 0){
+                    LogUtils.d(TAG, "initTestCategoryListFocus : 0");
+                    tc.setIsChecked(true);
+                }else{
+                    LogUtils.d(TAG, "initTestCategoryListFocus : "+i);
+                    tc.setIsChecked(false);
+                }
+            }
+        }
+    }
     private void updateTestItemList() {
         LogUtils.d(TAG, "updateTestItemList");
         TestItemListAdapter adapter = new TestItemListAdapter(mAllTestItems.get(mTestCategory[mCurrentType]), mSelectedTestItems, true);

@@ -55,6 +55,21 @@ public class ResultsFragment extends Fragment implements UseCaseManager.Selected
         }
     }
 
+    private void initUseCaseListFocus(ArrayList<UseCaseBase> ucs) {
+        if(ucs != null && !ucs.isEmpty()){
+            UseCaseBase uc;
+            for (int i = 0; i< ucs.size(); i++){
+                uc = ucs.get(i);
+                if(i == 0){
+                    LogUtils.d(TAG, "initUseCaseListFocus : 0");
+                    uc.setIsChecked(true);
+                }else{
+                    LogUtils.d(TAG, "initUseCaseListFocus : "+i);
+                    uc.setIsChecked(false);
+                }
+            }
+        }
+    }
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -62,6 +77,7 @@ public class ResultsFragment extends Fragment implements UseCaseManager.Selected
         View rootView = inflater.inflate(R.layout.fragment_results_layout, container, false);
         mUseCaseManager.getSelectedUseCaseFromXml();
         mUseCaseListView = (ListView) rootView.findViewById(R.id.testedusecaselist);
+        initUseCaseListFocus(mSelectedItems);
         mUseCaseAdapter = new ResultsUseCaseAdapter(mContext, mSelectedItems);
         mUseCaseListView.setAdapter(mUseCaseAdapter);
         mUseCaseListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {

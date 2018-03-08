@@ -5,7 +5,16 @@ package com.ckt.ckttestassistant;
  */
 
 public class TestCategory {
-    String mTitle = "testitem";
+    private String mTitle = "testitem";
+    private boolean mIsChecked = false;
+
+    public boolean isChecked() {
+        return mIsChecked;
+    }
+
+    public void setIsChecked(boolean isChecked) {
+        this.mIsChecked = isChecked;
+    }
 
     public TestCategory(String mTitle) {
         this.mTitle = mTitle;
