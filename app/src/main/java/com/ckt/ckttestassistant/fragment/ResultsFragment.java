@@ -47,7 +47,7 @@ public class ResultsFragment extends Fragment implements UseCaseManager.Selected
         super.onCreate(savedInstanceState);
         mContext = getActivity().getApplicationContext();
         mUseCaseManager = UseCaseManager.getInstance(mContext);
-        mUseCaseManager.init(mHandler);
+        mUseCaseManager.init(mHandler, false);
         mUseCaseManager.addSelectedUseCaseChangeObserver(this);
         mSelectedItems = mUseCaseManager.getSelectItems();
         if(mSelectedItems != null && !mSelectedItems.isEmpty()){

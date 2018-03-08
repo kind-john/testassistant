@@ -1,10 +1,13 @@
 package com.ckt.ckttestassistant;
 
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
-import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -21,11 +24,16 @@ import com.ckt.ckttestassistant.utils.MyConstants;
 
 import java.util.ArrayList;
 
-public class CktTestAssistantMainActivity extends AppCompatActivity implements UseCaseManager.ExecuteCallback{
+public class CktTestAssistantMainActivity extends AppCompatActivity implements UseCaseManager.FinishExecuteObserver{
 
     private static final String TAG = "CktTestAssistantMainActivity";
     private ArrayList<TestItemBase> mSelectedTestItems;
     private UseCaseManager mUseCaseManager;
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
 
     public Handler mHandler = new Handler(){
         @Override
@@ -55,7 +63,7 @@ public class CktTestAssistantMainActivity extends AppCompatActivity implements U
                     ArrayList<UseCaseManager.UseCaseChangeObserver> ul = mUseCaseManager.getUseCaseChangeListener();
                     if(ul != null && !ul.isEmpty()){
                         for (UseCaseManager.UseCaseChangeObserver observer : ul){
-                            int position = data.getInt(MyConstants.UPDATE_USECASEFRAGMENT_POSOTION, 0);
+                            int position = data.getInt(MyConstants.UPDATE_USECASEFRAGMENT_POSITION, 0);
                             int type = data.getInt(MyConstants.UPDATE_USECASEFRAGMENT_TYPE, 3);
                             observer.allUseCaseChangeNofify(position, type);
                         }
@@ -85,16 +93,46 @@ public class CktTestAssistantMainActivity extends AppCompatActivity implements U
         super.onCreate(savedInstanceState);
         LogUtils.d(TAG, "onCreate");
         setContentView(R.layout.activity_ckt_test_assistant_main);
+        Intent it = getIntent();
+        boolean reboot = it.getBooleanExtra("reboot", false);
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if(PackageManager.PERMISSION_GRANTED != checkSelfPermission("android.permission.WRITE_EXTERNAL_STORAGE")){
+                LogUtils.d(TAG, "request permission: android.permission.WRITE_EXTERNAL_STORAGE");
+                requestPermissions(new String[]{"android.permission.WRITE_EXTERNAL_STORAGE"}, 1);
+            }
+        }
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tab);
         ViewPager viewPager = (ViewPager) findViewById(R.id.fragment);
         mUseCaseManager = UseCaseManager.getInstance(getApplicationContext());
-        mUseCaseManager.init(mHandler);
-        mUseCaseManager.setmExecuteCallback(this);
+        mUseCaseManager.init(mHandler, reboot);
+        mUseCaseManager.addFinishExecuteObserver(this);
 
         FragmentAdapter adapter = new FragmentAdapter(getSupportFragmentManager(), getTabTitles(), mHandler);
         viewPager.setAdapter(adapter);
         tabLayout.setupWithViewPager(viewPager);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if(mDialog != null){
+            if(!mDialog.isShowing()){
+                LogUtils.d(TAG, "show progress");
+                mDialog.show();
+            }
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        if(mDialog != null){
+            if(mDialog.isShowing()){
+                LogUtils.d(TAG, "hide progress");
+                mDialog.hide();
+            }
+        }
+        super.onPause();
     }
 
     @Override
@@ -109,8 +147,7 @@ public class CktTestAssistantMainActivity extends AppCompatActivity implements U
         return getResources().getStringArray(R.array.tabTitles);
     }
 
-    @Override
-    public void closeProgressView() {
+    private void closeProgressView() {
         if(mDialog != null){
             mDialog.cancel();
             mDialog = null;
@@ -124,8 +161,7 @@ public class CktTestAssistantMainActivity extends AppCompatActivity implements U
         startButton.setClickable(true);
     }
 
-    @Override
-    public void updateProgressMessage(String message) {
+    private void updateProgressMessage(String message) {
         LogUtils.d(TAG, "updateProgressMessage message = "+message);
         if(mProgressDialogBuilder == null){
             LogUtils.d(TAG, "updateProgressMessage mProgressDialogBuilder is null!!!");
@@ -145,8 +181,7 @@ public class CktTestAssistantMainActivity extends AppCompatActivity implements U
         }
     }
 
-    @Override
-    public void updateProgressTitle(String title) {
+    private void updateProgressTitle(String title) {
         LogUtils.d(TAG, "updateProgressTitle title = "+title);
         if (mProgressDialogBuilder == null) {
             LogUtils.d(TAG, "updateProgressTitle mProgressDialogBuilder is null!!!");
@@ -165,5 +200,10 @@ public class CktTestAssistantMainActivity extends AppCompatActivity implements U
             mProgressTitleTextView.setText(title);
         }
 
+    }
+
+    @Override
+    public void finishExecueHandler() {
+        LogUtils.d(TAG, "CktTestAssistantMainActivity finishExecueHandler");
     }
 }

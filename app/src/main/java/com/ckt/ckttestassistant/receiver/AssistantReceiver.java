@@ -48,6 +48,7 @@ public class AssistantReceiver extends BroadcastReceiver {
         if(action.equals("android.intent.action.BOOT_COMPLETED")){
             LogUtils.d(TAG, "boot completed!");
             Intent it = new Intent(ACTION_START_CKT_REBOOT);
+            it.putExtra("reboot", true);
             it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             Intent findIntent = new Intent(findApp(context,it));
             context.startActivity(findIntent);

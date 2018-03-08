@@ -1,6 +1,7 @@
 package com.ckt.ckttestassistant.adapter;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -28,6 +29,7 @@ public class UseCaseListAdapter extends RecyclerView.Adapter<UseCaseListAdapter.
     private final ArrayList<UseCaseBase> mSelectedItems;
     private UpdateShowPanelListener mUpdateShowPanelListener;
     private OnItemClickListener mItemClickListener;
+    private int mSelectedPosition = -1;
 
     public interface UpdateShowPanelListener{
         /**
@@ -61,17 +63,22 @@ public class UseCaseListAdapter extends RecyclerView.Adapter<UseCaseListAdapter.
     }
 
     @Override
-    public void onBindViewHolder(UseCaseListAdapter.UseCaseListHolder holder, int position) {
+    public void onBindViewHolder(UseCaseListAdapter.UseCaseListHolder holder, final int position) {
         LogUtils.d(TAG,"onBindViewHolder");
 
         if(mAllItems != null && position < mAllItems.size()){
             holder.mTitle.setText(mAllItems.get(position).getTitle());
             holder.mTimes.setText(String.valueOf(mAllItems.get(position).getTimes()));
+            if(mSelectedPosition == position){
+                holder.mTitle.setBackgroundColor(Color.GREEN);
+            }
             final int index = position;
             holder.mTitle.setOnClickListener(new View.OnClickListener() {
 
                 @Override
                 public void onClick(final View v) {
+                    mSelectedPosition = position;
+                    notifyItemChanged(mSelectedPosition);
                     if(mItemClickListener != null){
                         mItemClickListener.onItemClick(index);
                     }

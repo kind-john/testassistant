@@ -12,7 +12,7 @@ public final class MyConstants {
     public static final String ROOT_DIR = "testauxiliarytool";
     public static final String PROGRESS_TITLE = "progresstitle";
     public static final String PROGRESS_MESSAGE = "progressmessage";
-    public static final String UPDATE_USECASEFRAGMENT_POSOTION = "usecaselistitem";
+    public static final String UPDATE_USECASEFRAGMENT_POSITION = "usecaselistitem";
     public static final String UPDATE_USECASEFRAGMENT_TYPE = "usecaselisttype";
 
     public static final String TEST_RESULT_EXCEL_DIR = "/mnt/sdcard/ckttestassistant";

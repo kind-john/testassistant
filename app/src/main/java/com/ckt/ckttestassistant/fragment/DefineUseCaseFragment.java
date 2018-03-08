@@ -326,7 +326,7 @@ public class DefineUseCaseFragment extends Fragment {
             public void onItemClick(int pos) {
                 TestItemBase ti = mAllTestItems.get(mTestCategory[mCurrentType]).get(pos);
                 LogUtils.d(TAG, "test item title clicked :"+pos+" : "+ti.getClass().getName());
-                ti.showPropertyDialog(mActivity);
+                ti.showPropertyDialog(mActivity, false);
             }
         });
         mTestItemList.setAdapter(adapter);
@@ -346,7 +346,7 @@ public class DefineUseCaseFragment extends Fragment {
             public void onItemClick(int pos) {
                 TestItemBase ti = mAllTestItems.get(mTestCategory[mCurrentType]).get(pos);
                 LogUtils.d(TAG, "test item title clicked :"+pos+" : "+ti.getClass().getName());
-                ti.showPropertyDialog(mActivity);
+                ti.showPropertyDialog(mActivity, false);
             }
         });
         mTestItemList.setHasFixedSize(true);

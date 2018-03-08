@@ -57,14 +57,6 @@ public class CktUseCase extends UseCaseBase {
     }
 
     @Override
-    protected void initTestItems(ArrayList<TestItemBase> testItems) {
-        for (TestItemBase ti : testItems){
-            ti.setCompletedTimes(0);
-            ti.setFailTimes(0);
-        }
-    }
-
-    @Override
     protected void updateWaitProgress(Handler handler, int times) {
         //String className = this.getClass().getSimpleName();
         //LogUtils.d(TAG, "UseCase : " + className + " extends UseCaseBase execute times = " + times);

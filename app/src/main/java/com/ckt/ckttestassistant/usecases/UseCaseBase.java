@@ -12,6 +12,7 @@ import com.ckt.ckttestassistant.utils.MyConstants;
 
 import org.xmlpull.v1.XmlSerializer;
 
+import java.io.Closeable;
 import java.io.File;
 import java.util.ArrayList;
 
@@ -19,7 +20,7 @@ import java.util.ArrayList;
  * Created by ckt on 18-1-26.
  */
 
-public abstract class UseCaseBase {
+public abstract class UseCaseBase implements Cloneable{
     private static final int DEFAULT_TIMES = 1;
     private static final String TAG = "UseCaseBase";
     protected UseCaseManager mUseCaseManager;
@@ -93,6 +94,17 @@ public abstract class UseCaseBase {
         this.mClassName = className;
     }
 
+    @Override
+    public UseCaseBase clone() {
+        UseCaseBase clone = null;
+        try {
+            clone = (UseCaseBase) super.clone();
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+        }
+        return clone;
+    }
+
     public boolean execute(Handler handler, UseCaseManager.ExecuteCallback executeCallback){
         boolean isPassed = false;
         try{
@@ -106,31 +118,39 @@ public abstract class UseCaseBase {
             mTestItems.get(mTestItems.size() - 1).setNextTestItem(null);
 
             int needTimes = mTimes - mCompletedTimes;
+            boolean usecaseFinish = false;
             LogUtils.d(TAG, "mCompletedTimes = "+mCompletedTimes);
             LogUtils.d(TAG, "mTimes = "+mTimes);
             LogUtils.d(TAG, "needTimes = "+needTimes);
             createExcelSheet();
             if(needTimes > 0){
                 for (int times = 0; times < needTimes; times++) {
-                    boolean usecaseFinish = false;
-                    updateWaitProgress(handler, times);
-
-                    if((mNextUseCase == null) && (times == needTimes - 1)){
-                        usecaseFinish = true;
+                    try{
+                        updateWaitProgress(handler, times);
+                        //writeUsecaseLabelToExcel(mCompletedTimes + 1);
+                        LogUtils.d(TAG, "usecaseFinish 1 : "+usecaseFinish);
+                        if((mNextUseCase == null) && (times == needTimes - 1)){
+                            usecaseFinish = true;
+                            LogUtils.d(TAG, "usecaseFinish 2 : "+usecaseFinish);
+                        }
+                        isPassed = mTestItems.get(0).execute(handler, executeCallback, usecaseFinish);
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }finally {
+                        mCompletedTimes += 1;
+                        if(!isPassed){
+                            mFailTimes++;
+                        }
+                        String path = mContext.getFilesDir()+"/selected_usecases.xml";
+                        mUseCaseManager.updateUseCaseOfXml(path, this);
+                        initTestItemOfUseCase();
                     }
-                    //writeUsecaseLabelToExcel(mCompletedTimes + 1);
-                    initTestItems(mTestItems);
-                    isPassed = mTestItems.get(0).execute(handler, executeCallback, usecaseFinish);
-                    mCompletedTimes += 1;
-                    if(!isPassed){
-                        mFailTimes++;
-                    }
-                    String path = mContext.getFilesDir()+"/selected_usecases.xml";
-                    mUseCaseManager.updateUseCaseOfXml(path, this);
                 }
             }
 
             if(mNextUseCase != null){
+                initUseCases(mNextUseCase);
+
                 mNextUseCase.execute(handler, executeCallback);
             }
         }catch (Exception e){
@@ -140,7 +160,20 @@ public abstract class UseCaseBase {
         return true;
     }
 
-    protected abstract void initTestItems(ArrayList<TestItemBase> testItems);
+    private void initTestItemOfUseCase() {
+        for (TestItemBase ti : mTestItems){
+            ti.setCompletedTimes(0);
+            ti.setFailTimes(0);
+        }
+    }
+
+    private void initUseCases(UseCaseBase uc) {
+        int completedTimes = uc.getCompletedTimes();
+        int totalTimes = uc.getTimes();
+        if(totalTimes > 0 && (completedTimes == totalTimes)){
+            uc.setCompletedTimes(0);
+        }
+    }
 
     protected abstract void writeUsecaseLabelToExcel(int times);
 

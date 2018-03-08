@@ -8,6 +8,8 @@
     <string name="settingsdelay">delay : </string>
     <string name="settingstimes">times : </string>
     <string name="importusecaseconfig">import</string>
-    <string name="outputusecaseconfig">export</string>
+    <string name="exportusecaseconfig">export</string>
     <string name="createresultfail">create excel fail!</string>
+    <string name="title_activity_open_file">open file</string>
+    <string name="pleaseinputpath">Please input config file path</string>
 </resources>

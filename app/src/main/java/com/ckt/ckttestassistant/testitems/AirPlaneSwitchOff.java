@@ -90,8 +90,8 @@ public class AirPlaneSwitchOff extends TestItemBase {
         LogUtils.d(TAG, "AirPlaneSwitchOff doExecute");
         //do test,then close progressview
         if(finish && executeCallback != null){
-            LogUtils.d(TAG, "closeProgressView");
-            //executeCallback.closeProgressView();
+            LogUtils.d(TAG, "stop test handler");
+            //executeCallback.stopTestHandler();
         }
         return false;
     }
@@ -193,7 +193,7 @@ public class AirPlaneSwitchOff extends TestItemBase {
     }
 
     @Override
-    public void showPropertyDialog(Context context) {
+    public void showPropertyDialog(Context context, final boolean isNeedUpdateXml) {
         LogUtils.d(TAG, "showPropertyDialog :"+this.getClass().getName());
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         View v = LayoutInflater.from(context).inflate(R.layout.settings_wifi_switch_on, null);
@@ -215,6 +215,9 @@ public class AirPlaneSwitchOff extends TestItemBase {
                         if(delay >= 0 && times > 0){
                             setDelay(delay);
                             setTimes(times);
+                            if(isNeedUpdateXml){
+                                mUseCaseManager.updateTestItemOfAllUseCaseXml(AirPlaneSwitchOff.this);
+                            }
                         }
                     }
                 })
@@ -235,7 +238,7 @@ public class AirPlaneSwitchOff extends TestItemBase {
     @Override
     public void saveParameters(Document doc, Element element) {
         Element e1 = doc.createElement(MyConstants.XMLTAG_TESTITEM_DELAY);
-        Node n1 = doc.createTextNode("100");
+        Node n1 = doc.createTextNode(""+mDelay);
         e1.appendChild(n1);
         element.appendChild(e1);
     }
@@ -245,7 +248,7 @@ public class AirPlaneSwitchOff extends TestItemBase {
         try{
             //eg. start
             serializer.startTag(null, MyConstants.XMLTAG_TESTITEM_DELAY);
-            serializer.text("100");
+            serializer.text(""+mDelay);
             serializer.endTag(null, MyConstants.XMLTAG_TESTITEM_DELAY);
             //eg. end
         }catch (Exception e) {

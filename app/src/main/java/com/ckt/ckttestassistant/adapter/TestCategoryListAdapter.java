@@ -1,6 +1,10 @@
 package com.ckt.ckttestassistant.adapter;
 
 import android.content.Context;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
+import android.os.Build;
+import android.support.annotation.RequiresApi;
 import android.support.v7.widget.RecyclerView;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
@@ -50,6 +54,7 @@ public class TestCategoryListAdapter extends RecyclerView.Adapter<TestCategoryLi
 
         if(mItems != null && position < mItems.size()){
             holder.mTitle.setText(mItems.get(position).getTitle());
+            //holder.mTitle.setBackgroundResource(R.drawable.bm_selector_btn_back);
             final int index = position;
             holder.mTitle.setOnClickListener(new View.OnClickListener() {
 
@@ -57,6 +62,7 @@ public class TestCategoryListAdapter extends RecyclerView.Adapter<TestCategoryLi
                 public void onClick(final View v) {
                     if(mItemClickListener != null){
                         mItemClickListener.onItemClick(index);
+                        //v.setBackgroundColor(Color.BLUE);
                     }
                 }
             });

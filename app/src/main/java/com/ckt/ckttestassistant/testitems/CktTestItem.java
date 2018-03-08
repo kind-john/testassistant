@@ -20,6 +20,16 @@ public class CktTestItem extends TestItemBase {
     private static final String TAG = "CktTestItem";
     private static final String TITLE = "Ckt TestItem";
 
+    public int getDelay() {
+        return mDelay;
+    }
+
+    public void setDelay(int delay) {
+        this.mDelay = delay;
+    }
+
+    private int mDelay = 0;
+
     public CktTestItem() {
         super();
         String className = this.getClass().getName();
@@ -55,8 +65,8 @@ public class CktTestItem extends TestItemBase {
         LogUtils.d(TAG, "CktTestItem doExecute");
         //do test,then close progressview
         if(finish && executeCallback != null){
-            LogUtils.d(TAG, "closeProgressView");
-            executeCallback.closeProgressView();
+            LogUtils.d(TAG, "stop test handler");
+            executeCallback.stopTestHandler();
         }
         return false;
     }
@@ -67,7 +77,7 @@ public class CktTestItem extends TestItemBase {
     }
 
     @Override
-    public void showPropertyDialog(Context mContext) {
+    public void showPropertyDialog(Context mContext, final boolean isNeedUpdateXml) {
 
     }
 
@@ -76,7 +86,7 @@ public class CktTestItem extends TestItemBase {
         try{
             //eg. start
             serializer.startTag(null, "delay");
-            serializer.text("100");
+            serializer.text(""+mDelay);
             serializer.endTag(null, "delay");
 
             serializer.startTag(null, "total");
@@ -91,7 +101,7 @@ public class CktTestItem extends TestItemBase {
     @Override
     public void saveParameters(Document doc, Element element) {
         Element e1 = doc.createElement(MyConstants.XMLTAG_TESTITEM_DELAY);
-        Node n1 = doc.createTextNode("100");
+        Node n1 = doc.createTextNode(""+mDelay);
         e1.appendChild(n1);
         element.appendChild(e1);
 

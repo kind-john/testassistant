@@ -38,7 +38,7 @@
                 android:layout_height="match_parent"
                 android:layout_gravity="center_horizontal"
                 android:layout_margin="1dp"
-                android:background="@color/red"
+                android:background="@drawable/btn_selector"
                 android:text="@string/deletetestitem" />
 
             <Button
@@ -47,7 +47,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:layout_margin="1dp"
-                android:background="@color/green"
+                android:background="@drawable/btn_selector"
                 android:visibility="gone"
                 android:text="@string/savetestitem" />
         </LinearLayout>
@@ -85,7 +85,7 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp"
-            android:background="@color/green"
+            android:background="@drawable/btn_selector"
             android:text="@string/starttest" />
         <Button
             android:id="@+id/importusecaseconfig"
@@ -94,17 +94,17 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp"
-            android:background="@color/green"
+            android:background="@drawable/btn_selector"
             android:text="@string/importusecaseconfig" />
         <Button
-            android:id="@+id/outputusecaseconfig"
+            android:id="@+id/exportusecaseconfig"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"
             android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp"
-            android:background="@color/green"
-            android:text="@string/outputusecaseconfig" />
+            android:background="@drawable/btn_selector"
+            android:text="@string/exportusecaseconfig" />
 
     </LinearLayout>
 </LinearLayout>

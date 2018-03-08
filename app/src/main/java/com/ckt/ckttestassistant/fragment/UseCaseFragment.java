@@ -29,7 +29,6 @@ import com.ckt.ckttestassistant.R;
 import com.ckt.ckttestassistant.usecases.UseCaseBase;
 import com.ckt.ckttestassistant.adapter.TestItemListAdapter;
 import com.ckt.ckttestassistant.adapter.UseCaseListAdapter;
-import com.ckt.ckttestassistant.utils.MyConstants;
 
 import java.io.File;
 import java.io.IOException;
@@ -42,7 +41,7 @@ import java.util.Date;
  */
 
 public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseChangeObserver,
-        UseCaseManager.SelectedUseCaseChangeObserver{
+        UseCaseManager.SelectedUseCaseChangeObserver, UseCaseManager.FinishExecuteObserver{
     private static final String TAG = "UseCaseFragment";
     private Handler mHandler = null;
     private RecyclerView mUseCaseList;
@@ -74,9 +73,10 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
         mActivity = getActivity();
         mContext = mActivity.getApplicationContext();
         mUseCaseManager = UseCaseManager.getInstance(mContext);
-        mUseCaseManager.init(mHandler);
+        mUseCaseManager.init(mHandler, false);
         mUseCaseManager.addUseCaseChangeObserver(this);
         mUseCaseManager.addSelectedUseCaseChangeObserver(this);
+        mUseCaseManager.addFinishExecuteObserver(this);
         mShowPanelInfo.append("use case : ");
         mAllItems = mUseCaseManager.getAllItems();
         mSelectedItems = mUseCaseManager.getSelectItems();
@@ -92,16 +92,18 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
         View rootView = inflater.inflate(R.layout.fragment_usecase_layout, container, false);
         mUseCaseTextView = (TextView) rootView.findViewById(R.id.usecasetext);
         mUseCaseManager.getSelectedUseCaseFromXml(); //及时与数据同步
-        if(needStartTest()){
-            mUseCaseManager.startExecute();
-        }
+
         mUseCaseTextView.setText(mShowPanelInfo.toString());
         mStartTestButton = (Button) rootView.findViewById(R.id.starttest);
         mStartTestButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if(mSelectedItems == null || mSelectedItems.isEmpty()){
+                    return;
+                }
                 if(createResultExcel()){
                     //保存数据，为了重启或者中断之后能继续执行
+                    mUseCaseManager.reInitSelectedUseCase();
                     mUseCaseManager.saveSelectedUseCaseToXml();
                     mUseCaseManager.startExecute();
                     mStartTestButton.setClickable(false);
@@ -110,6 +112,13 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
                 }
             }
         });
+
+        if(needStartTest()){
+            LogUtils.d(TAG, "continue start execute test work!");
+            mUseCaseManager.startExecute();
+            mStartTestButton.setClickable(false);
+        }
+
         mDeleteButton = (Button) rootView.findViewById(R.id.delete);
         mDeleteButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -139,23 +148,19 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
         mImportButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                /*AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);
-                View v = LayoutInflater.from(mContext).inflate(R.layout.settings_usecase, null);
+                AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);
+                View importFilePathView = LayoutInflater.from(mContext).inflate(R.layout.import_config_layout, null);
+                final EditText pathET = (EditText)importFilePathView.findViewById(R.id.path);
+                pathET.setText("/sdcard/config.xml");
+                pathET.setSelection(pathET.getText().length());
                 builder.setTitle(R.string.importusecaseconfig)
-                        .setView(v)
-                        .setMessage("set properties")
+                        .setView(importFilePathView)
                         .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 LogUtils.d(TAG, "Positive onClick");
-                                int delay = Integer.parseInt(delayEditText.getText().toString());
-                                int times = Integer.parseInt(timesEditText.getText().toString());
-                                LogUtils.d(TAG, "delay = "+delay+"; times = "+times);
-                                if(delay >= 0 && times > 0){
-                                    uc.setDelay(delay);
-                                    uc.setTimes(times);
-                                    setShowPanelForAdd(index);
-                                }
+                                String path = pathET.getText().toString();
+                                mUseCaseManager.importUseCaseConfig(path);
                             }
                         })
                         .setNegativeButton("cancel", new DialogInterface.OnClickListener() {
@@ -169,15 +174,40 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
                             public void onDismiss(DialogInterface dialog) {
                                 LogUtils.d(TAG, "onDismiss");
                             }
-                        }).create().show();*/
-                mUseCaseManager.importUseCaseConfig("/sdcard/config.cml");
+                        }).create().show();
             }
         });
-        mExportButton = (Button) rootView.findViewById(R.id.importusecaseconfig);
+        mExportButton = (Button) rootView.findViewById(R.id.exportusecaseconfig);
         mExportButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mUseCaseManager.exportUseCaseConfig("/sdcard/config.cml");
+                AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);
+                View exportFilePathView = LayoutInflater.from(mContext).inflate(R.layout.import_config_layout, null);
+                final EditText pathET = (EditText)exportFilePathView.findViewById(R.id.path);
+                pathET.setText("/sdcard/config.xml");
+                pathET.setSelection(pathET.getText().length());
+                builder.setTitle(R.string.exportusecaseconfig)
+                        .setView(exportFilePathView)
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                LogUtils.d(TAG, "Positive onClick");
+                                String path = pathET.getText().toString();
+                                mUseCaseManager.exportUseCaseConfig(path);
+                            }
+                        })
+                        .setNegativeButton("cancel", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                LogUtils.d(TAG, "Negative onClick");
+                            }
+                        })
+                        .setOnDismissListener(new DialogInterface.OnDismissListener() {
+                            @Override
+                            public void onDismiss(DialogInterface dialog) {
+                                LogUtils.d(TAG, "onDismiss");
+                            }
+                        }).create().show();
             }
         });
         mUseCaseList = (RecyclerView) rootView.findViewById(R.id.usecaselist);
@@ -215,21 +245,22 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
                 Date date = new Date(System.currentTimeMillis());
                 String fileName = simpleDateFormat.format(date)+".xls";
                 LogUtils.d(TAG, "fileName = "+fileName);
-                String path1 = Environment.getExternalStorageDirectory().getAbsolutePath() + "/ckttestassistant";
-                String path2 = Environment.getExternalStorageDirectory().getAbsolutePath();
-                String path3 = mContext.getFilesDir()+"/"+fileName;
+                String dirPath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/ckttestassistant";
+                //String path2 = Environment.getExternalStorageDirectory().getAbsolutePath();
+                //String path3 = mContext.getFilesDir()+"/"+fileName;
 
                 //File dir = new File(MyConstants.TEST_RESULT_EXCEL_DIR);
-                /*File dir = new File(path2);
+                File dir = new File(dirPath);
                 if(!dir.exists()){
-                    if(!dir.mkdir()){
+                    if(!dir.mkdirs()){
                         return false;
                     }
-                }*/
-                File excelfile = new File(path3);
+                }
+                String filePath = dirPath+"/"+fileName;
+                File excelfile = new File(filePath);
                 excelfile.createNewFile();
-                mUseCaseManager.setCurrentExcelFile(path3);
-                mUseCaseManager.createExcel(path3);
+                mUseCaseManager.setCurrentExcelFile(filePath);
+                mUseCaseManager.createExcel(filePath);
                 result = true;
             } catch (IOException e) {
                 e.printStackTrace();
@@ -293,32 +324,33 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
     }
 
     private boolean needStartTest() {
-        if(!mUseCaseManager.getTestStatus()){
+        /*if(!mUseCaseManager.getTestStatus()){
             return false;
-        }
-        boolean need = false;
+        }*/
+        LogUtils.d(TAG, "enter needStartTest");
+        //boolean need = false;
         if(mSelectedItems != null && !mSelectedItems.isEmpty()){
             for (UseCaseBase uc : mSelectedItems){
                 int uc_alltimes = uc.getTimes();
                 int uc_completedTimes = uc.getCompletedTimes();
                 LogUtils.d(TAG, "uc_alltimes = "+uc_alltimes+"; uc_completedTimes = "+uc_completedTimes);
                 if(uc_alltimes > uc_completedTimes){
-                    need = true;
+                    return true;
                 }
                 for (TestItemBase ti : uc.getTestItems()){
                     int ti_alltimes = ti.getTimes();
                     int ti_completedTimes = ti.getCompletedTimes();
                     LogUtils.d(TAG, "ti_alltimes = "+ti_alltimes+"; ti_completedTimes = "+ti_completedTimes);
                     if(ti_alltimes > ti_completedTimes){
-                        need = true;
+                        return true;
                     }
                 }
             }
         }
-        if(!need){
+        /*if(!need){
             mUseCaseManager.setTestStatus(false);
-        }
-        return need;
+        }*/
+        return false;
     }
 
     private void initTestItemList() {
@@ -331,7 +363,7 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
             public void onItemClick(int pos) {
                 TestItemBase ti = mCurrentUseCase.getTestItems().get(pos);
                 LogUtils.d(TAG, "test item title clicked :"+pos+" : "+ti.getClass().getName());
-                ti.showPropertyDialog(mActivity);
+                ti.showPropertyDialog(mActivity, true);
             }
         });
         mUseCaseTestItemList.setHasFixedSize(true);
@@ -352,7 +384,7 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
             public void onItemClick(int pos) {
                 TestItemBase ti = mCurrentUseCase.getTestItems().get(pos);
                 LogUtils.d(TAG, "test item title clicked :"+pos+" : "+ti.getClass().getName());
-                ti.showPropertyDialog(mActivity);
+                ti.showPropertyDialog(mActivity, true);
             }
         });
         mUseCaseTestItemList.setAdapter(mTestItemListAdapter);
@@ -402,5 +434,11 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
     public void selectedUseCaseChangeNofify() {
         generateShowPanelString(mSelectedItems);
         mUseCaseTextView.setText(mShowPanelInfo.toString());
+    }
+
+    @Override
+    public void finishExecueHandler() {
+        LogUtils.d(TAG, "finishExecueHandler");
+        mStartTestButton.setClickable(true);
     }
 }

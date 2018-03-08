@@ -166,8 +166,10 @@ public abstract class TestItemBase implements CktResultsHelper.ResultCallBack {
         int needTimes = mTimes - mCompletedTimes;
         boolean testItemFinish = false;
         boolean isPassed = false;
+        LogUtils.d(TAG, "class name = "+mClassName);
         LogUtils.d(TAG, "mCompletedTimes = "+mCompletedTimes);
         LogUtils.d(TAG, "mTimes = "+mTimes);
+        LogUtils.d(TAG, "mFailTimes = "+mFailTimes);
         LogUtils.d(TAG, "needTimes = "+needTimes);
         try{
             if(needTimes > 0){
@@ -178,23 +180,24 @@ public abstract class TestItemBase implements CktResultsHelper.ResultCallBack {
                         if(executeCallback != null){
                             //executeCallback.updateProgressMessage(className+" : "+times);
                         }
-                        sleep(2000);
+                        sleep(500);
+                        LogUtils.d(TAG, "testItemFinish 1 : "+testItemFinish);
+                        if((mNextTestItem == null) && (times == needTimes - 1)){
+                            testItemFinish = true;
+                            LogUtils.d(TAG, "testItemFinish 2 : "+testItemFinish);
+                        }
+                        isPassed = doExecute(executeCallback, (usecaseFinish && testItemFinish));
+                        saveResult();
                     }catch (Exception e){
                         e.printStackTrace();
+                    }finally {
+                        mCompletedTimes += 1;
+                        if(!isPassed){
+                            mFailTimes++;
+                        }
+                        String path = mContext.getFilesDir()+"/selected_usecases.xml";
+                        mUseCaseManager.updateTestItemOfSelectedUseCaseXml(this);
                     }
-                    if((mNextTestItem == null) && (times == needTimes - 1)){
-                        testItemFinish = true;
-                    }
-                    LogUtils.d(TAG, "usecaseFinish : "+usecaseFinish);
-                    LogUtils.d(TAG, "testItemFinish : "+testItemFinish);
-                    isPassed = doExecute(executeCallback, (usecaseFinish && testItemFinish));
-                    mCompletedTimes += 1;
-                    String path = mContext.getFilesDir()+"/selected_usecases.xml";
-                    if(!isPassed){
-                        mFailTimes++;
-                    }
-                    mUseCaseManager.updateTestItemOfXml(path, this);
-                    saveResult();
                 }
             }else{
                 testItemFinish = true;
@@ -202,6 +205,7 @@ public abstract class TestItemBase implements CktResultsHelper.ResultCallBack {
             closeWaitProgress(handler, (usecaseFinish && testItemFinish));
 
             if(mNextTestItem != null){
+                initTestItems(mNextTestItem);
                 mNextTestItem.execute(handler, executeCallback, usecaseFinish);
             }
         }catch (Exception e){
@@ -209,6 +213,15 @@ public abstract class TestItemBase implements CktResultsHelper.ResultCallBack {
             isPassed = false;
         }
         return isPassed;
+    }
+
+    private void initTestItems(TestItemBase ti) {
+        int completedTimes = ti.getCompletedTimes();
+        int totalTimes = ti.getTimes();
+        if(totalTimes > 0 && (completedTimes == totalTimes)){
+            ti.setCompletedTimes(0);
+            ti.setFailTimes(0);
+        }
     }
 
     private void updateWaitProgress(Handler handler, int times) {
@@ -233,9 +246,13 @@ public abstract class TestItemBase implements CktResultsHelper.ResultCallBack {
         }
     }
 
+   /* public void setParameters(Context context){
+        showPropertyDialog(context);
+    }*/
+
     public abstract boolean doExecute(UseCaseManager.ExecuteCallback executeCallback, boolean finish);
     public abstract void saveResult();
     public abstract void saveParametersToXml(XmlSerializer serializer) throws Exception;
-    public abstract void showPropertyDialog(Context context);
+    public abstract void showPropertyDialog(Context context, final boolean isNeedUpdateXml);
     public abstract void saveParameters(Document doc, Element element);
 }

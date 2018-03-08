@@ -51,7 +51,7 @@ public class CktXmlHelper {
     private static final String TAG = "CktXmlHelper";
     private static int allUseCaseMaxID = -1;
 
-    public void addUsecase(String path, ArrayList<UseCaseBase> usecases) throws Exception{
+    public void addUsecase(String path, ArrayList<UseCaseBase> usecases, boolean isNeedClean) throws Exception{
         LogUtils.d(TAG, "entry addUsecase!");
         try{
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -59,6 +59,9 @@ public class CktXmlHelper {
             Document doc;
             Element root;
             File file = new File(path);
+            if(isNeedClean){
+                file.delete();
+            }
             if (!file.exists()) {
                 LogUtils.d(TAG, path + " not exists, so create it");
                 //file.createNewFile();
@@ -130,18 +133,19 @@ public class CktXmlHelper {
         int usecaseID = uc.getID();
         if(usecaseID == -1){
             usecaseID = maxID + 1;
+            uc.setID(usecaseID);
             ArrayList<TestItemBase> tis = uc.getTestItems();
             if(tis != null && !tis.isEmpty()){
                 for(TestItemBase ti : tis){
                     int uc_id = uc.getID(); //可以删除
                     int uc_sn = uc.getSN();
                     LogUtils.d(TAG, "uc_id = "+uc_id+"; uc_sn = "+uc_sn);
-                    ti.setUseCaseID(uc_id);
+                    ti.setUseCaseID(usecaseID);
                     ti.setUseCaseSN(uc_sn);
                 }
             }
         }
-        usecaseE.setAttribute(MyConstants.XMLTAG_ID, String.valueOf(usecaseID));
+        usecaseE.setAttribute(MyConstants.XMLTAG_ID, String.valueOf(uc.getID()));
         usecaseE.setAttribute(MyConstants.XMLTAG_USECASE_CLASSNAME, uc.getClassName());
 
         createTextElement(doc, usecaseE, MyConstants.XMLTAG_USECASE_SN, String.valueOf(uc.getSN()));
@@ -160,7 +164,7 @@ public class CktXmlHelper {
         root.appendChild(usecaseE);
         return usecaseE;
     }
-    public void updateTestItem(String path, TestItemBase ti) {
+    public void updateTestItem(String path, TestItemBase ti, boolean needUCSN) {
         LogUtils.d(TAG, "entry updateTestItem!");
         try {
             File file = new File(path);
@@ -180,7 +184,13 @@ public class CktXmlHelper {
                 int id = Integer.parseInt(uc_node.getAttribute(MyConstants.XMLTAG_ID));
                 String str_sn = uc_node.getElementsByTagName(MyConstants.XMLTAG_USECASE_SN).item(0).getTextContent();
                 int sn = Integer.parseInt(str_sn);
-                if ((id == ti.getUseCaseID()) && (sn == ti.getUseCaseSN())) {
+                boolean isMatched = false;
+                if(needUCSN){
+                    isMatched = (id == ti.getUseCaseID()) && (sn == ti.getUseCaseSN());
+                } else {
+                    isMatched = id == ti.getUseCaseID();
+                }
+                if (isMatched) {
                     NodeList ti_listnode = uc_node.getElementsByTagName(MyConstants.XMLTAG_TESTITEM);
                     for (int j = 0; j < ti_listnode.getLength(); j++){
                         Element ti_element = (Element) ti_listnode.item(j);
@@ -190,6 +200,7 @@ public class CktXmlHelper {
                         if(ti_id == ti.getID() && ti_sn == ti.getSN()){
                             Element newNode = createTestItemElement(doc, uc_node, ti);
                             ti_element.getParentNode().replaceChild(newNode, ti_element);
+                            break;
                         }
                     }
                 }
@@ -227,6 +238,7 @@ public class CktXmlHelper {
                 if ((id == uc.getID()) && (sn == uc.getSN())) {
                     Element newNode = createUseCaseElement(doc, root, uc);
                     elink.getParentNode().replaceChild(newNode, elink);
+                    break;
                 }
             }
             TransformerFactory tfactory = TransformerFactory.newInstance();
@@ -484,6 +496,7 @@ public class CktXmlHelper {
                                     testitem.setID(id2);
                                     if(usecase != null){
                                         testitem.setParentUseCase(usecase);
+                                        testitem.setUseCaseID(usecase.getID());
                                     }
                                 } catch (IllegalAccessException e) {
                                     e.printStackTrace();
