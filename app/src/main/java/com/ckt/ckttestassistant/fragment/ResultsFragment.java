@@ -101,6 +101,7 @@ public class ResultsFragment extends Fragment implements UseCaseManager.Selected
     }
 
     private void initTestItemList() {
+        mCurrentTestItems = mSelectedItems.get(mCurrentUseCase).getTestItems();
         mTestItemAdapter = new ResultsTestItemAdapter(mContext, mCurrentTestItems);
         mTestItemListView.setAdapter(mTestItemAdapter);
     }

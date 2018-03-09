@@ -53,6 +53,7 @@ public final class MyConstants {
     public static final String SUCCESS = "pass";
     public static final String FAIL = "fail";
 
+    public static final String BROWSER_ACTION = "android.intent.action.VIEW";
 
     /**
      * @Description 私有化构造方法

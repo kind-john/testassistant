@@ -1,8 +1,12 @@
 package com.ckt.ckttestassistant.testitems;
 
+import android.app.Instrumentation;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.hardware.input.InputManager;
+import android.os.SystemClock;
 import android.support.v7.app.AlertDialog;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
@@ -61,10 +65,57 @@ public class SimulateBackKey extends TestItemBase {
     public void saveTestData() {
 
     }
+    /*private void sendDownEvents(int keyCode) {
+        final long token = Binder.clearCallingIdentity();
 
+        // Inject down.
+        final long downTime = SystemClock.uptimeMillis();
+        KeyEvent down = KeyEvent.obtain(downTime, downTime, KeyEvent.ACTION_DOWN, keyCode, 0, 0,
+                KeyCharacterMap.VIRTUAL_KEYBOARD, 0, KeyEvent.FLAG_FROM_SYSTEM,
+                InputDevice.SOURCE_KEYBOARD, null);
+        InputManager.getInstance().injectInputEvent(down,
+                InputManager.INJECT_INPUT_EVENT_MODE_ASYNC);
+        down.recycle();
+
+        Binder.restoreCallingIdentity(token);
+    }
+
+    private void sendUpEvents(int keyCode) {
+        final long token = Binder.clearCallingIdentity();
+
+        // Inject down.
+        final long downTime = SystemClock.uptimeMillis();
+        KeyEvent up = KeyEvent.obtain(downTime, downTime, KeyEvent.ACTION_UP, keyCode, 0, 0,
+                KeyCharacterMap.VIRTUAL_KEYBOARD, 0, KeyEvent.FLAG_FROM_SYSTEM,
+                InputDevice.SOURCE_KEYBOARD, null);
+        InputManager.getInstance().injectInputEvent(up,
+                InputManager.INJECT_INPUT_EVENT_MODE_ASYNC);
+        up.recycle();
+
+        Binder.restoreCallingIdentity(token);
+    }*/
     @Override
     public boolean doExecute(UseCaseManager.ExecuteCallback executeCallback, boolean finish) {
         LogUtils.d(TAG, "SimulateBackKey doExecute");
+        new Thread() {
+            public void run() {
+                try {
+                    /*Thread.sleep(100); // TouchEvent
+                    long now = SystemClock.uptimeMillis();
+                    KeyEvent down = new KeyEvent(now, now,
+                            KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK, 0);
+                    KeyEvent up = new KeyEvent(now, now, KeyEvent.ACTION_UP,
+                            KeyEvent.KEYCODE_BACK, 0);
+
+                    InputManager.getInstance().injectInputEvent(down,
+                            InputManager.INJECT_INPUT_EVENT_MODE_ASYNC);
+                    InputManager.getInstance().injectInputEvent(up,
+                            InputManager.INJECT_INPUT_EVENT_MODE_ASYNC);*/
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }.start();
         //do test,then close progressview
         if(finish && executeCallback != null){
             LogUtils.d(TAG, "stop test handler");

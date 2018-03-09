@@ -1,8 +1,10 @@
 package com.ckt.ckttestassistant.testitems;
 
+import android.app.Instrumentation;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.support.v7.app.AlertDialog;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
@@ -66,6 +68,16 @@ public class SimulateHomeKey extends TestItemBase {
     public boolean doExecute(UseCaseManager.ExecuteCallback executeCallback, boolean finish) {
         LogUtils.d(TAG, "SimulateHomeKey doExecute");
         //do test,then close progressview
+        new Thread() {
+            public void run() {
+                try {
+                    Instrumentation inst = new Instrumentation();
+                    inst.sendKeyDownUpSync(KeyEvent.KEYCODE_HOME);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }.start();
         if(finish && executeCallback != null){
             LogUtils.d(TAG, "stop test handler");
             executeCallback.stopTestHandler();

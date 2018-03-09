@@ -263,7 +263,8 @@ public class DefineUseCaseFragment extends Fragment {
                 //do something
                 View dialogView = LayoutInflater.from(mContext).inflate(R.layout.usecase_title_setting, null);
                 final EditText titleView = (EditText) dialogView.findViewById(R.id.titlesetting);
-                titleView.setText("default name");
+                titleView.setText("default");
+                titleView.setSelection(titleView.getText().length());
                 AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);
                 builder.setTitle("set usecase title:")
                         .setView(dialogView)

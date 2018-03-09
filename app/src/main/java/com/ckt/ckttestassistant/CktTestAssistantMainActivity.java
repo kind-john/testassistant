@@ -11,6 +11,7 @@ import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -162,6 +163,18 @@ public class CktTestAssistantMainActivity extends AppCompatActivity implements U
             mProgressMessageTextView = null;
         }
         //mUseCaseManager.setTestStatus(false);
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        LogUtils.d(TAG,"CktTestAssistantMainActivity onKeyDown : "+keyCode);
+        return true;
+    }
+
+    @Override
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        LogUtils.d(TAG,"CktTestAssistantMainActivity onKeyUp : "+keyCode);
+        return true;
     }
 
     private void updateProgressMessage(String message) {
