@@ -262,9 +262,9 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
                 Date date = new Date(System.currentTimeMillis());
                 String fileName = simpleDateFormat.format(date)+".xls";
                 LogUtils.d(TAG, "fileName = "+fileName);
-                String dirPath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/ckttestassistant";
+                //String dirPath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/ckttestassistant";
                 //String path2 = Environment.getExternalStorageDirectory().getAbsolutePath();
-                //String dirPath = mContext.getFilesDir()+"/ckttestassistant";
+                String dirPath = mContext.getFilesDir()+"/ckttestassistant";
 
                 //File dir = new File(MyConstants.TEST_RESULT_EXCEL_DIR);
                 File dir = new File(dirPath);

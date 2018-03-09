@@ -23,7 +23,7 @@ public class ResultsUseCaseAdapter extends BaseAdapter{
     private static final String TAG = "ResultsUseCaseAdapter";
     private ArrayList<UseCaseBase> mItems = null;
     private Context mContext;
-    private int mOldCheckedPosition = -1;
+    private int mOldCheckedPosition = 0;
 
     public ResultsUseCaseAdapter(Context context, ArrayList<UseCaseBase> items) {
         mItems = items;

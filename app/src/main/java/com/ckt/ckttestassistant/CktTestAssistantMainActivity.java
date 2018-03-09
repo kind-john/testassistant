@@ -22,18 +22,27 @@ import com.ckt.ckttestassistant.fragment.FragmentFactory;
 import com.ckt.ckttestassistant.testitems.TestItemBase;
 import com.ckt.ckttestassistant.utils.LogUtils;
 import com.ckt.ckttestassistant.utils.MyConstants;
+import com.ckt.ckttestassistant.utils.PermissionUtil;
 
 import java.util.ArrayList;
+import java.util.List;
 
-public class CktTestAssistantMainActivity extends AppCompatActivity implements UseCaseManager.FinishExecuteObserver{
+public class CktTestAssistantMainActivity extends AppCompatActivity
+        implements UseCaseManager.FinishExecuteObserver, PermissionUtil.OnRequestPermissionsResultCallbacks{
 
     private static final String TAG = "CktTestAssistantMainActivity";
+    private static final int REQUEST_CODE = 1;
     private ArrayList<TestItemBase> mSelectedTestItems;
     private UseCaseManager mUseCaseManager;
+    private String[] mPermissions = {
+            "android.permission.WRITE_EXTERNAL_STORAGE",
+            "android.permission.INJECT_EVENTS"
+    };
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        PermissionUtil.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
     }
 
     public Handler mHandler = new Handler(){
@@ -96,13 +105,6 @@ public class CktTestAssistantMainActivity extends AppCompatActivity implements U
         setContentView(R.layout.activity_ckt_test_assistant_main);
         Intent it = getIntent();
         boolean reboot = it.getBooleanExtra("reboot", false);
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if(PackageManager.PERMISSION_GRANTED != checkSelfPermission("android.permission.WRITE_EXTERNAL_STORAGE")){
-                LogUtils.d(TAG, "request permission: android.permission.WRITE_EXTERNAL_STORAGE");
-                requestPermissions(new String[]{"android.permission.WRITE_EXTERNAL_STORAGE"}, 1);
-            }
-        }
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tab);
         ViewPager viewPager = (ViewPager) findViewById(R.id.fragment);
         mUseCaseManager = UseCaseManager.getInstance(getApplicationContext());
@@ -112,10 +114,13 @@ public class CktTestAssistantMainActivity extends AppCompatActivity implements U
         FragmentAdapter adapter = new FragmentAdapter(getSupportFragmentManager(), getTabTitles(), mHandler);
         viewPager.setAdapter(adapter);
         tabLayout.setupWithViewPager(viewPager);
+
+        //PermissionUtil.requestPerssions(this, REQUEST_CODE, mPermissions);
     }
 
     @Override
     protected void onResume() {
+        LogUtils.d(TAG, "onResume");
         super.onResume();
         if(mDialog != null){
             if(!mDialog.isShowing()){
@@ -127,6 +132,7 @@ public class CktTestAssistantMainActivity extends AppCompatActivity implements U
 
     @Override
     protected void onPause() {
+        LogUtils.d(TAG, "onResume");
         if(mDialog != null){
             if(mDialog.isShowing()){
                 LogUtils.d(TAG, "hide progress");
@@ -139,7 +145,9 @@ public class CktTestAssistantMainActivity extends AppCompatActivity implements U
     @Override
     protected void onDestroy() {
         LogUtils.d(TAG, "onDestroy");
-        mUseCaseManager.saveDataWhenExit();
+        if(mUseCaseManager != null){
+            mUseCaseManager.saveDataWhenExit();
+        }
         closeProgressView();
         super.onDestroy();
     }
@@ -221,5 +229,16 @@ public class CktTestAssistantMainActivity extends AppCompatActivity implements U
     @Override
     public void finishExecueHandler() {
         LogUtils.d(TAG, "CktTestAssistantMainActivity finishExecueHandler");
+    }
+
+    @Override
+    public void onPermissionsGranted(int requestCode, List<String> perms, boolean isAllGranted) {
+        //do nothing
+    }
+
+    @Override
+    public void onPermissionsDenied(int requestCode, List<String> perms, boolean isAllDenied) {
+        LogUtils.e(TAG, "grant permission failed!");
+        finish();
     }
 }

@@ -94,14 +94,36 @@ public class ResultsFragment extends Fragment implements UseCaseManager.Selected
     }
 
     private void updateTestItemView() {
-        mCurrentTestItems = mSelectedItems.get(mCurrentUseCase).getTestItems();
+        if(mSelectedItems == null){
+            mCurrentTestItems = null;
+        }else{
+            if(mSelectedItems.size() > 0){
+                if(mCurrentUseCase > mSelectedItems.size() - 1){
+                    mCurrentUseCase = 0;
+                }
+                mCurrentTestItems = mSelectedItems.get(mCurrentUseCase).getTestItems();
+            }else{
+                mCurrentTestItems = null;
+            }
+        }
         mTestItemAdapter = new ResultsTestItemAdapter(mContext, mCurrentTestItems);
         mTestItemListView.setAdapter(mTestItemAdapter);
         //mTestItemAdapter.notifyDataSetChanged();
     }
 
     private void initTestItemList() {
-        mCurrentTestItems = mSelectedItems.get(mCurrentUseCase).getTestItems();
+        if(mSelectedItems == null){
+            mCurrentTestItems = null;
+        }else{
+            if(mSelectedItems.size() > 0){
+                if(mCurrentUseCase > mSelectedItems.size() - 1){
+                    mCurrentUseCase = 0;
+                }
+                mCurrentTestItems = mSelectedItems.get(mCurrentUseCase).getTestItems();
+            }else{
+                mCurrentTestItems = null;
+            }
+        }
         mTestItemAdapter = new ResultsTestItemAdapter(mContext, mCurrentTestItems);
         mTestItemListView.setAdapter(mTestItemAdapter);
     }
