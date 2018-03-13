@@ -76,7 +76,7 @@ public class UseCaseTreeAdapter extends TreeListViewAdapter {
                         /*if(mSelectedItems != null) {
                             mSelectedItems.add(mAllItems.get(index));
                         }*/
-                    mUpdateShowPanelListener.updateShowPanelForAdd(position);
+                    mUpdateShowPanelListener.updateShowPanelForAdd(tb);
                 }
             }
         });

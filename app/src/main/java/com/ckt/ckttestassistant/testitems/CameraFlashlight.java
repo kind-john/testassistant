@@ -1,9 +1,12 @@
 package com.ckt.ckttestassistant.testitems;
 
+import android.app.Instrumentation;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.os.SystemClock;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.EditText;
 
@@ -26,8 +29,6 @@ public class CameraFlashlight extends TestItemBase {
     private static final String TITLE = "Camera Flashlight";
     private static final String TAG = "CameraFlashlight";
 
-    private int mDelay = 0;
-
     public CameraFlashlight() {
         super();
         String className = this.getClass().getName();
@@ -44,14 +45,6 @@ public class CameraFlashlight extends TestItemBase {
         setTitle(TITLE);
     }
 
-    public int getDelay() {
-        return mDelay;
-    }
-
-    public void setDelay(int delay) {
-        this.mDelay = delay;
-    }
-
     @Override
     public boolean isSuccess() {
         return false;
@@ -66,6 +59,21 @@ public class CameraFlashlight extends TestItemBase {
     public boolean doExecute(UseCaseManager.ExecuteCallback executeCallback, boolean finish) {
         LogUtils.d(TAG, "CameraFlashlight doExecute");
         //do test,then close progressview
+        new Thread() {
+            public void run() {
+                try{
+                    Instrumentation inst=new Instrumentation();
+                    inst.sendPointerSync(MotionEvent.obtain(SystemClock.uptimeMillis(),
+                            SystemClock.uptimeMillis(), MotionEvent.ACTION_DOWN, 680, 810, 0));
+                    inst.sendPointerSync(MotionEvent.obtain(SystemClock.uptimeMillis(),
+                            SystemClock.uptimeMillis(), MotionEvent.ACTION_UP, 680, 810, 0));
+
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+        }.start();
+        task2(true);
         if(finish && executeCallback != null){
             LogUtils.d(TAG, "stop test handler");
             executeCallback.stopTestHandler();

@@ -149,6 +149,15 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
         mContext.startService(it);
     }
 
+    private void closeWaitProgress(Handler handler, boolean finish) {
+        if(finish){
+            Message msg = Message.obtain();
+            msg.what = MyConstants.UPDATE_PROGRESS_CLOSE;
+            handler.sendMessage(msg);
+        }else{
+            LogUtils.e(TAG, "error: progress close fail!!!");
+        }
+    }
     /**
      * 获取测试状态
      * @return
@@ -361,6 +370,7 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
         UseCaseBase uc = new CktUseCase(mContext);
         uc.setTitle(name);
         uc.setChildren(selectedTestItems);
+        uc.setChildrenSN();
         ArrayList<TestBase> ucs = new ArrayList<TestBase>();
         ucs.add(uc);
         try {
@@ -409,10 +419,12 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
             LogUtils.d(TAG, "startExecuteThread exit : no selected use case");
             return ;
         }
-        for (int index = 0; index < mSelectedUseCases.size() - 1; index++){
+        for (int index = 0; index < mSelectedUseCases.size(); index++){
             TestBase tb = mSelectedUseCases.get(index);
             tb.task();
         }
+        closeWaitProgress(mHandler, true);
+        notifyAllObserverOfFinishExecute();
     }
     /*@Override
     public void startExecuteThread() {
@@ -432,19 +444,19 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
     public void updateSelectedUseCases(int index) {
         TestBase tb = mAllUseCases.get(index).clone();
         //tb.setChecked(true);
-       /* int sn = mSelectedUseCases == null ? 0 : mSelectedUseCases.size();
+        int sn = mSelectedUseCases == null ? 0 : mSelectedUseCases.size();
         tb.setSN(sn);
         List<TestBase> tis = tb.getChildren();
         if(tis != null && !tis.isEmpty()){
             for(TestBase item : tis){
-                int uc_id = item.getID(); //可以删除
-                int uc_sn = item.getSN();
-                LogUtils.d(TAG, "uc_id = "+uc_id+"; uc_sn = "+uc_sn);
+                //int uc_id = item.getID(); //可以删除
+                //int uc_sn = item.getSN();
+                //LogUtils.d(TAG, "uc_id = "+uc_id+"; uc_sn = "+uc_sn);
                 item.setParent(tb);
                 //item.setUseCaseID(uc_id);
                 //item.setUseCaseSN(uc_sn);
             }
-        }*/
+        }
         mSelectedUseCases.add(tb);
         //saveSelectedUseCaseToXml();
         notifySelectedUseCaseChange();

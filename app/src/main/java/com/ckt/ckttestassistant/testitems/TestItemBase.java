@@ -8,6 +8,7 @@ import android.os.Message;
 import com.ckt.ckttestassistant.CktResultsHelper;
 import com.ckt.ckttestassistant.TestBase;
 import com.ckt.ckttestassistant.UseCaseManager;
+import com.ckt.ckttestassistant.adapter.CktItemDecoration;
 import com.ckt.ckttestassistant.usecases.UseCaseBase;
 import com.ckt.ckttestassistant.utils.LogUtils;
 import com.ckt.ckttestassistant.utils.MyConstants;
@@ -132,7 +133,8 @@ public abstract class TestItemBase extends TestBase implements CktResultsHelper.
                 mCompletedTimes++;
                 mFailTimes++;   //先假设本次失败，异步返回成功以后再减1
                 mUseCaseManager.updateTestItemOfSelectedUseCaseXml(this);
-                updateWaitProgress(mUseCaseManager.getHandler(), mCompletedTimes);
+                updateWaitProgress(mUseCaseManager.getHandler(), mCompletedTimes - 1);
+                sleep(mDelay);
                 mPassed = doExecute(null, false);
                 List<TestBase> children = getChildren();
                 if(children != null && !children.isEmpty()){
@@ -149,6 +151,9 @@ public abstract class TestItemBase extends TestBase implements CktResultsHelper.
             }
         }else{
             //completed
+        }
+        if(mCompletedTimes == mTimes){
+            initTestItems();
         }
         return mPassed;
     }
@@ -204,12 +209,10 @@ public abstract class TestItemBase extends TestBase implements CktResultsHelper.
         return isPassed;
     }*/
 
-    private void initTestItems(TestItemBase ti) {
-        int completedTimes = ti.getCompletedTimes();
-        int totalTimes = ti.getTimes();
-        if(totalTimes > 0 && (completedTimes == totalTimes)){
-            ti.setCompletedTimes(0);
-            ti.setFailTimes(0);
+    private void initTestItems() {
+        if(mTimes > 0 && (mCompletedTimes == mTimes)){
+            mCompletedTimes = 0;
+            mFailTimes = 0;
         }
     }
 
@@ -223,16 +226,6 @@ public abstract class TestItemBase extends TestBase implements CktResultsHelper.
         data.putString(MyConstants.PROGRESS_MESSAGE, mTitle + " : "+times);
         msg.setData(data);
         handler.sendMessage(msg);
-    }
-
-    private void closeWaitProgress(Handler handler, boolean finish) {
-        if(finish){
-            Message msg = Message.obtain();
-            msg.what = MyConstants.UPDATE_PROGRESS_CLOSE;
-            handler.sendMessage(msg);
-        }else{
-            LogUtils.e(TAG, "error: progress close fail!!!");
-        }
     }
 
    /* public void setParameters(Context context){

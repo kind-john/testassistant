@@ -30,8 +30,6 @@ public class SimulateBackKey extends TestItemBase {
     private static final String TITLE = "Simulate Back Key";
     private static final String TAG = "SimulateBackKey";
 
-    private int mDelay = 0;
-
     public SimulateBackKey() {
         super();
         String className = this.getClass().getName();
@@ -46,14 +44,6 @@ public class SimulateBackKey extends TestItemBase {
         setClassName(className);
         setID(ID);
         setTitle(TITLE);
-    }
-
-    public int getDelay() {
-        return mDelay;
-    }
-
-    public void setDelay(int delay) {
-        this.mDelay = delay;
     }
 
     @Override
@@ -100,17 +90,17 @@ public class SimulateBackKey extends TestItemBase {
         new Thread() {
             public void run() {
                 try {
-                    /*Thread.sleep(100); // TouchEvent
-                    long now = SystemClock.uptimeMillis();
-                    KeyEvent down = new KeyEvent(now, now,
-                            KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK, 0);
-                    KeyEvent up = new KeyEvent(now, now, KeyEvent.ACTION_UP,
-                            KeyEvent.KEYCODE_BACK, 0);
+                /*Thread.sleep(100); // TouchEvent
+                long now = SystemClock.uptimeMillis();
+                KeyEvent down = new KeyEvent(now, now,
+                        KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK, 0);
+                KeyEvent up = new KeyEvent(now, now, KeyEvent.ACTION_UP,
+                        KeyEvent.KEYCODE_BACK, 0);
 
-                    InputManager.getInstance().injectInputEvent(down,
-                            InputManager.INJECT_INPUT_EVENT_MODE_ASYNC);
-                    InputManager.getInstance().injectInputEvent(up,
-                            InputManager.INJECT_INPUT_EVENT_MODE_ASYNC);*/
+                InputManager.getInstance().injectInputEvent(down,
+                        InputManager.INJECT_INPUT_EVENT_MODE_ASYNC);
+                InputManager.getInstance().injectInputEvent(up,
+                        InputManager.INJECT_INPUT_EVENT_MODE_ASYNC);*/
                     try {
                         Instrumentation inst = new Instrumentation();
                         inst.sendKeyDownUpSync(KeyEvent.KEYCODE_BACK);
@@ -122,6 +112,7 @@ public class SimulateBackKey extends TestItemBase {
                 }
             }
         }.start();
+
         //do test,then close progressview
         if(finish && executeCallback != null){
             LogUtils.d(TAG, "stop test handler");

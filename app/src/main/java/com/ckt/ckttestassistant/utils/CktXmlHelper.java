@@ -5,18 +5,15 @@ import android.util.Xml;
 import android.widget.Toast;
 
 import com.ckt.ckttestassistant.TestBase;
-import com.ckt.ckttestassistant.testitems.CktTestItem;
 import com.ckt.ckttestassistant.testitems.Reboot;
 import com.ckt.ckttestassistant.testitems.TestItemBase;
 import com.ckt.ckttestassistant.testitems.WifiSwitchOn;
-import com.ckt.ckttestassistant.usecases.CktUseCase;
 import com.ckt.ckttestassistant.usecases.UseCaseBase;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlSerializer;
@@ -27,15 +24,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Properties;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
@@ -165,6 +157,7 @@ public class CktXmlHelper {
 
         createTextElement(doc, usecaseE, MyConstants.XMLTAG_USECASE_COMPLETEDTIMES, String.valueOf(uc.getCompletedTimes()));
 
+        uc.saveParameters(doc, usecaseE);
         for (TestBase tb : uc.getChildren()) {
             if(tb instanceof UseCaseBase){
                 createUseCaseElement(doc, usecaseE, (UseCaseBase)tb);
@@ -325,6 +318,9 @@ public class CktXmlHelper {
         Element e = (Element) element.getParentNode();
         int level = 0;
         while(e != null){
+            if("usecases".equals(e.getTagName())){
+                break;
+            }
             level++;
             e = (Element) e.getParentNode();
         }
@@ -574,13 +570,7 @@ public class CktXmlHelper {
                             LogUtils.d(TAG, "delay : " + delay);
                             if (testitem != null) {
                                 LogUtils.d(TAG, "testitem delay : " + delay);
-                                if (testitem instanceof WifiSwitchOn) {
-                                    ((WifiSwitchOn) testitem).setDelay(delay);
-                                } else if (testitem instanceof Reboot) {
-                                    ((Reboot) testitem).setDelay(delay);
-                                } else {
-                                    LogUtils.d(TAG, "there is no " + MyConstants.XMLTAG_TESTITEM_DELAY);
-                                }
+                                testitem.setDelay(delay);
                             }
                         } else {
                             LogUtils.e(TAG, "error: some new tag has not parser!!! name = " + name);

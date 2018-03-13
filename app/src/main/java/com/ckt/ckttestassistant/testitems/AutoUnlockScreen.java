@@ -1,5 +1,6 @@
 package com.ckt.ckttestassistant.testitems;
 
+import android.app.KeyguardManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.support.v7.app.AlertDialog;
@@ -16,6 +17,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xmlpull.v1.XmlSerializer;
+
+import static android.content.Context.KEYGUARD_SERVICE;
 
 /**
  * Created by ckt on 18-1-31.
@@ -66,6 +69,11 @@ public class AutoUnlockScreen extends TestItemBase {
     public boolean doExecute(UseCaseManager.ExecuteCallback executeCallback, boolean finish) {
         LogUtils.d(TAG, "AutoUnlockScreen doExecute");
         //do test,then close progressview
+        KeyguardManager keyguardManager = (KeyguardManager) mContext
+                .getSystemService(KEYGUARD_SERVICE);
+        KeyguardManager.KeyguardLock keyguardLock = keyguardManager.newKeyguardLock("unLock");
+        keyguardLock.disableKeyguard();
+
         if(finish && executeCallback != null){
             LogUtils.d(TAG, "stop test handler");
             executeCallback.stopTestHandler();

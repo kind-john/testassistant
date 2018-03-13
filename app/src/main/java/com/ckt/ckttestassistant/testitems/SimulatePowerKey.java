@@ -68,6 +68,11 @@ public class SimulatePowerKey extends TestItemBase {
     public boolean doExecute(UseCaseManager.ExecuteCallback executeCallback, boolean finish) {
         LogUtils.d(TAG, "SimulatePowerKey doExecute");
         //do test,then close progressview
+        try {
+            Thread.sleep(mDelay);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         new Thread() {
             public void run() {
                 try {

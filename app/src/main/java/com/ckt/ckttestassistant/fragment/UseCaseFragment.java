@@ -220,8 +220,9 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
         mCurrentUseCase = mAdapter.setFocus(0);
         mAdapter.setUpdateShowPanelListener(new UseCaseTreeAdapter.UpdateShowPanelListener() {
             @Override
-            public void updateShowPanelForAdd(int index) {
-                TestBase tb = mAllItems.get(index);
+            public void updateShowPanelForAdd(TestBase tb) {
+                //TestBase tb = mAllItems.get(index);
+                int index = mAllItems.indexOf(tb);
                 showPropertySetting((UseCaseBase)tb, index);
             }
         });
@@ -349,7 +350,7 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
         LogUtils.d(TAG, "enter needStartTest");
         //boolean need = false;
         if(mSelectedItems != null && !mSelectedItems.isEmpty()){
-            return isTestCompleted(mSelectedItems);
+            return !isTestCompleted(mSelectedItems);
         }
         /*if(!need){
             mUseCaseManager.setTestStatus(false);

@@ -13,6 +13,9 @@ import com.ckt.ckttestassistant.utils.ExcelUtils;
 import com.ckt.ckttestassistant.utils.LogUtils;
 import com.ckt.ckttestassistant.utils.MyConstants;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.xmlpull.v1.XmlSerializer;
 
 import java.io.File;
@@ -107,5 +110,22 @@ public class CktUseCase extends UseCaseBase {
     @Override
     public void saveParametersToXml(XmlSerializer serializer) {
 
+    }
+
+    @Override
+    public void setChildrenSN() {
+        if(children != null && !children.isEmpty()){
+            for (int i = 0; i < children.size(); i++){
+                children.get(i).setSN(i);
+            }
+        }
+    }
+
+    @Override
+    public void saveParameters(Document doc, Element root) {
+        Element e1 = doc.createElement(MyConstants.XMLTAG_USECASE_DELAY);
+        Node n1 = doc.createTextNode(""+mDelay);
+        e1.appendChild(n1);
+        root.appendChild(e1);
     }
 }

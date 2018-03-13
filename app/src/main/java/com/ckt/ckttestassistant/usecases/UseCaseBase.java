@@ -11,6 +11,8 @@ import com.ckt.ckttestassistant.testitems.TestItemBase;
 import com.ckt.ckttestassistant.utils.LogUtils;
 import com.ckt.ckttestassistant.utils.MyConstants;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.xmlpull.v1.XmlSerializer;
 
 import java.io.Closeable;
@@ -26,18 +28,9 @@ public abstract class UseCaseBase extends TestBase{
     private static final String TAG = "UseCaseBase";
     protected UseCaseManager mUseCaseManager;
     protected UseCaseBase mNextUseCase;
-    protected int mDelay = 0;
 
     protected Context mContext;
     private boolean mPassed = false;
-
-    public int getDelay() {
-        return mDelay;
-    }
-
-    public void setDelay(int delay) {
-        this.mDelay = delay;
-    }
 
     public String getTitle() {
         return mTitle;
@@ -66,7 +59,7 @@ public abstract class UseCaseBase extends TestBase{
 
     @Override
     public boolean task() {
-        boolean isPassed = false;
+        boolean isPassed = true;
         try{
             if(children == null || children.isEmpty()){
                 return true;
@@ -79,13 +72,16 @@ public abstract class UseCaseBase extends TestBase{
             if(needTimes > 0){
                 for (int times = 0; times < needTimes; times++) {
                     try{
+                        Thread.sleep(mDelay);
                         mCompletedTimes++;
                         mFailTimes++;
                         String path = mContext.getFilesDir()+"/selected_usecases.xml";
                         mUseCaseManager.updateUseCaseOfXml(path, this);
-                        updateWaitProgress(mUseCaseManager.getHandler(), times);
+                        updateWaitProgress(mUseCaseManager.getHandler(), mCompletedTimes - 1);
                         for (TestBase tb : children){
-                            isPassed = tb.task();
+                            if(!tb.task()){
+                                isPassed = false;
+                            }
                         }
                     }catch (Exception e){
                         isPassed = false;
@@ -210,4 +206,8 @@ public abstract class UseCaseBase extends TestBase{
             throw new Exception();
         }
     }
+
+    public abstract void setChildrenSN();
+
+    public abstract void saveParameters(Document doc, Element root);
 }

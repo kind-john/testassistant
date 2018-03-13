@@ -63,7 +63,7 @@ public abstract class TreeListViewAdapter extends BaseAdapter
          *
          * @param index
          */
-        void updateShowPanelForAdd(int index);
+        void updateShowPanelForAdd(TestBase tb);
     }
     public void setUpdateShowPanelListener(UpdateShowPanelListener listener){
         this.mUpdateShowPanelListener = listener;

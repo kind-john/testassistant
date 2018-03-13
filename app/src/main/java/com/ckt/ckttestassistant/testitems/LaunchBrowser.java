@@ -3,6 +3,7 @@ package com.ckt.ckttestassistant.testitems;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
@@ -67,10 +68,11 @@ public class LaunchBrowser extends TestItemBase {
     @Override
     public boolean doExecute(UseCaseManager.ExecuteCallback executeCallback, boolean finish) {
         LogUtils.d(TAG, "LaunchBrowser doExecute");
-        Intent it = new Intent(MyConstants.BROWSER_ACTION);
-        it.addCategory("ndroid.intent.category.BROWSABLE");
-        it.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        mContext.startActivity(it);
+        Uri uri = Uri.parse("https://www.baidu.com");
+        Intent intent = new Intent(Intent.ACTION_VIEW,uri);
+        intent.setClassName("com.android.chrome","org.chromium.chrome.browser.ChromeTabbedActivity");
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        mContext.startActivity(intent);
         task2(true);
         //new MyAsyncTask().execute();
         //doTask();

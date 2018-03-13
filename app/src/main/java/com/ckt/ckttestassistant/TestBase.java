@@ -39,6 +39,16 @@ public abstract class TestBase  implements Cloneable {
     protected String mClassName = "ClassName";
     protected int ID = -1;
     protected int SN = -1;
+
+    public int getDelay() {
+        return mDelay;
+    }
+
+    public void setDelay(int delay) {
+        this.mDelay = delay;
+    }
+
+    protected int mDelay = 0;
     /**
      * 父TestBase
      */

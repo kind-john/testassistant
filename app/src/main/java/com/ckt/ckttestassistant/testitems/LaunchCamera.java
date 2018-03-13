@@ -2,6 +2,8 @@ package com.ckt.ckttestassistant.testitems;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.provider.MediaStore;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,8 +28,6 @@ public class LaunchCamera extends TestItemBase {
     private static final String TITLE = "Launch Camera";
     private static final String TAG = "WifiSwitchOn";
 
-    private int mDelay = 0;
-
     public LaunchCamera() {
         super();
         String className = this.getClass().getName();
@@ -44,14 +44,6 @@ public class LaunchCamera extends TestItemBase {
         setTitle(TITLE);
     }
 
-    public int getDelay() {
-        return mDelay;
-    }
-
-    public void setDelay(int delay) {
-        this.mDelay = delay;
-    }
-
     @Override
     public boolean isSuccess() {
         return false;
@@ -66,10 +58,13 @@ public class LaunchCamera extends TestItemBase {
     public boolean doExecute(UseCaseManager.ExecuteCallback executeCallback, boolean finish) {
         LogUtils.d(TAG, "WifiSwitchOn doExecute");
         //do test,then close progressview
+        Intent intent = new Intent(MediaStore.INTENT_ACTION_STILL_IMAGE_CAMERA);
+        mContext.startActivity(intent);
         if(finish && executeCallback != null){
             LogUtils.d(TAG, "stop test handler");
             executeCallback.stopTestHandler();
         }
+        task2(true);
         return false;
     }
 

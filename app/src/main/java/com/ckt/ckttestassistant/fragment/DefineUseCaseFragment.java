@@ -381,8 +381,8 @@ public class DefineUseCaseFragment extends Fragment {
         mSelectedTestItems = selectItems;
         if(mSelectedTestItems != null && !mSelectedTestItems.isEmpty()){
             int sn = mSelectedTestItems.size() - 1;
-            LogUtils.d(TAG, "set TestItem SN : "+sn);
-            mSelectedTestItems.get(mSelectedTestItems.size() - 1).setSN(sn);
+            //LogUtils.d(TAG, "set TestItem SN : "+sn);
+            //mSelectedTestItems.get(mSelectedTestItems.size() - 1).setSN(sn);
         }
 
         generateShowPanelString(mSelectedTestItems);

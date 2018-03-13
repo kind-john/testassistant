@@ -89,7 +89,7 @@ public class AirPlaneSwitchOn extends TestItemBase {
         //do test,then close progressview
         if(finish && executeCallback != null){
             LogUtils.d(TAG, "stop test handler");
-            //executeCallback.stopTestHandler();
+            executeCallback.stopTestHandler();
         }
         return false;
     }
