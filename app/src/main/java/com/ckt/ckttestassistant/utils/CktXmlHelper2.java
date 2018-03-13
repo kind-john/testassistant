@@ -3,6 +3,7 @@ package com.ckt.ckttestassistant.utils;
 import android.content.Context;
 import android.util.Xml;
 
+import com.ckt.ckttestassistant.TestBase;
 import com.ckt.ckttestassistant.testitems.CktTestItem;
 import com.ckt.ckttestassistant.testitems.Reboot;
 import com.ckt.ckttestassistant.testitems.TestItemBase;
@@ -155,7 +156,7 @@ public class CktXmlHelper2 {
                             boolean isChecked = Boolean.parseBoolean(parser.nextText());
                             LogUtils.d(TAG, "usecase isChecked : " + isChecked);
                             if(usecase != null){
-                                usecase.setIsChecked(isChecked);
+                                usecase.setChecked(isChecked);
                             }
                         }else if(name.equals(MyConstants.XMLTAG_USECASE_DELAY)){
                             int delay = Integer.parseInt(parser.nextText());
@@ -203,7 +204,7 @@ public class CktXmlHelper2 {
                             boolean isChecked = Boolean.parseBoolean(parser.nextText());
                             LogUtils.d(TAG, "testitem isChecked : " + isChecked);
                             if(testitem != null){
-                                testitem.setIsChecked(isChecked);
+                                testitem.setChecked(isChecked);
                             }
                         }else if(name.equals(MyConstants.XMLTAG_TESTITEM)){
                             if (usecase != null) {
@@ -398,7 +399,8 @@ public class CktXmlHelper2 {
             serializer.startTag(null, MyConstants.XMLTAG_USECASE_COMPLETEDTIMES);
             serializer.text(String.valueOf(uc.getCompletedTimes()));
             serializer.endTag(null, MyConstants.XMLTAG_USECASE_COMPLETEDTIMES);
-            for(TestItemBase ti : uc.getTestItems()){
+            for(TestBase tb : uc.getChildren()){
+                TestItemBase ti = (TestItemBase)tb;
                 serializer.startTag(null, MyConstants.XMLTAG_TESTITEM);
                 serializer.attribute(null, "id", ti.getID()+"");
                 serializer.attribute(null, "classname", ti.getClassName());

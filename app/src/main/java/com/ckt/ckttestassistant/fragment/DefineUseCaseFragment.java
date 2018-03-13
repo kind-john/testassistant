@@ -18,6 +18,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.ckt.ckttestassistant.R;
+import com.ckt.ckttestassistant.TestBase;
 import com.ckt.ckttestassistant.TestCategory;
 import com.ckt.ckttestassistant.UseCaseManager;
 import com.ckt.ckttestassistant.adapter.CktItemDecoration;
@@ -48,8 +49,8 @@ public class DefineUseCaseFragment extends Fragment {
     private ArrayList<TestCategory> mTestCategoryItems = new ArrayList<TestCategory>();
     private TestCategoryListAdapter mAdapter;
     private RecyclerView mTestItemList;
-    private HashMap<String, ArrayList<TestItemBase>> mAllTestItems = new HashMap<String,ArrayList<TestItemBase>>();
-    private ArrayList<TestItemBase> mSelectedTestItems = new ArrayList<TestItemBase>();
+    private HashMap<String, ArrayList<TestBase>> mAllTestItems = new HashMap<String,ArrayList<TestBase>>();
+    private ArrayList<TestBase> mSelectedTestItems = new ArrayList<TestBase>();
     private StringBuilder mShowPanelInfo = new StringBuilder();
     private String[] mTestCategory = {
         "camera",
@@ -115,6 +116,8 @@ public class DefineUseCaseFragment extends Fragment {
             "com.ckt.ckttestassistant.testitems.SimulateHomeKey",
             "com.ckt.ckttestassistant.testitems.SimulateMenuKey",
             "com.ckt.ckttestassistant.testitems.SimulatePowerKey",
+            "com.ckt.ckttestassistant.testitems.SimulateVolumeDownKey",
+            "com.ckt.ckttestassistant.testitems.SimulateVolumeUpKey",
             "com.ckt.ckttestassistant.testitems.WakeUp",
             "com.ckt.ckttestassistant.testitems.Reboot",
             "com.ckt.ckttestassistant.testitems.CheckMMIInformation"
@@ -186,7 +189,7 @@ public class DefineUseCaseFragment extends Fragment {
             mTestCategoryItems.add(new TestCategory(mTestCategory[i]));
         }
         for (int j = 0; j < mTestItems.length; j++){
-            ArrayList<TestItemBase> itemList = new ArrayList<TestItemBase>();
+            ArrayList<TestBase> itemList = new ArrayList<TestBase>();
             for(int k = 0; k < mTestItems[j].length; k++){
                 try {
                     Class tiClassName = Class.forName(mTestItems[j][k]);
@@ -248,7 +251,7 @@ public class DefineUseCaseFragment extends Fragment {
                 LogUtils.d(TAG, "start = "+start+ "; end = "+end);
                 mShowPanelInfo.delete(start, end);*/
                 if(mSelectedTestItems != null && !mSelectedTestItems.isEmpty()){
-                    TestItemBase ti = mSelectedTestItems.get(mSelectedTestItems.size() - 1);
+                    TestBase ti = mSelectedTestItems.get(mSelectedTestItems.size() - 1);
                     ti.setSN(-1);
                     mSelectedTestItems.remove(ti);
                 }
@@ -321,10 +324,10 @@ public class DefineUseCaseFragment extends Fragment {
                 tc = tcs.get(i);
                 if(i == 0){
                     LogUtils.d(TAG, "initTestCategoryListFocus : 0");
-                    tc.setIsChecked(true);
+                    tc.setChecked(true);
                 }else{
                     LogUtils.d(TAG, "initTestCategoryListFocus : "+i);
-                    tc.setIsChecked(false);
+                    tc.setChecked(false);
                 }
             }
         }
@@ -334,14 +337,14 @@ public class DefineUseCaseFragment extends Fragment {
         TestItemListAdapter adapter = new TestItemListAdapter(mAllTestItems.get(mTestCategory[mCurrentType]), mSelectedTestItems, true);
         adapter.setUpdateShowPanelListener(new TestItemListAdapter.UpdateShowPanelListener() {
             @Override
-            public void updateShowPanel(ArrayList<TestItemBase> info) {
+            public void updateShowPanel(ArrayList<TestBase> info) {
                 setShowPanel(info);
             }
         });
         adapter.setOnItemClickListener(new OnItemClickListener() {
             @Override
             public void onItemClick(int pos) {
-                TestItemBase ti = mAllTestItems.get(mTestCategory[mCurrentType]).get(pos);
+                TestItemBase ti = (TestItemBase)mAllTestItems.get(mTestCategory[mCurrentType]).get(pos);
                 LogUtils.d(TAG, "test item title clicked :"+pos+" : "+ti.getClass().getName());
                 ti.showPropertyDialog(mActivity, false);
             }
@@ -354,14 +357,14 @@ public class DefineUseCaseFragment extends Fragment {
         TestItemListAdapter adapter = new TestItemListAdapter(mAllTestItems.get(mTestCategory[mCurrentType]), mSelectedTestItems, true);
         adapter.setUpdateShowPanelListener(new TestItemListAdapter.UpdateShowPanelListener() {
             @Override
-            public void updateShowPanel(ArrayList<TestItemBase> info) {
+            public void updateShowPanel(ArrayList<TestBase> info) {
                 setShowPanel(info);
             }
         });
         adapter.setOnItemClickListener(new OnItemClickListener() {
             @Override
             public void onItemClick(int pos) {
-                TestItemBase ti = mAllTestItems.get(mTestCategory[mCurrentType]).get(pos);
+                TestItemBase ti = (TestItemBase)mAllTestItems.get(mTestCategory[mCurrentType]).get(pos);
                 LogUtils.d(TAG, "test item title clicked :"+pos+" : "+ti.getClass().getName());
                 ti.showPropertyDialog(mActivity, false);
             }
@@ -374,7 +377,7 @@ public class DefineUseCaseFragment extends Fragment {
         mTestItemList.setAdapter(adapter);
     }
 
-    public void setShowPanel(ArrayList<TestItemBase> selectItems){
+    public void setShowPanel(ArrayList<TestBase> selectItems){
         mSelectedTestItems = selectItems;
         if(mSelectedTestItems != null && !mSelectedTestItems.isEmpty()){
             int sn = mSelectedTestItems.size() - 1;
@@ -386,7 +389,7 @@ public class DefineUseCaseFragment extends Fragment {
         mTestItemTextView.setText(mShowPanelInfo.toString());
     }
 
-    private void generateShowPanelString(ArrayList<TestItemBase> selectItems) {
+    private void generateShowPanelString(ArrayList<TestBase> selectItems) {
         if (selectItems != null && !selectItems.isEmpty()){
             mShowPanelInfo.delete(12, mShowPanelInfo.length());
             for (int i = 0; i < selectItems.size(); i++){

@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 
+import com.ckt.ckttestassistant.TestBase;
 import com.ckt.ckttestassistant.UseCaseManager;
 import com.ckt.ckttestassistant.testitems.TestItemBase;
 import com.ckt.ckttestassistant.utils.LogUtils;
@@ -20,22 +21,15 @@ import java.util.ArrayList;
  * Created by ckt on 18-1-26.
  */
 
-public abstract class UseCaseBase implements Cloneable{
-    private static final int DEFAULT_TIMES = 1;
+public abstract class UseCaseBase extends TestBase{
+
     private static final String TAG = "UseCaseBase";
     protected UseCaseManager mUseCaseManager;
-    protected ArrayList<TestItemBase> mTestItems = new ArrayList<TestItemBase>();
     protected UseCaseBase mNextUseCase;
-    protected int mTimes = DEFAULT_TIMES;
     protected int mDelay = 0;
-    protected int mFailTimes = 0;
-    protected int mCompletedTimes = 0;
-    protected String mTitle = "case";
-    protected  boolean mIsChecked = false;
-    protected int ID = -1;
-    protected int SN = -1;
-    protected String mClassName = "UseCaseBase";
+
     protected Context mContext;
+    private boolean mPassed = false;
 
     public int getDelay() {
         return mDelay;
@@ -45,20 +39,12 @@ public abstract class UseCaseBase implements Cloneable{
         this.mDelay = delay;
     }
 
-    public int getSN() {
-        return SN;
+    public String getTitle() {
+        return mTitle;
     }
 
-    public void setSN(int sn) {
-        this.SN = sn;
-    }
-
-    public int getCompletedTimes() {
-        return mCompletedTimes;
-    }
-
-    public void setCompletedTimes(int completedTimes) {
-        this.mCompletedTimes = completedTimes;
+    public void setTitle(String title) {
+        super.setTitle(title);
     }
 
     public UseCaseBase() {
@@ -74,48 +60,67 @@ public abstract class UseCaseBase implements Cloneable{
         this.mContext = context;
     }
 
-    public int getFailTimes() {
-        return mFailTimes;
-    }
-
-    public void setFailTimes(int failTimes) {
-        this.mFailTimes = failTimes;
-    }
-
     public void setNextUseCase(UseCaseBase nextUseCase){
         this.mNextUseCase = nextUseCase;
     }
 
-    public String getClassName() {
-        return mClassName;
-    }
-
-    public void setClassName(String className) {
-        this.mClassName = className;
-    }
-
     @Override
-    public UseCaseBase clone() {
-        UseCaseBase clone = null;
-        try {
-            clone = (UseCaseBase) super.clone();
-        } catch (CloneNotSupportedException e) {
-            e.printStackTrace();
-        }
-        return clone;
-    }
-
-    public boolean execute(Handler handler, UseCaseManager.ExecuteCallback executeCallback){
+    public boolean task() {
         boolean isPassed = false;
         try{
-            if(mTestItems == null || mTestItems.isEmpty()){
+            if(children == null || children.isEmpty()){
+                return true;
+            }
+            createExcelSheet();
+            int needTimes = mTimes - mCompletedTimes;
+            LogUtils.d(TAG, "mCompletedTimes = "+mCompletedTimes);
+            LogUtils.d(TAG, "mTimes = "+mTimes);
+            LogUtils.d(TAG, "needTimes = "+needTimes);
+            if(needTimes > 0){
+                for (int times = 0; times < needTimes; times++) {
+                    try{
+                        mCompletedTimes++;
+                        mFailTimes++;
+                        String path = mContext.getFilesDir()+"/selected_usecases.xml";
+                        mUseCaseManager.updateUseCaseOfXml(path, this);
+                        updateWaitProgress(mUseCaseManager.getHandler(), times);
+                        for (TestBase tb : children){
+                            isPassed = tb.task();
+                        }
+                    }catch (Exception e){
+                        isPassed = false;
+                        e.printStackTrace();
+                    }finally {
+                        if(isPassed){
+                            mFailTimes--;
+                            String path = mContext.getFilesDir()+"/selected_usecases.xml";
+                            mUseCaseManager.updateUseCaseOfXml(path, this);
+                        }
+                    }
+                }
+            }else{
+                //is completed
+            }
+            if(mCompletedTimes == mTimes){
+                initTestItemOfUseCase();
+            }
+        }catch (Exception e){
+            isPassed = false;
+            e.printStackTrace();
+        }
+        return isPassed;
+    }
+    /*public boolean execute(Handler handler, UseCaseManager.ExecuteCallback executeCallback){
+        boolean isPassed = false;
+        try{
+            if(children == null || children.isEmpty()){
                 return true;
             }
 
-            for (int index = 0; index < mTestItems.size() - 1; index++){
-                mTestItems.get(index).setNextTestItem(mTestItems.get(index + 1));
+            *//*for (int index = 0; index < children.size() - 1; index++){
+                children.get(index).setNextTestItem(children.get(index + 1));
             }
-            mTestItems.get(mTestItems.size() - 1).setNextTestItem(null);
+            children.get(children.size() - 1).setNextTestItem(null);*//*
 
             int needTimes = mTimes - mCompletedTimes;
             boolean usecaseFinish = false;
@@ -133,7 +138,7 @@ public abstract class UseCaseBase implements Cloneable{
                             usecaseFinish = true;
                             LogUtils.d(TAG, "usecaseFinish 2 : "+usecaseFinish);
                         }
-                        isPassed = mTestItems.get(0).execute(handler, executeCallback, usecaseFinish);
+                        isPassed = (children.get(0)).execute(handler, executeCallback, usecaseFinish);
                     }catch (Exception e){
                         e.printStackTrace();
                     }finally {
@@ -158,12 +163,16 @@ public abstract class UseCaseBase implements Cloneable{
             isPassed = false;
         }
         return true;
-    }
+    }*/
 
     private void initTestItemOfUseCase() {
-        for (TestItemBase ti : mTestItems){
-            ti.setCompletedTimes(0);
-            ti.setFailTimes(0);
+        for (TestBase ti : children){
+            if(ti instanceof UseCaseBase){
+                ((UseCaseBase)ti).initTestItemOfUseCase();
+            }else if(ti instanceof TestItemBase){
+                ((TestItemBase)ti).setCompletedTimes(0);
+                ((TestItemBase)ti).setFailTimes(0);
+            }
         }
     }
 
@@ -175,84 +184,30 @@ public abstract class UseCaseBase implements Cloneable{
         }
     }
 
-    protected abstract void writeUsecaseLabelToExcel(int times);
-
     protected abstract void updateWaitProgress(Handler handler, int times);
 
     protected abstract void createExcelSheet();
 
-    public void addTestItem(TestItemBase testItem){
-        mTestItems.add(testItem);
-    }
-
-    public void deleteLatestTestItem(){
-        if(mTestItems != null && !mTestItems.isEmpty()){
-            mTestItems.remove(mTestItems.size() - 1);
-        }
+    public void addTestItem(TestBase testItem){
+        children.add(testItem);
     }
 
     public void saveParametersToXml(XmlSerializer serializer) throws Exception{
         try {
             serializer.startTag(null, "usecase");
             serializer.attribute(null, "id", "1");
-            if(mTestItems != null){
-                for (TestItemBase item : mTestItems){
-                    item.saveParametersToXml(serializer);
+            if(children != null){
+                for (TestBase item : children){
+                    if(item instanceof UseCaseBase){
+                        saveParametersToXml(serializer);
+                    }else if(item instanceof TestItemBase){
+                        ((TestItemBase)item).saveParametersToXml(serializer);
+                    }
                 }
             }
             serializer.endTag(null, "usecase");
         } catch (Exception e) {
             throw new Exception();
         }
-    }
-
-    public void deleteAllTestItems(){
-        if(mTestItems != null && !mTestItems.isEmpty()){
-            for (int index = 0; index < mTestItems.size(); index++){
-                mTestItems.get(index).setNextTestItem(null);
-            }
-            mTestItems.clear();
-        }
-    }
-
-    public void setTestItems(ArrayList<TestItemBase> testItems) {
-        this.mTestItems = testItems;
-    }
-
-    public ArrayList<TestItemBase> getTestItems() {
-        return mTestItems;
-    }
-
-    public int getTimes() {
-        return mTimes;
-    }
-
-    public void setTimes(int times) {
-        this.mTimes = times;
-    }
-
-    public String getTitle() {
-        return mTitle;
-    }
-
-    public void setTitle(String title) {
-        this.mTitle = title;
-    }
-
-    public boolean isChecked() {
-        return mIsChecked;
-    }
-
-    public void setIsChecked(boolean isChecked) {
-        this.mIsChecked = isChecked;
-    }
-
-
-    public void setID(int id) {
-        this.ID = id;
-    }
-
-    public int getID() {
-        return ID;
     }
 }

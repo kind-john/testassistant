@@ -17,11 +17,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.ckt.ckttestassistant.TestBase;
 import com.ckt.ckttestassistant.UseCaseManager;
 import com.ckt.ckttestassistant.adapter.CktItemDecoration;
+import com.ckt.ckttestassistant.adapter.TreeListViewAdapter;
+import com.ckt.ckttestassistant.adapter.UseCaseTreeAdapter;
 import com.ckt.ckttestassistant.interfaces.OnItemClickListener;
 import com.ckt.ckttestassistant.testitems.TestItemBase;
 import com.ckt.ckttestassistant.utils.LogUtils;
@@ -35,6 +39,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Created by ckt on 18-1-30.
@@ -44,12 +49,12 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
         UseCaseManager.SelectedUseCaseChangeObserver, UseCaseManager.FinishExecuteObserver{
     private static final String TAG = "UseCaseFragment";
     private Handler mHandler = null;
-    private RecyclerView mUseCaseList;
+    private ListView mUseCaseList;
     private Context mContext;
-    private ArrayList<UseCaseBase> mAllItems;
-    private ArrayList<UseCaseBase> mSelectedItems;
-    private UseCaseBase mCurrentUseCase;
-    private UseCaseListAdapter mAdapter;
+    private ArrayList<TestBase> mAllItems;
+    private ArrayList<TestBase> mSelectedItems;
+    private TestBase mCurrentUseCase;
+    private UseCaseTreeAdapter mAdapter;
     private RecyclerView mUseCaseTestItemList;
     private UseCaseManager mUseCaseManager;
     private StringBuilder mShowPanelInfo = new StringBuilder();
@@ -125,10 +130,9 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
             public void onClick(View v) {
                 //do something
                 if(mSelectedItems != null && !mSelectedItems.isEmpty()){
-                    UseCaseBase uc = mSelectedItems.get(mSelectedItems.size() - 1);
-                    uc.setIsChecked(false);
-                    uc.setSN(-1);
-                    mSelectedItems.remove(uc);
+                    TestBase tb = mSelectedItems.get(mSelectedItems.size() - 1);
+                    tb.setSN(-1);
+                    mSelectedItems.remove(tb);
                 }
                 generateShowPanelString(mSelectedItems);
                 mUseCaseTextView.setText(mShowPanelInfo.toString());
@@ -210,45 +214,43 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
                         }).create().show();
             }
         });
-        mUseCaseList = (RecyclerView) rootView.findViewById(R.id.usecaselist);
-        initUseCaseListFocus(mAllItems);
-        mAdapter = new UseCaseListAdapter(mContext, mAllItems, mSelectedItems);
-        mAdapter.setUpdateShowPanelListener(new UseCaseListAdapter.UpdateShowPanelListener() {
+        mUseCaseList = (ListView) rootView.findViewById(R.id.usecaselist);
+        //initUseCaseListFocus(mAllItems);
+        mAdapter = new UseCaseTreeAdapter(mContext, mAllItems, 1);
+        mCurrentUseCase = mAdapter.setFocus(0);
+        mAdapter.setUpdateShowPanelListener(new UseCaseTreeAdapter.UpdateShowPanelListener() {
             @Override
             public void updateShowPanelForAdd(int index) {
-                showPropertySetting(mAllItems.get(index), index);
+                TestBase tb = mAllItems.get(index);
+                showPropertySetting((UseCaseBase)tb, index);
             }
         });
-        mAdapter.setOnItemClickListener(new OnItemClickListener() {
+        mAdapter.setOnTreeTestBaseClickListener(new TreeListViewAdapter.OnTreeTestBaseClickListener() {
             @Override
-            public void onItemClick(int pos) {
+            public void onClick(TestBase tb) {
                 LogUtils.d(TAG, "onItemClick");
-                mCurrentUseCase = mAllItems.get(pos);
+                mCurrentUseCase = tb;
                 updateTestItemList();
             }
         });
-        mUseCaseList.setHasFixedSize(true);
-        mUseCaseList.setLayoutManager(new LinearLayoutManager(mContext));
-        mUseCaseList.addItemDecoration(new CktItemDecoration(mContext,
-                LinearLayoutManager.VERTICAL,
-                CktItemDecoration.DECORATION_TYPE_USECASELIST));
+
         mUseCaseList.setAdapter(mAdapter);
         mUseCaseTestItemList = (RecyclerView) rootView.findViewById(R.id.testitemlist);
         initTestItemList();
         return rootView;
     }
 
-    private void initUseCaseListFocus(ArrayList<UseCaseBase> ucs) {
-        if(ucs != null && !ucs.isEmpty()){
-            UseCaseBase uc;
-            for (int i = 0; i< ucs.size(); i++){
-                uc = ucs.get(i);
+    private void initUseCaseListFocus(ArrayList<TestBase> tbs) {
+        if(tbs != null && !tbs.isEmpty()){
+            TestBase tb;
+            for (int i = 0; i< tbs.size(); i++){
+                tb = tbs.get(i);
                 if(i == 0){
                     LogUtils.d(TAG, "initUseCaseListFocus : 0");
-                    uc.setIsChecked(true);
+                    tb.setChecked(true);
                 }else{
                     LogUtils.d(TAG, "initUseCaseListFocus : "+i);
-                    uc.setIsChecked(false);
+                    tb.setChecked(false);
                 }
             }
         }
@@ -347,22 +349,7 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
         LogUtils.d(TAG, "enter needStartTest");
         //boolean need = false;
         if(mSelectedItems != null && !mSelectedItems.isEmpty()){
-            for (UseCaseBase uc : mSelectedItems){
-                int uc_alltimes = uc.getTimes();
-                int uc_completedTimes = uc.getCompletedTimes();
-                LogUtils.d(TAG, "uc_alltimes = "+uc_alltimes+"; uc_completedTimes = "+uc_completedTimes);
-                if(uc_alltimes > uc_completedTimes){
-                    return true;
-                }
-                for (TestItemBase ti : uc.getTestItems()){
-                    int ti_alltimes = ti.getTimes();
-                    int ti_completedTimes = ti.getCompletedTimes();
-                    LogUtils.d(TAG, "ti_alltimes = "+ti_alltimes+"; ti_completedTimes = "+ti_completedTimes);
-                    if(ti_alltimes > ti_completedTimes){
-                        return true;
-                    }
-                }
-            }
+            return isTestCompleted(mSelectedItems);
         }
         /*if(!need){
             mUseCaseManager.setTestStatus(false);
@@ -370,17 +357,35 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
         return false;
     }
 
+    private boolean isTestCompleted(ArrayList<TestBase> tbs) {
+        for (TestBase tb : tbs){
+            int alltimes = tb.getTimes();
+            int completedTimes = tb.getCompletedTimes();
+            if(alltimes > completedTimes){
+                return false;
+            }
+            ArrayList<TestBase> children = tb.getChildren();
+            if(children != null && !children.isEmpty()){
+                return isTestCompleted(children);
+            }
+        }
+        return true;
+    }
+
     private void initTestItemList() {
         LogUtils.d(TAG, "initTestItemList");
-        ArrayList<TestItemBase> tis = mCurrentUseCase == null ? null : mCurrentUseCase.getTestItems();
+        ArrayList<TestBase> tis = mCurrentUseCase == null ? null : mCurrentUseCase.getChildren();
         //initTestItemListFocus(tis);
         mTestItemListAdapter = new TestItemListAdapter(tis, null, false);
         mTestItemListAdapter.setOnItemClickListener(new OnItemClickListener() {
             @Override
             public void onItemClick(int pos) {
-                TestItemBase ti = mCurrentUseCase.getTestItems().get(pos);
-                LogUtils.d(TAG, "test item title clicked :"+pos+" : "+ti.getClass().getName());
-                ti.showPropertyDialog(mActivity, true);
+                TestBase tb = mCurrentUseCase.getChildren().get(pos);
+                if(tb instanceof TestItemBase){
+                    TestItemBase ti = (TestItemBase)tb;
+                    LogUtils.d(TAG, "test item title clicked :"+pos+" : "+ti.getClass().getName());
+                    ti.showPropertyDialog(mActivity, true);
+                }
             }
         });
         mUseCaseTestItemList.setHasFixedSize(true);
@@ -397,9 +402,9 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
             for (int i = 0; i< tis.size(); i++){
                 ti = tis.get(i);
                 if(i == 0){
-                    ti.setIsChecked(true);
+                    ti.setChecked(true);
                 }else{
-                    ti.setIsChecked(false);
+                    ti.setChecked(false);
                 }
             }
         }
@@ -407,15 +412,18 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
 
     private void updateTestItemList() {
         LogUtils.d(TAG, "updateTestItemList");
-        ArrayList<TestItemBase> tis = mCurrentUseCase == null ? null : mCurrentUseCase.getTestItems();
+        ArrayList<TestBase> tbs = mCurrentUseCase == null ? null : mCurrentUseCase.getChildren();
         //initTestItemListFocus(tis);
-        mTestItemListAdapter = new TestItemListAdapter(tis, null, false);
+        mTestItemListAdapter = new TestItemListAdapter(tbs, null, false);
         mTestItemListAdapter.setOnItemClickListener(new OnItemClickListener() {
             @Override
             public void onItemClick(int pos) {
-                TestItemBase ti = mCurrentUseCase.getTestItems().get(pos);
-                LogUtils.d(TAG, "test item title clicked :"+pos+" : "+ti.getClass().getName());
-                ti.showPropertyDialog(mActivity, true);
+                TestBase tb = mCurrentUseCase.getChildren().get(pos);
+                if(tb instanceof TestItemBase){
+                    TestItemBase ti = (TestItemBase)tb;
+                    LogUtils.d(TAG, "test item title clicked :"+pos+" : "+ti.getClass().getName());
+                    ti.showPropertyDialog(mActivity, true);
+                }
             }
         });
         mUseCaseTestItemList.setAdapter(mTestItemListAdapter);
@@ -427,7 +435,7 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
         mUseCaseTextView.setText(mShowPanelInfo.toString());
     }
 
-    private void generateShowPanelString(ArrayList<UseCaseBase> selectItems) {
+    private void generateShowPanelString(ArrayList<TestBase> selectItems) {
         if (selectItems != null && !selectItems.isEmpty()){
             mShowPanelInfo.delete(11, mShowPanelInfo.length());
             for (int i = 0; i < selectItems.size(); i++){
@@ -445,25 +453,11 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
     public void allUseCaseChangeNofify(int position, int i) {
         LogUtils.d(TAG, "allUseCaseChangeNofify position = "+position+"; i="+i);
         if(mAllItems != null && !mAllItems.isEmpty()){
-            mCurrentUseCase = mAllItems.get(0);
-            initUseCaseListFocus(mAllItems);
+            mCurrentUseCase = mAdapter.setFocus(0); //mAllItems.get(0);
+            //initUseCaseListFocus(mAllItems);
         }
-
-        switch (i){
-            case 0:
-                mAdapter.notifyItemInserted(position);
-                break;
-            case 1:
-                mAdapter.notifyItemChanged(position);
-                break;
-            case 2:
-                mAdapter.notifyItemRemoved(position);
-                break;
-            default:
-                mAdapter.notifyDataSetChanged();
-                break;
-
-        }
+        //mAdapter.notifyDataSetChanged();
+        mAdapter.notifyData();
     }
 
     @Override

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.Xml;
 import android.widget.Toast;
 
+import com.ckt.ckttestassistant.TestBase;
 import com.ckt.ckttestassistant.testitems.CktTestItem;
 import com.ckt.ckttestassistant.testitems.Reboot;
 import com.ckt.ckttestassistant.testitems.TestItemBase;
@@ -51,7 +52,7 @@ public class CktXmlHelper {
     private static final String TAG = "CktXmlHelper";
     private static int allUseCaseMaxID = -1;
 
-    public void addUsecase(String path, ArrayList<UseCaseBase> usecases, boolean isNeedClean) throws Exception{
+    public void addUsecase(String path, ArrayList<TestBase> usecases, boolean isNeedClean) throws Exception{
         LogUtils.d(TAG, "entry addUsecase!");
         try{
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -75,8 +76,11 @@ public class CktXmlHelper {
                 root = doc.getDocumentElement();
             }
 
-            for (UseCaseBase uc : usecases) {
-                createUseCaseElement(doc, root, uc);
+            for (TestBase tb : usecases) {
+                if(tb instanceof UseCaseBase){
+                    UseCaseBase uc = (UseCaseBase)tb;
+                    createUseCaseElement(doc, root, uc);
+                }
             }
             /*Properties properties = new Properties();
             properties.setProperty(OutputKeys.INDENT, "yes");
@@ -134,14 +138,17 @@ public class CktXmlHelper {
         if(usecaseID == -1){
             usecaseID = maxID + 1;
             uc.setID(usecaseID);
-            ArrayList<TestItemBase> tis = uc.getTestItems();
-            if(tis != null && !tis.isEmpty()){
-                for(TestItemBase ti : tis){
-                    int uc_id = uc.getID(); //可以删除
-                    int uc_sn = uc.getSN();
-                    LogUtils.d(TAG, "uc_id = "+uc_id+"; uc_sn = "+uc_sn);
-                    ti.setUseCaseID(usecaseID);
-                    ti.setUseCaseSN(uc_sn);
+            ArrayList<TestBase> tbs = uc.getChildren();
+            if(tbs != null && !tbs.isEmpty()){
+                for(TestBase tb : tbs){
+                    if(tb instanceof TestItemBase){
+                        TestItemBase ti = (TestItemBase)tb;
+                        int uc_id = uc.getID(); //可以删除
+                        int uc_sn = uc.getSN();
+                        LogUtils.d(TAG, "uc_id = "+uc_id+"; uc_sn = "+uc_sn);
+                        ti.setUseCaseID(usecaseID);
+                        ti.setUseCaseSN(uc_sn);
+                    }
                 }
             }
         }
@@ -158,8 +165,13 @@ public class CktXmlHelper {
 
         createTextElement(doc, usecaseE, MyConstants.XMLTAG_USECASE_COMPLETEDTIMES, String.valueOf(uc.getCompletedTimes()));
 
-        for (TestItemBase ti : uc.getTestItems()) {
-            createTestItemElement(doc, usecaseE, ti);
+        for (TestBase tb : uc.getChildren()) {
+            if(tb instanceof UseCaseBase){
+                createUseCaseElement(doc, usecaseE, (UseCaseBase)tb);
+            }else if(tb instanceof TestItemBase){
+                TestItemBase ti = (TestItemBase)tb;
+                createTestItemElement(doc, usecaseE, ti);
+            }
         }
         root.appendChild(usecaseE);
         return usecaseE;
@@ -185,10 +197,16 @@ public class CktXmlHelper {
                 String str_sn = uc_node.getElementsByTagName(MyConstants.XMLTAG_USECASE_SN).item(0).getTextContent();
                 int sn = Integer.parseInt(str_sn);
                 boolean isMatched = false;
+                int level = computeNodeLevel(uc_node);
+                //找到父节点
+                TestBase parentUC = ti.getParent();
                 if(needUCSN){
-                    isMatched = (id == ti.getUseCaseID()) && (sn == ti.getUseCaseSN());
+                    isMatched = (id == parentUC.getID()) &&
+                            (sn == parentUC.getSN() &&
+                                    (level == parentUC.getLevel()));
                 } else {
-                    isMatched = id == ti.getUseCaseID();
+                    isMatched = id == parentUC.getID() &&
+                            (level == parentUC.getLevel());
                 }
                 if (isMatched) {
                     NodeList ti_listnode = uc_node.getElementsByTagName(MyConstants.XMLTAG_TESTITEM);
@@ -235,7 +253,8 @@ public class CktXmlHelper {
                 String str_sn = elink.getElementsByTagName(MyConstants.XMLTAG_USECASE_SN).item(0).getTextContent();
 
                 int sn = Integer.parseInt(str_sn);
-                if ((id == uc.getID()) && (sn == uc.getSN())) {
+                int level = computeNodeLevel(elink);
+                if ((id == uc.getID()) && (sn == uc.getSN()) && (level == uc.getLevel())) {
                     Element newNode = createUseCaseElement(doc, root, uc);
                     elink.getParentNode().replaceChild(newNode, elink);
                     break;
@@ -281,7 +300,8 @@ public class CktXmlHelper {
                     int id = Integer.parseInt(elink.getAttribute(MyConstants.XMLTAG_ID));
                     //int sn = Integer.parseInt(elink.getAttribute(MyConstants.XMLTAG_USECASE_SN));
                     int sn = Integer.parseInt(elink.getElementsByTagName(MyConstants.XMLTAG_USECASE_SN).item(0).getTextContent());
-                    if ((id == uc.getID()) && (sn == uc.getSN())) {
+                    int level = computeNodeLevel(elink);
+                    if ((id == uc.getID()) && (sn == uc.getSN()) && (level == uc.getLevel())) {
                         if (listnode.getLength() == 1) {
                             //如果只有一条数据，那么这条数据删除之后，大节点也应该被删除
                             root.removeChild(elink.getParentNode());
@@ -301,10 +321,21 @@ public class CktXmlHelper {
         }
     }
 
+    private int computeNodeLevel(Element element) {
+        Element e = (Element) element.getParentNode();
+        int level = 0;
+        while(e != null){
+            level++;
+            e = (Element) e.getParentNode();
+        }
+        LogUtils.d(TAG, "computeNodeLevel = "+level);
+        return level;
+    }
+
     /**
      * pull 解析读取xml文件
      */
-    public static void readxml(Context context, String path, ArrayList<UseCaseBase> allUseCases) throws XmlPullParserException,IOException{
+    public static void readxml(Context context, String path, ArrayList<TestBase> allUseCases) throws XmlPullParserException,IOException{
         LogUtils.d(TAG, "entry readxml!");
         try {
             File file = new File(path);
@@ -318,6 +349,7 @@ public class CktXmlHelper {
             parser.setInput(is, "utf-8");
             int eventtype = parser.getEventType();// 产生第一个事件
             UseCaseBase usecase = null;
+            UseCaseBase usecase2 = null;
             TestItemBase testitem = null;
             allUseCaseMaxID = -1;
             LogUtils.d(TAG, "set allUseCaseMaxID = -1");
@@ -344,12 +376,28 @@ public class CktXmlHelper {
                             LogUtils.d(TAG, "getUseCases : allUseCaseMaxID = " + allUseCaseMaxID);
                             if (id >= 0) {
                                 try {
-                                    // 根据给定的类名初始化类
-                                    Class catClass = Class.forName(className);
-                                    // 实例化这个类
-                                    usecase = (UseCaseBase) catClass.newInstance();
-                                    usecase.setContext(context);
-                                    usecase.setID(id);
+                                    if(usecase != null){
+                                        //嵌套用例
+                                        // 根据给定的类名初始化类
+                                        Class catClass = Class.forName(className);
+                                        // 实例化这个类
+                                        usecase2 = (UseCaseBase) catClass.newInstance();
+                                        usecase2.setContext(context);
+                                        usecase2.setID(id);
+                                        usecase2.setExpand(false);
+                                        if(usecase != null){
+                                            usecase2.setParent(usecase);
+                                        }
+                                    }else{
+                                        // 根据给定的类名初始化类
+                                        Class catClass = Class.forName(className);
+                                        // 实例化这个类
+                                        usecase = (UseCaseBase) catClass.newInstance();
+                                        usecase.setContext(context);
+                                        usecase.setID(id);
+                                        usecase.setExpand(false);
+                                        usecase.setParent(null);
+                                    }
 
                                 } catch (IllegalAccessException e) {
                                     e.printStackTrace();
@@ -364,8 +412,9 @@ public class CktXmlHelper {
                         } else if (name.equals(MyConstants.XMLTAG_USECASE_SN)) {
                             int ucsn = Integer.parseInt(parser.nextText());
                             LogUtils.d(TAG, "ucsn : " + ucsn);
-
-                            if (usecase != null) {
+                            if(usecase2 != null){
+                                usecase2.setSN(ucsn);
+                            }else if (usecase != null) {
                                 LogUtils.d(TAG, "usecase ucsn : " + ucsn);
                                 usecase.setSN(ucsn);
                             }
@@ -373,7 +422,9 @@ public class CktXmlHelper {
                             String title = parser.nextText();
                             LogUtils.d(TAG, "title : " + title);
 
-                            if (usecase != null) {
+                            if(usecase2 != null){
+                                usecase2.setTitle(title);
+                            }else if (usecase != null) {
                                 LogUtils.d(TAG, "usecase title : " + title);
                                 usecase.setTitle(title);
                             }
@@ -381,7 +432,9 @@ public class CktXmlHelper {
                             int times = Integer.parseInt(parser.nextText());
                             LogUtils.d(TAG, "times : " + times);
 
-                            if (usecase != null) {
+                            if(usecase2 != null){
+                                usecase2.setTimes(times);
+                            }else if (usecase != null) {
                                 LogUtils.d(TAG, "usecase times : " + times);
                                 usecase.setTimes(times);
                             }
@@ -390,7 +443,9 @@ public class CktXmlHelper {
                             int failtimes = Integer.parseInt(parser.nextText());
                             LogUtils.d(TAG, "failtimes : " + failtimes);
 
-                            if (usecase != null) {
+                            if(usecase2 != null){
+                                usecase2.setFailTimes(failtimes);
+                            }else if (usecase != null) {
                                 LogUtils.d(TAG, "usecase failtimes : " + failtimes);
                                 usecase.setFailTimes(failtimes);
                             }
@@ -399,7 +454,9 @@ public class CktXmlHelper {
                             int completedtimes = Integer.parseInt(parser.nextText());
                             LogUtils.d(TAG, "completedtimes : " + completedtimes);
 
-                            if (usecase != null) {
+                            if(usecase2 != null){
+                                usecase2.setCompletedTimes(completedtimes);
+                            }else if (usecase != null) {
                                 LogUtils.d(TAG, "usecase completedtimes : " + completedtimes);
                                 usecase.setCompletedTimes(completedtimes);
                             }
@@ -407,13 +464,17 @@ public class CktXmlHelper {
                         } else if (name.equals(MyConstants.XMLTAG_USECASE_SELECTED)) {
                             boolean isChecked = Boolean.parseBoolean(parser.nextText());
                             LogUtils.d(TAG, "usecase isChecked : " + isChecked);
-                            if (usecase != null) {
-                                usecase.setIsChecked(isChecked);
+                            if(usecase2 != null){
+                                usecase2.setChecked(isChecked);
+                            }else if (usecase != null) {
+                                usecase.setChecked(isChecked);
                             }
                         } else if (name.equals(MyConstants.XMLTAG_USECASE_DELAY)) {
                             int delay = Integer.parseInt(parser.nextText());
                             LogUtils.d(TAG, "delay : " + delay);
-                            if (usecase != null) {
+                            if(usecase2 != null){
+                                usecase2.setDelay(delay);
+                            }else if (usecase != null) {
                                 LogUtils.d(TAG, "usecase delay : " + delay);
                                 usecase.setDelay(delay);
                             }
@@ -480,7 +541,7 @@ public class CktXmlHelper {
                             boolean isChecked = Boolean.parseBoolean(parser.nextText());
                             LogUtils.d(TAG, "testitem isChecked : " + isChecked);
                             if (testitem != null) {
-                                testitem.setIsChecked(isChecked);
+                                testitem.setChecked(isChecked);
                             }
                         } else if (name.equals(MyConstants.XMLTAG_TESTITEM)) {
                             if (usecase != null) {
@@ -494,9 +555,10 @@ public class CktXmlHelper {
                                     testitem = (TestItemBase) catClass.newInstance();
                                     testitem.setContext(context);
                                     testitem.setID(id2);
-                                    if(usecase != null){
-                                        testitem.setParentUseCase(usecase);
-                                        testitem.setUseCaseID(usecase.getID());
+                                    if(usecase2 != null){
+                                        testitem.setParent(usecase2);
+                                    }else if(usecase != null){
+                                        testitem.setParent(usecase);
                                     }
                                 } catch (IllegalAccessException e) {
                                     e.printStackTrace();
@@ -529,11 +591,23 @@ public class CktXmlHelper {
                         String endName = parser.getName();
                         LogUtils.d(TAG, "XmlPullParser.END_TAG name:" + endName);
                         if (endName.equals(MyConstants.XMLTAG_USECASE)) {
-                            allUseCases.add(usecase);
-                            usecase = null;
+                            if(usecase != null){
+                                if(usecase2 != null){
+                                    usecase.addTestItem(usecase2);
+                                    usecase2 = null;
+                                    break;
+                                }
+                                allUseCases.add(usecase);
+                                usecase = null;
+                            }
                         } else if (endName.equals(MyConstants.XMLTAG_TESTITEM)) {
-                            usecase.addTestItem(testitem);
-                            testitem = null;
+                            if(usecase2 != null){
+                                usecase2.addTestItem(testitem);
+                                testitem = null;
+                            }else if(usecase != null){
+                                usecase.addTestItem(testitem);
+                                testitem = null;
+                            }
                         } else {
                             LogUtils.d(TAG, "ignored endName = " + endName);
                         }

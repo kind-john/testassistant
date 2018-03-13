@@ -9,6 +9,7 @@ import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import com.ckt.ckttestassistant.R;
+import com.ckt.ckttestassistant.TestBase;
 import com.ckt.ckttestassistant.testitems.TestItemBase;
 import com.ckt.ckttestassistant.utils.LogUtils;
 
@@ -21,10 +22,10 @@ import java.util.ArrayList;
 public class ResultsTestItemAdapter extends BaseAdapter{
     private static final String TAG = "ResultsTestItemAdapter";
     private Context mContext;
-    private ArrayList<TestItemBase> mItems;
+    private ArrayList<TestBase> mItems;
     private int mOldCheckedPosition = -1;
 
-    public ResultsTestItemAdapter(Context context, ArrayList<TestItemBase> items) {
+    public ResultsTestItemAdapter(Context context, ArrayList<TestBase> items) {
         mContext = context;
         mItems = items;
     }
@@ -58,10 +59,10 @@ public class ResultsTestItemAdapter extends BaseAdapter{
                     LogUtils.d(TAG, "click convertView");
                     if(position != mOldCheckedPosition){
                         if(mOldCheckedPosition > -1){
-                            mItems.get(mOldCheckedPosition).setIsChecked(false);
+                            mItems.get(mOldCheckedPosition).setChecked(false);
                             //notifyItemChanged(mOldCheckedPosition);
                         }
-                        mItems.get(position).setIsChecked(true);
+                        mItems.get(position).setChecked(true);
                         //notifyItemChanged(position);
                         notifyDataSetChanged();
                         mOldCheckedPosition = position;

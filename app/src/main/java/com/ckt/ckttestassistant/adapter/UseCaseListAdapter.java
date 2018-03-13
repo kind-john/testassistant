@@ -81,10 +81,10 @@ public class UseCaseListAdapter extends RecyclerView.Adapter<UseCaseListAdapter.
                     LogUtils.d(TAG, "mItemView clicked");
                     if(position != mOldCheckedPosition){
                         if(mOldCheckedPosition > -1){
-                            mAllItems.get(mOldCheckedPosition).setIsChecked(false);
+                            mAllItems.get(mOldCheckedPosition).setChecked(false);
                             notifyItemChanged(mOldCheckedPosition);
                         }
-                        mAllItems.get(position).setIsChecked(true);
+                        mAllItems.get(position).setChecked(true);
                         notifyItemChanged(position);
                         mOldCheckedPosition = position;
                     }

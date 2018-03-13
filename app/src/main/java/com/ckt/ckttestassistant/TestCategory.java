@@ -12,7 +12,7 @@ public class TestCategory {
         return mIsChecked;
     }
 
-    public void setIsChecked(boolean isChecked) {
+    public void setChecked(boolean isChecked) {
         this.mIsChecked = isChecked;
     }
 

@@ -6,6 +6,7 @@ import android.os.Handler;
 import android.os.Message;
 
 import com.ckt.ckttestassistant.CktResultsHelper;
+import com.ckt.ckttestassistant.TestBase;
 import com.ckt.ckttestassistant.UseCaseManager;
 import com.ckt.ckttestassistant.usecases.UseCaseBase;
 import com.ckt.ckttestassistant.utils.LogUtils;
@@ -15,37 +16,25 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xmlpull.v1.XmlSerializer;
 
+import java.util.List;
+
 import static java.lang.Thread.sleep;
 
 /**
  * Created by ckt on 18-1-26.
  */
 
-public abstract class TestItemBase implements CktResultsHelper.ResultCallBack {
+public abstract class TestItemBase extends TestBase implements CktResultsHelper.ResultCallBack {
     private static final int DEFAULT_TESTITEM_TIMES = 1;
     private static final String TAG = "TestItemBase";
     protected UseCaseManager mUseCaseManager;
 
-    public UseCaseBase getParentUseCase() {
-        return mParentUseCase;
-    }
-
-    public void setParentUseCase(UseCaseBase parentUseCase) {
-        this.mParentUseCase = parentUseCase;
-    }
-
-    protected UseCaseBase mParentUseCase = null;
     protected Context mContext;
     //设置下一个测试项，如果结束则必须将其设置为空
     protected TestItemBase mNextTestItem;
-    protected int mTimes = DEFAULT_TESTITEM_TIMES;
-    protected int mFailTimes = 0;
-    protected int mCompletedTimes = 0;
-    protected String mTitle = "testitem";
-    protected  boolean mIsChecked = false;
+
     protected int ID = -1;
     protected int SN = -1;
-    protected String mClassName = "TestItemBase";
     protected int mUseCaseID = -1;
     protected int mUseCaseSN = -1;
     protected boolean mPassed = false;
@@ -82,22 +71,6 @@ public abstract class TestItemBase implements CktResultsHelper.ResultCallBack {
         this.SN = sn;
     }
 
-    public int getCompletedTimes() {
-        return mCompletedTimes;
-    }
-
-    public void setCompletedTimes(int completedTimes) {
-        this.mCompletedTimes = completedTimes;
-    }
-
-    public String getClassName() {
-        return mClassName;
-    }
-
-    public void setClassName(String className) {
-        this.mClassName = className;
-    }
-
     public TestItemBase getNextTestItem() {
         return mNextTestItem;
     }
@@ -106,43 +79,12 @@ public abstract class TestItemBase implements CktResultsHelper.ResultCallBack {
         this.mNextTestItem = nextTestItem;
     }
 
-    public int getTimes() {
-        return mTimes;
-    }
-
-    public void setTimes(int times) {
-        this.mTimes = times;
-    }
-
-    public String getTitle() {
-        return mTitle;
-    }
-
-    public void setTitle(String title) {
-        this.mTitle = title;
-    }
-
-    public boolean isChecked() {
-        return mIsChecked;
-    }
-
-    public void setIsChecked(boolean isChecked) {
-        this.mIsChecked = isChecked;
-    }
     public void setID(int id) {
         this.ID = id;
     }
 
     public int getID() {
         return ID;
-    }
-
-    public int getFailTimes() {
-        return mFailTimes;
-    }
-
-    public void setFailTimes(int failTimes) {
-        this.mFailTimes = failTimes;
     }
 
     public TestItemBase(TestItemBase mNextTestItem) {
@@ -162,7 +104,55 @@ public abstract class TestItemBase implements CktResultsHelper.ResultCallBack {
         mUseCaseManager = UseCaseManager.getInstance(null);
     }
 
-    public boolean execute(Handler handler, UseCaseManager.ExecuteCallback executeCallback, boolean usecaseFinish){
+    protected void task2(boolean passed){
+        if(passed){
+            mFailTimes--;
+            String path = mContext.getFilesDir()+"/selected_usecases.xml";
+            mUseCaseManager.updateTestItemOfSelectedUseCaseXml(this);
+        }
+        if(mCompletedTimes < mTimes){
+            task();
+        }else if(mCompletedTimes == mTimes){
+            if(mFailTimes == 0){
+                mPassed = true;
+            }
+        }else{
+            LogUtils.e(TAG, "error: mCompletedTimes > mTimes");
+        }
+    }
+
+    @Override
+    public boolean task() {
+        LogUtils.d(TAG, "class name = "+mClassName);
+        LogUtils.d(TAG, "mCompletedTimes = "+mCompletedTimes);
+        LogUtils.d(TAG, "mTimes = "+mTimes);
+        LogUtils.d(TAG, "mFailTimes = "+mFailTimes);
+        if(mCompletedTimes < mTimes){
+            try{
+                mCompletedTimes++;
+                mFailTimes++;   //先假设本次失败，异步返回成功以后再减1
+                mUseCaseManager.updateTestItemOfSelectedUseCaseXml(this);
+                updateWaitProgress(mUseCaseManager.getHandler(), mCompletedTimes);
+                mPassed = doExecute(null, false);
+                List<TestBase> children = getChildren();
+                if(children != null && !children.isEmpty()){
+                    //这里理论上不会执行，因为目前的设计测试项不包含子测试项
+                    for (TestBase child : children){
+                        if(!child.task()){
+                            mPassed = false;
+                        }
+                    }
+                }
+            }catch (Exception e){
+                mPassed = false;
+                e.printStackTrace();
+            }
+        }else{
+            //completed
+        }
+        return mPassed;
+    }
+/*public boolean execute(Handler handler, UseCaseManager.ExecuteCallback executeCallback, boolean usecaseFinish){
         int needTimes = mTimes - mCompletedTimes;
         boolean testItemFinish = false;
         boolean isPassed = false;
@@ -195,7 +185,6 @@ public abstract class TestItemBase implements CktResultsHelper.ResultCallBack {
                         if(!isPassed){
                             mFailTimes++;
                         }
-                        String path = mContext.getFilesDir()+"/selected_usecases.xml";
                         mUseCaseManager.updateTestItemOfSelectedUseCaseXml(this);
                     }
                 }
@@ -213,7 +202,7 @@ public abstract class TestItemBase implements CktResultsHelper.ResultCallBack {
             isPassed = false;
         }
         return isPassed;
-    }
+    }*/
 
     private void initTestItems(TestItemBase ti) {
         int completedTimes = ti.getCompletedTimes();

@@ -140,14 +140,14 @@ public class AirPlaneSwitchOn extends TestItemBase {
         try {
             Workbook wb = Workbook.getWorkbook(new File(file));
             WritableWorkbook book = Workbook.createWorkbook(new File(file), wb);
-            WritableSheet sheet = book.getSheet(mParentUseCase.getTitle());
+            WritableSheet sheet = book.getSheet(mParent.getTitle());
             /*if(book.getNumberOfSheets() > 0){
                 sheet = book.getSheet(0);
             }else{
                 sheet = book.createSheet(""+mCompletedTimes, 0);
             }*/
             if(sheet == null){
-                LogUtils.e(TAG, "sheet can not find : "+ mParentUseCase.getTitle());
+                LogUtils.e(TAG, "sheet can not find : "+ mParent.getTitle());
                 return ;
             }else{
                 WritableFont font = new WritableFont(WritableFont.createFont("楷体"), 11, WritableFont.BOLD);

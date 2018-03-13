@@ -10,6 +10,7 @@ import android.widget.Button;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.ckt.ckttestassistant.TestBase;
 import com.ckt.ckttestassistant.interfaces.OnItemClickListener;
 import com.ckt.ckttestassistant.utils.LogUtils;
 import com.ckt.ckttestassistant.R;
@@ -23,8 +24,8 @@ import java.util.ArrayList;
 
 public class TestItemListAdapter extends RecyclerView.Adapter<TestItemListAdapter.TestItemListHolder>{
     private static final String TAG = "TestItemListAdapter";
-    private final ArrayList<TestItemBase> mAllItems;
-    private ArrayList<TestItemBase> mSelectedItems;
+    private final ArrayList<TestBase> mAllItems;
+    private ArrayList<TestBase> mSelectedItems;
     private OnItemClickListener mItemClickListener;
     private UpdateShowPanelListener mUpdateShowPanelListener;
     private boolean mIsShowButton = false;
@@ -35,7 +36,7 @@ public class TestItemListAdapter extends RecyclerView.Adapter<TestItemListAdapte
          *
          * @param info
          */
-        void updateShowPanel(ArrayList<TestItemBase> info);
+        void updateShowPanel(ArrayList<TestBase> info);
     }
     public void setOnItemClickListener(OnItemClickListener listener){
         LogUtils.d(TAG, "setOnItemClickListener");
@@ -46,7 +47,7 @@ public class TestItemListAdapter extends RecyclerView.Adapter<TestItemListAdapte
         this.mUpdateShowPanelListener = listener;
     }
 
-    public TestItemListAdapter(ArrayList<TestItemBase> allTestItems, ArrayList<TestItemBase> selectedTestItems, boolean b) {
+    public TestItemListAdapter(ArrayList<TestBase> allTestItems, ArrayList<TestBase> selectedTestItems, boolean b) {
         this.mAllItems = allTestItems;
         this.mSelectedItems = selectedTestItems;
         this.mIsShowButton = b;
@@ -67,47 +68,55 @@ public class TestItemListAdapter extends RecyclerView.Adapter<TestItemListAdapte
         LogUtils.d(TAG,"onBindViewHolder");
 
         if(mAllItems != null && position < mAllItems.size()){
-            holder.mTitle.setText(mAllItems.get(position).getTitle());
-            if(mAllItems.get(position).isChecked()){
-                holder.mTitle.setBackgroundColor(Color.GREEN);
-            }else{
-                holder.mTitle.setBackgroundColor(Color.TRANSPARENT);
-            }
-            final int index = position;
-            holder.mItemView.setOnClickListener(new View.OnClickListener() {
-
-                @Override
-                public void onClick(final View v) {
-                    LogUtils.d(TAG, "click mItemView");
-                    if(position != mOldCheckedPosition){
-                        if(mOldCheckedPosition > -1){
-                            mAllItems.get(mOldCheckedPosition).setIsChecked(false);
-                            notifyItemChanged(mOldCheckedPosition);
-                        }
-                        mAllItems.get(position).setIsChecked(true);
-                        notifyItemChanged(position);
-                        mOldCheckedPosition = position;
-                    }
-                    if(mItemClickListener != null){
-                        mItemClickListener.onItemClick(index);
-                    }
+            TestBase tb = mAllItems.get(position);
+            if(tb instanceof TestItemBase){
+                TestItemBase ti = (TestItemBase)tb;
+                holder.mTitle.setText(ti.getTitle());
+                if(ti.isChecked()){
+                    holder.mTitle.setBackgroundColor(Color.GREEN);
+                }else{
+                    holder.mTitle.setBackgroundColor(Color.TRANSPARENT);
                 }
-            });
-            if(mIsShowButton){
-                holder.mAdd.setVisibility(View.VISIBLE);
-                holder.mAdd.setOnClickListener(new View.OnClickListener() {
+                final int index = position;
+                holder.mItemView.setOnClickListener(new View.OnClickListener() {
+
                     @Override
-                    public void onClick(View v) {
-                        if (mUpdateShowPanelListener != null){
-                            if(mSelectedItems != null){
-                                mSelectedItems.add(mAllItems.get(index));
+                    public void onClick(final View v) {
+                        LogUtils.d(TAG, "click mItemView");
+                        /*if(position != mOldCheckedPosition){
+                            if(mOldCheckedPosition > -1){
+                                mAllItems.get(mOldCheckedPosition).setChecked(false);
+                                notifyItemChanged(mOldCheckedPosition);
                             }
-                            mUpdateShowPanelListener.updateShowPanel(mSelectedItems);
+                            mAllItems.get(position).setChecked(true);
+                            notifyItemChanged(position);
+                            mOldCheckedPosition = position;
+                        }*/
+                        if(mItemClickListener != null){
+                            mItemClickListener.onItemClick(index);
                         }
                     }
                 });
-            } else {
-                holder.mAdd.setVisibility(View.GONE);
+                if(mIsShowButton){
+                    holder.mAdd.setVisibility(View.VISIBLE);
+                    holder.mAdd.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            if (mUpdateShowPanelListener != null){
+                                if(mSelectedItems != null){
+                                    TestBase tb2 = mAllItems.get(index);
+                                    if(tb2 instanceof TestItemBase){
+                                        TestItemBase ti2 = (TestItemBase)tb2;
+                                        mSelectedItems.add(ti2);
+                                    }
+                                }
+                                mUpdateShowPanelListener.updateShowPanel(mSelectedItems);
+                            }
+                        }
+                    });
+                } else {
+                    holder.mAdd.setVisibility(View.GONE);
+                }
             }
         }
     }

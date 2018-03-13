@@ -21,6 +21,7 @@ import com.ckt.ckttestassistant.utils.MyConstants;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 import jxl.Workbook;
 import jxl.write.WritableWorkbook;
@@ -33,8 +34,8 @@ import jxl.write.WriteException;
 public class UseCaseManager implements DoTestIntentService.HandleCallback{
     private static final String FILENAME = "usecases.xml";
     private static final String TAG = "UseCaseManager";
-    private ArrayList<UseCaseBase> mAllUseCases = new ArrayList<UseCaseBase>();
-    private ArrayList<UseCaseBase> mSelectedUseCases = new ArrayList<UseCaseBase>();
+    private ArrayList<TestBase> mAllUseCases = new ArrayList<TestBase>();
+    private ArrayList<TestBase> mSelectedUseCases = new ArrayList<TestBase>();
     private ArrayList<UseCaseChangeObserver> mUseCaseChangeListener = new ArrayList<UseCaseChangeObserver>();
     private ArrayList<SelectedUseCaseChangeObserver> mSelectedUseCaseChangeObserver = new ArrayList<SelectedUseCaseChangeObserver>();
     private static Context mContext;
@@ -88,7 +89,7 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
     }
     public boolean importUseCaseConfig(String path){
         boolean result = false;
-        ArrayList<UseCaseBase> ucs = new ArrayList<UseCaseBase>();
+        ArrayList<TestBase> ucs = new ArrayList<TestBase>();
         try{
             //从配置文件中读取用例信息
             mXmlHelper.readxml(mContext, path, ucs);
@@ -107,7 +108,7 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
 
     public boolean exportUseCaseConfig(String path){
         boolean result = false;
-        ArrayList<UseCaseBase> ucs = new ArrayList<UseCaseBase>();
+        ArrayList<TestBase> ucs = new ArrayList<TestBase>();
         try{
             //从本地xml文件中读取用例信息
             String source_path = mContext.getFilesDir()+"/usecases.xml";
@@ -120,6 +121,14 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
             e.printStackTrace();
         }
         return result;
+    }
+
+    public Handler getHandler() {
+        return mHandler;
+    }
+
+    public void setHandler(Handler handler) {
+        this.mHandler = handler;
     }
 
     /**
@@ -151,18 +160,33 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
 
     public boolean isTestCompleted() {
         boolean result = true;
-        for (UseCaseBase uc : mSelectedUseCases){
-            if(uc.getCompletedTimes() < uc.getTimes()){
+        for (TestBase tb : mSelectedUseCases){
+            if (tb.getCompletedTimes() < tb.getTimes()) {
                 return false;
-            }
-            for (TestItemBase ti : uc.getTestItems()){
-                if (ti.getCompletedTimes() < ti.getTimes()){
-                    return false;
+            } else {
+                if(tb.getChildren() != null && !tb.getChildren().isEmpty()){
+                    result = isUseCaseTestCompleted(tb);
                 }
             }
         }
         return result;
     }
+
+    private boolean isUseCaseTestCompleted(TestBase stb) {
+            if(stb.getCompletedTimes() < stb.getTimes()){
+                return false;
+            }else{
+                for (TestBase tb : stb.getChildren()){
+                    if (tb.getCompletedTimes() < tb.getTimes()){
+                        return false;
+                    }else{
+                        return isUseCaseTestCompleted(tb);
+                    }
+                }
+            }
+            return true;
+    }
+
     /**
      * 记录测试任务是否完成
      * @param status
@@ -199,7 +223,6 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
 
         try {
             mXmlHelper.addUsecase(path,mAllUseCases, true);
-            //mXmlHelper2.reCreateXml(path, mAllUseCases);
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -296,24 +319,19 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
             LogUtils.d(TAG, "is reboot : true");
             //找到正在重启的任务
             if(mSelectedUseCases != null && !mSelectedUseCases.isEmpty()){
-                for (UseCaseBase uc : mSelectedUseCases){
-                    int ucTotalTimes = uc.getTimes();
-                    int ucCompletedTimes = uc.getCompletedTimes();
+                for (TestBase tb : mSelectedUseCases){
+                    int ucTotalTimes = tb.getTimes();
+                    int ucCompletedTimes = tb.getCompletedTimes();
                     if(ucCompletedTimes == ucTotalTimes){
                         continue;
                     }
-                    for (TestItemBase ti : uc.getTestItems()){
-                        if(ti.getClassName().equals("com.ckt.ckttestassistant.testitems.Reboot")){
-                            LogUtils.d(TAG, "change reboot times");
-                            int tiTotalTimes = ti.getTimes();
-                            int tiCompletedTimes = ti.getCompletedTimes();
-                            if(tiCompletedTimes >= tiTotalTimes){
-                                LogUtils.e(TAG, "error : reboot times exception");
-                            }else{
-                                tiCompletedTimes++;
-                                ti.setCompletedTimes(tiCompletedTimes);
-                                updateTestItemOfSelectedUseCaseXml(ti);
-                            }
+                    if(tb.getClassName().equals("com.ckt.ckttestassistant.testitems.Reboot")){
+                        LogUtils.d(TAG, "change reboot times");
+                        int tiFailTimes = tb.getFailTimes();
+                        if(tiFailTimes > 0){
+                            tiFailTimes--;
+                            tb.setFailTimes(tiFailTimes);
+                            updateTestItemOfSelectedUseCaseXml((TestItemBase) tb);
                         }
                     }
                 }
@@ -334,7 +352,7 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
      * @param selectedTestItems
      * @param name
      */
-    public void addUsecaseToAllUseCaseXml(ArrayList<TestItemBase> selectedTestItems, String name) {
+    public void addUsecaseToAllUseCaseXml(ArrayList<TestBase> selectedTestItems, String name) {
         if(selectedTestItems == null || selectedTestItems.isEmpty()){
             LogUtils.d(TAG, "don't select any testitem,so don't save anything!");
             return;
@@ -342,8 +360,8 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
         String path = mContext.getFilesDir()+"/usecases.xml";
         UseCaseBase uc = new CktUseCase(mContext);
         uc.setTitle(name);
-        uc.setTestItems(selectedTestItems);
-        ArrayList<UseCaseBase> ucs = new ArrayList<UseCaseBase>();
+        uc.setChildren(selectedTestItems);
+        ArrayList<TestBase> ucs = new ArrayList<TestBase>();
         ucs.add(uc);
         try {
             mXmlHelper.addUsecase(path, ucs, false);
@@ -359,7 +377,7 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
      * 获取所有用例引用
      * @return
      */
-    public ArrayList<UseCaseBase> getAllItems() {
+    public ArrayList<TestBase> getAllItems() {
         return mAllUseCases != null ? mAllUseCases : null;
     }
 
@@ -367,7 +385,7 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
      * 获取已选用例引用
      * @return
      */
-    public ArrayList<UseCaseBase> getSelectItems() {
+    public ArrayList<TestBase> getSelectItems() {
         return mSelectedUseCases != null ? mSelectedUseCases : null;
     }
 
@@ -392,29 +410,42 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
             return ;
         }
         for (int index = 0; index < mSelectedUseCases.size() - 1; index++){
+            TestBase tb = mSelectedUseCases.get(index);
+            tb.task();
+        }
+    }
+    /*@Override
+    public void startExecuteThread() {
+        int size = 0;
+        if(mSelectedUseCases == null || mSelectedUseCases.isEmpty()){
+            LogUtils.d(TAG, "startExecuteThread exit : no selected use case");
+            return ;
+        }
+        for (int index = 0; index < mSelectedUseCases.size() - 1; index++){
             UseCaseBase tmp = mSelectedUseCases.get(index);
             tmp.setNextUseCase(mSelectedUseCases.get(index + 1));
         }
         mSelectedUseCases.get(mSelectedUseCases.size() - 1).setNextUseCase(null);
         mSelectedUseCases.get(0).execute(mHandler, mExecuteCallback);
-    }
+    }*/
 
     public void updateSelectedUseCases(int index) {
-        UseCaseBase uc = mAllUseCases.get(index).clone();
-        uc.setIsChecked(true);
-        int sn = mSelectedUseCases == null ? 0 : mSelectedUseCases.size();
-        uc.setSN(sn);
-        ArrayList<TestItemBase> tis = uc.getTestItems();
+        TestBase tb = mAllUseCases.get(index).clone();
+        //tb.setChecked(true);
+       /* int sn = mSelectedUseCases == null ? 0 : mSelectedUseCases.size();
+        tb.setSN(sn);
+        List<TestBase> tis = tb.getChildren();
         if(tis != null && !tis.isEmpty()){
-            for(TestItemBase ti : tis){
-                int uc_id = uc.getID(); //可以删除
-                int uc_sn = uc.getSN();
+            for(TestBase item : tis){
+                int uc_id = item.getID(); //可以删除
+                int uc_sn = item.getSN();
                 LogUtils.d(TAG, "uc_id = "+uc_id+"; uc_sn = "+uc_sn);
-                ti.setUseCaseID(uc_id);
-                ti.setUseCaseSN(uc_sn);
+                item.setParent(tb);
+                //item.setUseCaseID(uc_id);
+                //item.setUseCaseSN(uc_sn);
             }
-        }
-        mSelectedUseCases.add(uc);
+        }*/
+        mSelectedUseCases.add(tb);
         //saveSelectedUseCaseToXml();
         notifySelectedUseCaseChange();
     }
@@ -454,25 +485,16 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
 
     public void reInitSelectedUseCase() {
         LogUtils.d(TAG, "clear selected usecase,and read original from all usecase");
-        /*ArrayList<UseCaseBase> ucs = new ArrayList<UseCaseBase>();
-        for (UseCaseBase suc : mSelectedUseCases){
-            int sucID = suc.getID();
-            for (UseCaseBase auc : mAllUseCases){
-                int aucID = auc.getID();
-                if(sucID == aucID){
-                    ucs.add(auc.clone());
-                    break;
-                }
-            }
-        }
-        mSelectedUseCases.clear();
-        mSelectedUseCases.addAll(ucs);*/
-        for (UseCaseBase uc : mSelectedUseCases){
-            uc.setCompletedTimes(0);
-            uc.setFailTimes(0);
-            for (TestItemBase ti : uc.getTestItems()){
-                ti.setCompletedTimes(0);
-                ti.setFailTimes(0);
+        reInitUseCase(mSelectedUseCases);
+    }
+
+    private void reInitUseCase(List<TestBase> tbs) {
+        for (TestBase tb : tbs){
+            tb.setCompletedTimes(0);
+            tb.setFailTimes(0);
+            List<TestBase> children = tb.getChildren();
+            if(children != null && !children.isEmpty()){
+                reInitUseCase(children);
             }
         }
     }

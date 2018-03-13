@@ -3,6 +3,7 @@ package com.ckt.ckttestassistant.testitems;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -70,12 +71,43 @@ public class LaunchBrowser extends TestItemBase {
         it.addCategory("ndroid.intent.category.BROWSABLE");
         it.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         mContext.startActivity(it);
+        task2(true);
+        //new MyAsyncTask().execute();
+        //doTask();
         //do test,then close progressview
         if(finish && executeCallback != null){
             LogUtils.d(TAG, "stop test handler");
             executeCallback.stopTestHandler();
         }
         return false;
+    }
+
+    private class MyAsyncTask extends AsyncTask<Void, Void, Void>{
+        @Override
+        protected Void doInBackground(Void... params) {
+            try{
+                LogUtils.d(TAG, "doInBackground...");
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+
+        }
+
+        @Override
+        protected void onProgressUpdate(Void... values) {
+            super.onProgressUpdate(values);
+        }
     }
 
     @Override

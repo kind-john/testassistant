@@ -12,6 +12,7 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.ckt.ckttestassistant.R;
+import com.ckt.ckttestassistant.TestBase;
 import com.ckt.ckttestassistant.UseCaseManager;
 import com.ckt.ckttestassistant.adapter.ResultsTestItemAdapter;
 import com.ckt.ckttestassistant.adapter.ResultsUseCaseAdapter;
@@ -30,13 +31,13 @@ public class ResultsFragment extends Fragment implements UseCaseManager.Selected
     private Handler mHandler = null;
     private Context mContext;
     private UseCaseManager mUseCaseManager;
-    private ArrayList<UseCaseBase> mSelectedItems;
+    private ArrayList<TestBase> mSelectedItems;
     private ListView mUseCaseListView;
     private ListView mTestItemListView;
     private ResultsUseCaseAdapter mUseCaseAdapter;
     private int mCurrentUseCase = 0;
     private ResultsTestItemAdapter mTestItemAdapter;
-    private ArrayList<TestItemBase> mCurrentTestItems = null;
+    private ArrayList<TestBase> mCurrentTestItems = null;
 
     public void setHandler(Handler handler) {
         this.mHandler = handler;
@@ -51,21 +52,21 @@ public class ResultsFragment extends Fragment implements UseCaseManager.Selected
         mUseCaseManager.addSelectedUseCaseChangeObserver(this);
         mSelectedItems = mUseCaseManager.getSelectItems();
         if(mSelectedItems != null && !mSelectedItems.isEmpty()){
-            mCurrentTestItems = mSelectedItems.get(mCurrentUseCase).getTestItems();
+            mCurrentTestItems = mSelectedItems.get(mCurrentUseCase).getChildren();
         }
     }
 
-    private void initUseCaseListFocus(ArrayList<UseCaseBase> ucs) {
-        if(ucs != null && !ucs.isEmpty()){
-            UseCaseBase uc;
-            for (int i = 0; i< ucs.size(); i++){
-                uc = ucs.get(i);
+    private void initUseCaseListFocus(ArrayList<TestBase> tbs) {
+        if(tbs != null && !tbs.isEmpty()){
+            TestBase tb;
+            for (int i = 0; i< tbs.size(); i++){
+                tb = tbs.get(i);
                 if(i == 0){
                     LogUtils.d(TAG, "initUseCaseListFocus : 0");
-                    uc.setIsChecked(true);
+                    tb.setChecked(true);
                 }else{
                     LogUtils.d(TAG, "initUseCaseListFocus : "+i);
-                    uc.setIsChecked(false);
+                    tb.setChecked(false);
                 }
             }
         }
@@ -101,7 +102,7 @@ public class ResultsFragment extends Fragment implements UseCaseManager.Selected
                 if(mCurrentUseCase > mSelectedItems.size() - 1){
                     mCurrentUseCase = 0;
                 }
-                mCurrentTestItems = mSelectedItems.get(mCurrentUseCase).getTestItems();
+                mCurrentTestItems = mSelectedItems.get(mCurrentUseCase).getChildren();
             }else{
                 mCurrentTestItems = null;
             }
@@ -119,7 +120,7 @@ public class ResultsFragment extends Fragment implements UseCaseManager.Selected
                 if(mCurrentUseCase > mSelectedItems.size() - 1){
                     mCurrentUseCase = 0;
                 }
-                mCurrentTestItems = mSelectedItems.get(mCurrentUseCase).getTestItems();
+                mCurrentTestItems = mSelectedItems.get(mCurrentUseCase).getChildren();
             }else{
                 mCurrentTestItems = null;
             }

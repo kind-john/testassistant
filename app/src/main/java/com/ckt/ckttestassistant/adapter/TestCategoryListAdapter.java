@@ -67,10 +67,10 @@ public class TestCategoryListAdapter extends RecyclerView.Adapter<TestCategoryLi
                 public void onClick(final View v) {
                     if(position != mOldCheckedPosition){
                         if(mOldCheckedPosition > -1){
-                            mItems.get(mOldCheckedPosition).setIsChecked(false);
+                            mItems.get(mOldCheckedPosition).setChecked(false);
                             notifyItemChanged(mOldCheckedPosition);
                         }
-                        mItems.get(position).setIsChecked(true);
+                        mItems.get(position).setChecked(true);
                         notifyItemChanged(position);
                         mOldCheckedPosition = position;
                     }

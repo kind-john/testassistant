@@ -54,6 +54,7 @@ public final class MyConstants {
     public static final String FAIL = "fail";
 
     public static final String BROWSER_ACTION = "android.intent.action.VIEW";
+    public static final int BROWSER_REQUESTCODE = 1;
 
     /**
      * @Description 私有化构造方法

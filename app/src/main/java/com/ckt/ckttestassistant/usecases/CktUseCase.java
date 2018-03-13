@@ -50,11 +50,11 @@ public class CktUseCase extends UseCaseBase {
         setClassName(className);
     }
 
-    @Override
+    /*@Override
     public boolean execute(Handler mHandler, UseCaseManager.ExecuteCallback mExecuteCallback) {
         super.execute(mHandler, mExecuteCallback);
         return true;
-    }
+    }*/
 
     @Override
     protected void updateWaitProgress(Handler handler, int times) {
@@ -78,29 +78,6 @@ public class CktUseCase extends UseCaseBase {
         }
         //return result;   //后续要优化，暂时返回true测试excel读写
         return true;
-    }
-
-    @Override
-    protected void writeUsecaseLabelToExcel(int times) {
-        LogUtils.d(TAG, "writeUsecaseLabelToExcel");
-        UseCaseManager usm = UseCaseManager.getInstance(mContext);
-        String file = usm.getCurrentExcelFile();
-        try {
-            WritableWorkbook book = Workbook.createWorkbook(new File(file));
-            WritableSheet sheet;
-            sheet = book.getSheet(mTitle);
-            if(sheet == null){
-                sheet = book.createSheet(mTitle, SN);
-            }
-            int row = ExcelUtils.findEmptyRowFromSheet(sheet, 2, 2);
-            Label label = new Label(0, row, "第"+times+"次");
-            book.write();
-            book.close();
-        } catch (WriteException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     @Override
@@ -130,10 +107,5 @@ public class CktUseCase extends UseCaseBase {
     @Override
     public void saveParametersToXml(XmlSerializer serializer) {
 
-    }
-
-    @Override
-    public void addTestItem(TestItemBase testItem) {
-        super.addTestItem(testItem);
     }
 }

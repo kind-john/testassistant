@@ -36,7 +36,7 @@ public class CktTestAssistantMainActivity extends AppCompatActivity
     private UseCaseManager mUseCaseManager;
     private String[] mPermissions = {
             "android.permission.WRITE_EXTERNAL_STORAGE",
-            "android.permission.INJECT_EVENTS"
+            //"android.permission.INJECT_EVENTS"
     };
 
     @Override
@@ -115,30 +115,30 @@ public class CktTestAssistantMainActivity extends AppCompatActivity
         viewPager.setAdapter(adapter);
         tabLayout.setupWithViewPager(viewPager);
 
-        //PermissionUtil.requestPerssions(this, REQUEST_CODE, mPermissions);
+        PermissionUtil.requestPerssions(this, REQUEST_CODE, mPermissions);
     }
 
     @Override
     protected void onResume() {
         LogUtils.d(TAG, "onResume");
         super.onResume();
-        if(mDialog != null){
+        /*if(mDialog != null){
             if(!mDialog.isShowing()){
                 LogUtils.d(TAG, "show progress");
                 mDialog.show();
             }
-        }
+        }*/
     }
 
     @Override
     protected void onPause() {
-        LogUtils.d(TAG, "onResume");
-        if(mDialog != null){
+        LogUtils.d(TAG, "onPause");
+        /*if(mDialog != null){
             if(mDialog.isShowing()){
                 LogUtils.d(TAG, "hide progress");
                 mDialog.hide();
             }
-        }
+        }*/
         super.onPause();
     }
 
@@ -173,57 +173,70 @@ public class CktTestAssistantMainActivity extends AppCompatActivity
         //mUseCaseManager.setTestStatus(false);
     }
 
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        LogUtils.d(TAG,"CktTestAssistantMainActivity onKeyDown : "+keyCode);
-        return true;
-    }
-
-    @Override
-    public boolean onKeyUp(int keyCode, KeyEvent event) {
-        LogUtils.d(TAG,"CktTestAssistantMainActivity onKeyUp : "+keyCode);
-        return true;
-    }
-
     private void updateProgressMessage(String message) {
         LogUtils.d(TAG, "updateProgressMessage message = "+message);
-        if(mProgressDialogBuilder == null){
-            LogUtils.d(TAG, "updateProgressMessage mProgressDialogBuilder is null!!!");
-            mProgressDialogBuilder = new AlertDialog.Builder(CktTestAssistantMainActivity.this);
-            mProgressDialogBuilder.setCancelable(false);
-            mProgressView = LayoutInflater.from(getApplicationContext()).inflate(R.layout.progress_layout, null);
-            mProgressMessageTextView = (TextView)mProgressView.findViewById(R.id.message);
-            mProgressMessageTextView.setText(message);
-            mDialog = mProgressDialogBuilder.setView(mProgressView).create();
-            mDialog.show();
-        }else{
-            LogUtils.d(TAG, "updateProgressMessage mProgressDialogBuilder not null, only update message");
-            if(mProgressMessageTextView == null){
+        try{
+            if(mProgressDialogBuilder == null){
+                LogUtils.d(TAG, "updateProgressMessage mProgressDialogBuilder is null!!!");
+                mProgressDialogBuilder = new AlertDialog.Builder(CktTestAssistantMainActivity.this);
+                mProgressDialogBuilder.setCancelable(false);
+                mProgressView = LayoutInflater.from(getApplicationContext()).inflate(R.layout.progress_layout, null);
                 mProgressMessageTextView = (TextView)mProgressView.findViewById(R.id.message);
+                mProgressMessageTextView.setText(message);
+                mDialog = mProgressDialogBuilder.setView(mProgressView).create();
+                mDialog.show();
+            }else{
+                LogUtils.d(TAG, "updateProgressMessage mProgressDialogBuilder not null, only update message");
+                if(mProgressMessageTextView == null){
+                    mProgressMessageTextView = (TextView)mProgressView.findViewById(R.id.message);
+                }
+                mProgressMessageTextView.setText(message);
+                if(!mDialog.isShowing()){
+                    mDialog.show();
+                }
             }
-            mProgressMessageTextView.setText(message);
+        }catch (Exception e){
+            e.printStackTrace();
         }
     }
 
     private void updateProgressTitle(String title) {
         LogUtils.d(TAG, "updateProgressTitle title = "+title);
-        if (mProgressDialogBuilder == null) {
-            LogUtils.d(TAG, "updateProgressTitle mProgressDialogBuilder is null!!!");
-            mProgressDialogBuilder = new AlertDialog.Builder(CktTestAssistantMainActivity.this);
-            mProgressDialogBuilder.setCancelable(false);
-            mProgressView = LayoutInflater.from(getApplicationContext()).inflate(R.layout.progress_layout, null);
-            mProgressTitleTextView = (TextView)mProgressView.findViewById(R.id.title);
-            mProgressTitleTextView.setText(title);
-            mDialog = mProgressDialogBuilder.setView(mProgressView).create();
-            mDialog.show();
-        } else {
-            LogUtils.d(TAG, "updateProgressTitle mProgressDialogBuilder not null, only update title");
-            if(mProgressTitleTextView == null){
+        try{
+            if (mProgressDialogBuilder == null) {
+                LogUtils.d(TAG, "updateProgressTitle mProgressDialogBuilder is null!!!");
+                mProgressDialogBuilder = new AlertDialog.Builder(CktTestAssistantMainActivity.this);
+                mProgressDialogBuilder.setCancelable(false);
+                mProgressView = LayoutInflater.from(getApplicationContext()).inflate(R.layout.progress_layout, null);
                 mProgressTitleTextView = (TextView)mProgressView.findViewById(R.id.title);
+                mProgressTitleTextView.setText(title);
+                mDialog = mProgressDialogBuilder.setView(mProgressView).create();
+                mDialog.show();
+            } else {
+                LogUtils.d(TAG, "updateProgressTitle mProgressDialogBuilder not null, only update title");
+                if(mProgressTitleTextView == null){
+                    mProgressTitleTextView = (TextView)mProgressView.findViewById(R.id.title);
+                }
+                mProgressTitleTextView.setText(title);
+                if(!mDialog.isShowing()){
+                    mDialog.show();
+                }
             }
-            mProgressTitleTextView.setText(title);
+        }catch (Exception e){
+            e.printStackTrace();
         }
+    }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (requestCode){
+            case MyConstants.BROWSER_REQUESTCODE:
+
+                break;
+            default:
+                break;
+        }
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
     @Override

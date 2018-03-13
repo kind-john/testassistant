@@ -59,7 +59,7 @@
         android:layout_weight="1"
         android:orientation="horizontal">
 
-        <android.support.v7.widget.RecyclerView
+        <ListView
             android:id="@+id/usecaselist"
             android:layout_width="0dp"
             android:layout_height="match_parent"

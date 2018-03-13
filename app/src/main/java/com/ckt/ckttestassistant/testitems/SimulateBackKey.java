@@ -111,6 +111,12 @@ public class SimulateBackKey extends TestItemBase {
                             InputManager.INJECT_INPUT_EVENT_MODE_ASYNC);
                     InputManager.getInstance().injectInputEvent(up,
                             InputManager.INJECT_INPUT_EVENT_MODE_ASYNC);*/
+                    try {
+                        Instrumentation inst = new Instrumentation();
+                        inst.sendKeyDownUpSync(KeyEvent.KEYCODE_BACK);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
