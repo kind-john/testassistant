@@ -5,6 +5,8 @@ import android.os.Environment;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.ckt.ckttestassistant.TestBase;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -22,6 +24,7 @@ import jxl.format.BorderLineStyle;
 import jxl.format.CellFormat;
 import jxl.format.Colour;
 import jxl.write.Label;
+import jxl.write.Number;
 import jxl.write.WritableCell;
 import jxl.write.WritableCellFormat;
 import jxl.write.WritableFont;
@@ -57,6 +60,46 @@ public final class ExcelUtils {
         createExcel(excelFile);
     }
 
+    public static void addRecordTitleToExcel(WritableSheet sheet, int row, int col, String[] titles) throws WriteException {
+        String result;
+        WritableFont font = new WritableFont(WritableFont.createFont("楷体"), 11, WritableFont.BOLD);
+        WritableCellFormat format = new WritableCellFormat(font);
+        if(titles != null && titles.length > 0){
+            for(int i = 0; i < titles.length; i++){
+                Label label = new Label(col + i, row, titles[i]);
+                sheet.addCell(label);
+            }
+        }
+    }
+
+
+
+    public static void addRecordToExcel(WritableSheet sheet, int row, int col, TestBase tb) throws WriteException {
+        String result;
+        WritableCellFormat labelFormat = new WritableCellFormat();
+        WritableCellFormat failFormat = new WritableCellFormat();
+        int times = tb.getTimes();
+        int completedTimes = tb.getCompletedTimes();
+        int failTimes = tb.getFailTimes();
+        if(failTimes == 0 && completedTimes == times){
+            result = MyConstants.SUCCESS;
+            labelFormat.setBackground(Colour.GREEN);
+        }else{
+            result = MyConstants.FAIL;
+            labelFormat.setBackground(Colour.RED);
+        }
+        Label label = new Label(col, row, result);
+        sheet.addCell(label);
+        Number totalTimesCell = new Number(col + 1, row, times);
+        sheet.addCell(totalTimesCell);
+        Number completedTimesCell = new Number(col + 2, row, completedTimes);
+        sheet.addCell(completedTimesCell);
+        Number failTimesCell = new Number(col + 3, row, failTimes);
+        if(failTimes > 0){
+            failFormat.setBackground(Colour.RED);
+        }
+        sheet.addCell(failTimesCell);
+    }
     public static int findEmptyRowFromSheet(WritableSheet sheet, int continuousEmpty, int wide) {
         Cell cell;
         int sum = 0;
@@ -779,54 +822,6 @@ public final class ExcelUtils {
             e.printStackTrace();
         }
     }
-
-    /**
-     * 将数据存入到Excel表中
-     * add by chen shuaian for AutoPhone
-     *
-     * @param excelFile
-     * @param list
-     */
-    /*static void writeToExcel(File excelFile, ArrayList<CallRecord> list) {
-
-        try {
-            Workbook oldWwb = Workbook.getWorkbook(excelFile);
-            WritableWorkbook wwb = Workbook.createWorkbook(excelFile, oldWwb);
-            WritableSheet ws = wwb.getSheet(0);
-
-            Label lab1, lab2, lab3, lab4, lab5, lab6;
-            WritableCellFormat wcf;
-            CallRecord record;
-            for (int i = 0; i < list.size(); i++) {
-                record = list.get(i);
-                if (record.isConnect().equals("pass")) {
-                    wcf = getAlignment();
-                } else {
-                    wcf = getBackground();
-                }
-                lab1 = new Label(0, i + 1, record.getId(), wcf);
-                lab2 = new Label(1, i + 1, record.getStartDate(), wcf);
-                lab3 = new Label(2, i + 1, record.getEndDate(), wcf);
-                lab4 = new Label(3, i + 1, record.getDuration(), wcf);
-                lab5 = new Label(4, i + 1, record.getNetworkType(), wcf);
-                lab6 = new Label(5, i + 1, record.isConnect(), wcf);
-
-                ws.addCell(lab1);
-                ws.addCell(lab2);
-                ws.addCell(lab3);
-                ws.addCell(lab4);
-                ws.addCell(lab5);
-                ws.addCell(lab6);
-            }
-
-            // 从内存中写入文件中,只能刷一次.
-            wwb.write();
-            wwb.close();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }*/
 
     /**
      * 表格头部样式

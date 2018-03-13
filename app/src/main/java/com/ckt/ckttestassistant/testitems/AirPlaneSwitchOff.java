@@ -44,12 +44,12 @@ public class AirPlaneSwitchOff extends TestItemBase {
     public static final int ID = 16;
     private static final String TITLE = "AirPlane Switch Off";
     private static final String TAG = "AirPlaneSwitchOff";
-    private static final String EXCEL_TITLE_RESULT = "result";
-    private static final String EXCEL_TITLE_TOTAL_TIMES = "total times";
-    private static final String EXCEL_TITLE_COMPLETED_TIMES = "completed times";
-    private static final String EXCEL_TITLE_FAIL_TIMES = "fial times";
-
-    private int mDelay = 0;
+    private String[] mExcelTitles = {
+            "result",
+            "total times",
+            "completed times",
+            "fial times"
+    };
 
     public AirPlaneSwitchOff() {
         super();
@@ -65,14 +65,6 @@ public class AirPlaneSwitchOff extends TestItemBase {
         setClassName(className);
         setID(ID);
         setTitle(TITLE);
-    }
-
-    public int getDelay() {
-        return mDelay;
-    }
-
-    public void setDelay(int delay) {
-        this.mDelay = delay;
     }
 
     @Override
@@ -123,7 +115,7 @@ public class AirPlaneSwitchOff extends TestItemBase {
                     //在标题后插入一行
                     sheet.insertRow(row + 2);
                     //在添加的新空行写入数据
-                    addRecordToExcel(sheet, row + 2, col);
+                    ExcelUtils.addRecordToExcel(sheet, row + 2, col, this);
                 }else{
                     LogUtils.d(TAG, "there is no cell of "+ getTitle()+", so create it.");
                     //找到空白地方插入label标记
@@ -132,9 +124,9 @@ public class AirPlaneSwitchOff extends TestItemBase {
                     LogUtils.d(TAG, "rows = " + rows);
                     label = new Label(0, rows, getTitle(), format);
                     sheet.addCell(label);
-                    addRecordTitleToExcel(sheet, rows + 1, 0);
+                    ExcelUtils.addRecordTitleToExcel(sheet, rows + 1, 0, mExcelTitles);
                     //sheet.insertRow(emptyRow + 2);
-                    addRecordToExcel(sheet, rows + 2, 0);
+                    ExcelUtils.addRecordToExcel(sheet, rows + 2, 0, this);
                 }
                 book.write();
                 book.close();
@@ -151,46 +143,7 @@ public class AirPlaneSwitchOff extends TestItemBase {
         }
     }
 
-    private void addRecordTitleToExcel(WritableSheet sheet, int row, int col) throws WriteException {
-        String result;
-        WritableFont font = new WritableFont(WritableFont.createFont("楷体"), 11, WritableFont.BOLD);
-        WritableCellFormat format = new WritableCellFormat(font);
 
-        Label label1 = new Label(col, row, EXCEL_TITLE_RESULT);
-        sheet.addCell(label1);
-        Label label2 = new Label(col + 1, row, EXCEL_TITLE_TOTAL_TIMES);
-        sheet.addCell(label2);
-        Label label3 = new Label(col + 2, row, EXCEL_TITLE_COMPLETED_TIMES);
-        sheet.addCell(label3);
-        Label label4 = new Label(col + 3, row, EXCEL_TITLE_FAIL_TIMES);
-        sheet.addCell(label4);
-    }
-
-
-
-    private void addRecordToExcel(WritableSheet sheet, int row, int col) throws WriteException {
-        String result;
-        WritableCellFormat labelFormat = new WritableCellFormat();
-        WritableCellFormat failFormat = new WritableCellFormat();
-        if(isSuccess()){
-            result = MyConstants.SUCCESS;
-            labelFormat.setBackground(Colour.GREEN);
-        }else{
-            result = MyConstants.FAIL;
-            labelFormat.setBackground(Colour.RED);
-        }
-        Label label = new Label(col, row, result);
-        sheet.addCell(label);
-        Number totalTimes = new Number(col + 1, row, mTimes);
-        sheet.addCell(totalTimes);
-        Number completedTimes = new Number(col + 2, row, mCompletedTimes);
-        sheet.addCell(completedTimes);
-        Number failTimes = new Number(col + 3, row, mFailTimes);
-        if(mFailTimes > 0){
-            failFormat.setBackground(Colour.RED);
-        }
-        sheet.addCell(failTimes);
-    }
 
     @Override
     public void showPropertyDialog(Context context, final boolean isNeedUpdateXml) {

@@ -111,6 +111,7 @@ public abstract class TestItemBase extends TestBase implements CktResultsHelper.
             String path = mContext.getFilesDir()+"/selected_usecases.xml";
             mUseCaseManager.updateTestItemOfSelectedUseCaseXml(this);
         }
+        saveResult();
         if(mCompletedTimes < mTimes){
             task();
         }else if(mCompletedTimes == mTimes){

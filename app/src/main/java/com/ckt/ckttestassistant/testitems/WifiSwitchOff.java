@@ -26,8 +26,6 @@ public class WifiSwitchOff extends TestItemBase {
     private static final String TITLE = "Wifi Switch Off";
     private static final String TAG = "WifiSwitchOff";
 
-    private int mDelay = 0;
-
     public WifiSwitchOff() {
         super();
         String className = this.getClass().getName();
@@ -42,14 +40,6 @@ public class WifiSwitchOff extends TestItemBase {
         setClassName(className);
         setID(ID);
         setTitle(TITLE);
-    }
-
-    public int getDelay() {
-        return mDelay;
-    }
-
-    public void setDelay(int delay) {
-        this.mDelay = delay;
     }
 
     @Override
