@@ -1,9 +1,13 @@
 package com.ckt.ckttestassistant.testitems;
 
+import android.app.Instrumentation;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.graphics.Point;
+import android.os.SystemClock;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.EditText;
 
@@ -17,6 +21,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xmlpull.v1.XmlSerializer;
 
+import java.util.HashMap;
+
 /**
  * Created by ckt on 18-1-31.
  */
@@ -25,8 +31,6 @@ public class CameraZoomOut extends TestItemBase {
     public static final int ID = 70;
     private static final String TITLE = "Camera Zoom Out";
     private static final String TAG = "CameraZoomOut";
-
-    private int mDelay = 0;
 
     public CameraZoomOut() {
         super();
@@ -44,14 +48,6 @@ public class CameraZoomOut extends TestItemBase {
         setTitle(TITLE);
     }
 
-    public int getDelay() {
-        return mDelay;
-    }
-
-    public void setDelay(int delay) {
-        this.mDelay = delay;
-    }
-
     @Override
     public boolean isSuccess() {
         return false;
@@ -65,7 +61,24 @@ public class CameraZoomOut extends TestItemBase {
     @Override
     public boolean doExecute(UseCaseManager.ExecuteCallback executeCallback, boolean finish) {
         LogUtils.d(TAG, "CameraZoomOut doExecute");
-        //do test,then close progressview
+        new Thread() {
+            public void run() {
+                try{
+                    HashMap<String, Point> points = mUseCaseManager.getTouchPosConfig();
+                    Point point = points.get(MyConstants.CAMERA_ZOOM_OUT_POINT);
+                    if(point != null){
+                        Instrumentation inst=new Instrumentation();
+                        inst.sendPointerSync(MotionEvent.obtain(SystemClock.uptimeMillis(),
+                                SystemClock.uptimeMillis(), MotionEvent.ACTION_DOWN, point.x, point.y, 0));
+                        inst.sendPointerSync(MotionEvent.obtain(SystemClock.uptimeMillis(),
+                                SystemClock.uptimeMillis(), MotionEvent.ACTION_UP, point.x, point.y, 0));
+                    }
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+        }.start();
+        task2(true);
         if(finish && executeCallback != null){
             LogUtils.d(TAG, "stop test handler");
             executeCallback.stopTestHandler();
@@ -75,7 +88,7 @@ public class CameraZoomOut extends TestItemBase {
 
     @Override
     public void saveResult() {
-
+        super.saveResult();
     }
 
     @Override

@@ -12,6 +12,7 @@ import android.widget.EditText;
 
 import com.ckt.ckttestassistant.R;
 import com.ckt.ckttestassistant.UseCaseManager;
+import com.ckt.ckttestassistant.utils.ExcelUtils;
 import com.ckt.ckttestassistant.utils.LogUtils;
 import com.ckt.ckttestassistant.utils.MyConstants;
 
@@ -19,6 +20,20 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xmlpull.v1.XmlSerializer;
+
+import java.io.File;
+import java.io.IOException;
+
+import jxl.Cell;
+import jxl.Workbook;
+import jxl.read.biff.BiffException;
+import jxl.write.Label;
+import jxl.write.WritableCellFormat;
+import jxl.write.WritableFont;
+import jxl.write.WritableSheet;
+import jxl.write.WritableWorkbook;
+import jxl.write.WriteException;
+import jxl.write.biff.RowsExceededException;
 
 /**
  * Created by ckt on 18-1-31.
@@ -28,8 +43,6 @@ public class LaunchBrowser extends TestItemBase {
     public static final int ID = 34;
     private static final String TITLE = "Launch Browser";
     private static final String TAG = "LaunchBrowser";
-
-    private int mDelay = 0;
 
     public LaunchBrowser() {
         super();
@@ -47,14 +60,6 @@ public class LaunchBrowser extends TestItemBase {
         setTitle(TITLE);
     }
 
-    public int getDelay() {
-        return mDelay;
-    }
-
-    public void setDelay(int delay) {
-        this.mDelay = delay;
-    }
-
     @Override
     public boolean isSuccess() {
         return false;
@@ -68,14 +73,22 @@ public class LaunchBrowser extends TestItemBase {
     @Override
     public boolean doExecute(UseCaseManager.ExecuteCallback executeCallback, boolean finish) {
         LogUtils.d(TAG, "LaunchBrowser doExecute");
-        Uri uri = Uri.parse("https://www.baidu.com");
+        /*Uri uri = Uri.parse("https://www.baidu.com");
         Intent intent = new Intent(Intent.ACTION_VIEW,uri);
-        intent.setClassName("com.android.chrome","org.chromium.chrome.browser.ChromeTabbedActivity");
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        mContext.startActivity(intent);
-        task2(true);
-        //new MyAsyncTask().execute();
-        //doTask();
+        intent.setClassName("com.android.chrome","org.chromium.chrome.browser.ChromeTabbedActivity");*/
+        boolean result = true;
+        try{
+            Intent intent = new Intent(Intent.ACTION_MAIN).
+                    addCategory(Intent.CATEGORY_LAUNCHER).
+                    setClassName("org.chromium.webview_shell", "org.chromium.webview_shell.WebViewBrowserActivity").
+                    setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+            mContext.startActivity(intent);
+        }catch (Exception e){
+            e.printStackTrace();
+            result = false;
+        }
+        task2(result);
+
         //do test,then close progressview
         if(finish && executeCallback != null){
             LogUtils.d(TAG, "stop test handler");
@@ -84,37 +97,9 @@ public class LaunchBrowser extends TestItemBase {
         return false;
     }
 
-    private class MyAsyncTask extends AsyncTask<Void, Void, Void>{
-        @Override
-        protected Void doInBackground(Void... params) {
-            try{
-                LogUtils.d(TAG, "doInBackground...");
-                Thread.sleep(3000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-
-        }
-
-        @Override
-        protected void onProgressUpdate(Void... values) {
-            super.onProgressUpdate(values);
-        }
-    }
-
     @Override
     public void saveResult() {
-
+        super.saveResult();
     }
 
     @Override

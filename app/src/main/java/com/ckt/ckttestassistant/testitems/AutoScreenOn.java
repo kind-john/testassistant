@@ -26,8 +26,6 @@ public class AutoScreenOn extends TestItemBase {
     private static final String TITLE = "Auto Screen On";
     private static final String TAG = "AutoScreenOn";
 
-    private int mDelay = 0;
-
     public AutoScreenOn() {
         super();
         String className = this.getClass().getName();
@@ -44,14 +42,6 @@ public class AutoScreenOn extends TestItemBase {
         setTitle(TITLE);
     }
 
-    public int getDelay() {
-        return mDelay;
-    }
-
-    public void setDelay(int delay) {
-        this.mDelay = delay;
-    }
-
     @Override
     public boolean isSuccess() {
         return false;
@@ -66,6 +56,7 @@ public class AutoScreenOn extends TestItemBase {
     public boolean doExecute(UseCaseManager.ExecuteCallback executeCallback, boolean finish) {
         LogUtils.d(TAG, "AutoScreenOn doExecute");
         //do test,then close progressview
+        task2(true);
         if(finish && executeCallback != null){
             LogUtils.d(TAG, "stop test handler");
             executeCallback.stopTestHandler();
@@ -75,7 +66,7 @@ public class AutoScreenOn extends TestItemBase {
 
     @Override
     public void saveResult() {
-
+        super.saveResult();
     }
 
     @Override

@@ -11,6 +11,7 @@ import android.widget.EditText;
 
 import com.ckt.ckttestassistant.R;
 import com.ckt.ckttestassistant.UseCaseManager;
+import com.ckt.ckttestassistant.utils.ExcelUtils;
 import com.ckt.ckttestassistant.utils.LogUtils;
 import com.ckt.ckttestassistant.utils.MyConstants;
 
@@ -18,6 +19,20 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xmlpull.v1.XmlSerializer;
+
+import java.io.File;
+import java.io.IOException;
+
+import jxl.Cell;
+import jxl.Workbook;
+import jxl.read.biff.BiffException;
+import jxl.write.Label;
+import jxl.write.WritableCellFormat;
+import jxl.write.WritableFont;
+import jxl.write.WritableSheet;
+import jxl.write.WritableWorkbook;
+import jxl.write.WriteException;
+import jxl.write.biff.RowsExceededException;
 
 /**
  * Created by ckt on 18-1-31.
@@ -27,8 +42,6 @@ public class SimulatePowerKey extends TestItemBase {
     public static final int ID = 49;
     private static final String TITLE = "Simulate Power Key";
     private static final String TAG = "SimulatePowerKey";
-
-    private int mDelay = 0;
 
     public SimulatePowerKey() {
         super();
@@ -44,14 +57,6 @@ public class SimulatePowerKey extends TestItemBase {
         setClassName(className);
         setID(ID);
         setTitle(TITLE);
-    }
-
-    public int getDelay() {
-        return mDelay;
-    }
-
-    public void setDelay(int delay) {
-        this.mDelay = delay;
     }
 
     @Override
@@ -76,17 +81,14 @@ public class SimulatePowerKey extends TestItemBase {
         new Thread() {
             public void run() {
                 try {
-                    try {
-                        Instrumentation inst = new Instrumentation();
-                        inst.sendKeyDownUpSync(KeyEvent.KEYCODE_POWER);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+                    Instrumentation inst = new Instrumentation();
+                    inst.sendKeyDownUpSync(KeyEvent.KEYCODE_POWER);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
         }.start();
+        task2(true);
         if(finish && executeCallback != null){
             LogUtils.d(TAG, "stop test handler");
             executeCallback.stopTestHandler();
@@ -96,7 +98,7 @@ public class SimulatePowerKey extends TestItemBase {
 
     @Override
     public void saveResult() {
-
+        super.saveResult();
     }
 
     @Override

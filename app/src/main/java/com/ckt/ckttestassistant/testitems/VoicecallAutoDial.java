@@ -26,8 +26,6 @@ public class VoicecallAutoDial extends TestItemBase {
     private static final String TITLE = "Voicecall Auto Dial";
     private static final String TAG = "VoicecallAutoDial";
 
-    private int mDelay = 0;
-
     public VoicecallAutoDial() {
         super();
         String className = this.getClass().getName();
@@ -44,14 +42,6 @@ public class VoicecallAutoDial extends TestItemBase {
         setTitle(TITLE);
     }
 
-    public int getDelay() {
-        return mDelay;
-    }
-
-    public void setDelay(int delay) {
-        this.mDelay = delay;
-    }
-
     @Override
     public boolean isSuccess() {
         return false;
@@ -66,6 +56,7 @@ public class VoicecallAutoDial extends TestItemBase {
     public boolean doExecute(UseCaseManager.ExecuteCallback executeCallback, boolean finish) {
         LogUtils.d(TAG, "VoicecallAutoDial doExecute");
         //do test,then close progressview
+        task2(true);
         if(finish && executeCallback != null){
             LogUtils.d(TAG, "stop test handler");
             executeCallback.stopTestHandler();
@@ -75,7 +66,7 @@ public class VoicecallAutoDial extends TestItemBase {
 
     @Override
     public void saveResult() {
-
+        super.saveResult();
     }
 
     @Override

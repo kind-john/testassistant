@@ -1,5 +1,6 @@
 package com.ckt.ckttestassistant.testitems;
 
+import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.support.v7.app.AlertDialog;
@@ -25,15 +26,15 @@ public class BTSwitchOff extends TestItemBase {
     public static final int ID = 11;
     private static final String TITLE = "BT Switch Off";
     private static final String TAG = "BTSwitchOff";
-
-    private int mDelay = 0;
-
+    private BluetoothAdapter mBluetoothAdapter = null;
+    private Object lock = new Object();
     public BTSwitchOff() {
         super();
         String className = this.getClass().getName();
         setClassName(className);
         setID(ID);
         setTitle(TITLE);
+        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
     }
 
     public BTSwitchOff(Context context) {
@@ -42,14 +43,7 @@ public class BTSwitchOff extends TestItemBase {
         setClassName(className);
         setID(ID);
         setTitle(TITLE);
-    }
-
-    public int getDelay() {
-        return mDelay;
-    }
-
-    public void setDelay(int delay) {
-        this.mDelay = delay;
+        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
     }
 
     @Override
@@ -63,9 +57,35 @@ public class BTSwitchOff extends TestItemBase {
     }
 
     @Override
+    public void setDelay(int delay) {
+        if(delay < 2000){
+            AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);
+            builder.setTitle("value available:").
+                    setMessage("delay must greater than "+2000).
+                    setNeutralButton("OK", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            //do nothing
+                        }
+                    }).create().show();
+
+        }else{
+            mDelay = delay;
+        }
+    }
+
+    @Override
     public boolean doExecute(UseCaseManager.ExecuteCallback executeCallback, boolean finish) {
-        LogUtils.d(TAG, "BTSwitchOff doExecute");
-        //do test,then close progressview
+        LogUtils.d(TAG, mClassName+" doExecute");
+        if(mBluetoothAdapter != null){
+            if (mBluetoothAdapter.getState() != BluetoothAdapter.STATE_OFF){
+                LogUtils.d(TAG, mClassName+" start run");
+                mBluetoothAdapter.disable();
+            }
+        }
+
+        task2(true);
+
         if(finish && executeCallback != null){
             LogUtils.d(TAG, "stop test handler");
             executeCallback.stopTestHandler();
@@ -75,7 +95,7 @@ public class BTSwitchOff extends TestItemBase {
 
     @Override
     public void saveResult() {
-
+        super.saveResult();
     }
 
     @Override

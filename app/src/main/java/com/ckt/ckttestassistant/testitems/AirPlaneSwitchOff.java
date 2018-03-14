@@ -1,7 +1,11 @@
 package com.ckt.ckttestassistant.testitems;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.os.Build;
+import android.provider.Settings;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -44,12 +48,6 @@ public class AirPlaneSwitchOff extends TestItemBase {
     public static final int ID = 16;
     private static final String TITLE = "AirPlane Switch Off";
     private static final String TAG = "AirPlaneSwitchOff";
-    private String[] mExcelTitles = {
-            "result",
-            "total times",
-            "completed times",
-            "fial times"
-    };
 
     public AirPlaneSwitchOff() {
         super();
@@ -77,10 +75,27 @@ public class AirPlaneSwitchOff extends TestItemBase {
 
     }
 
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     @Override
     public boolean doExecute(UseCaseManager.ExecuteCallback executeCallback, boolean finish) {
-        LogUtils.d(TAG, "AirPlaneSwitchOff doExecute");
-        //do test,then close progressview
+        LogUtils.d(TAG, mClassName+" doExecute");
+        try {
+            boolean isOff = Settings.Global.getInt(mContext.getContentResolver(),
+                    Settings.Global.AIRPLANE_MODE_ON) == 0 ? true : false;
+            if(!isOff){
+                Settings.Global.putInt(mContext.getContentResolver(),
+                        Settings.Global.AIRPLANE_MODE_ON,
+                        0);
+                Intent intent = new Intent(Intent.ACTION_AIRPLANE_MODE_CHANGED);
+                intent.addFlags(Intent.FLAG_RECEIVER_REPLACE_PENDING);
+                intent.putExtra("state", false);
+                mContext.sendBroadcast(intent);
+            }
+        } catch (Settings.SettingNotFoundException e) {
+            e.printStackTrace();
+        }finally {
+            task2(true);
+        }
         if(finish && executeCallback != null){
             LogUtils.d(TAG, "stop test handler");
             //executeCallback.stopTestHandler();
@@ -90,57 +105,7 @@ public class AirPlaneSwitchOff extends TestItemBase {
 
     @Override
     public void saveResult() {
-        LogUtils.d(TAG, "AirPlaneSwitchOff saveResult");
-        UseCaseManager usm = UseCaseManager.getInstance(mContext);
-        String file = usm.getCurrentExcelFile();
-        try {
-            Workbook wb = Workbook.getWorkbook(new File(file));
-            WritableWorkbook book = Workbook.createWorkbook(new File(file), wb);
-            WritableSheet sheet = book.getSheet(mParent.getTitle());
-            if(sheet == null){
-                LogUtils.e(TAG, "sheet can not find : "+ mParent.getTitle());
-                return ;
-            }else{
-                WritableFont font = new WritableFont(WritableFont.createFont("楷体"), 11, WritableFont.BOLD);
-                WritableCellFormat format = new WritableCellFormat(font);
-                Cell cell = sheet.findCell(getTitle());
-                Label label;
-                if(cell != null){
-                    LogUtils.d(TAG, "found cell of "+ getTitle()+", insert record!");
-                    LogUtils.d(TAG, "rows = " + sheet.getRows());
-                    //找到合适的地方插入一行记录
-                    int row, col;
-                    row = cell.getRow();
-                    col = cell.getColumn();
-                    //在标题后插入一行
-                    sheet.insertRow(row + 2);
-                    //在添加的新空行写入数据
-                    ExcelUtils.addRecordToExcel(sheet, row + 2, col, this);
-                }else{
-                    LogUtils.d(TAG, "there is no cell of "+ getTitle()+", so create it.");
-                    //找到空白地方插入label标记
-                    //int emptyRow = ExcelUtils.findEmptyRowFromSheet(sheet, 2, 1);
-                    int rows = sheet.getRows();
-                    LogUtils.d(TAG, "rows = " + rows);
-                    label = new Label(0, rows, getTitle(), format);
-                    sheet.addCell(label);
-                    ExcelUtils.addRecordTitleToExcel(sheet, rows + 1, 0, mExcelTitles);
-                    //sheet.insertRow(emptyRow + 2);
-                    ExcelUtils.addRecordToExcel(sheet, rows + 2, 0, this);
-                }
-                book.write();
-                book.close();
-                wb.close();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (RowsExceededException e) {
-            e.printStackTrace();
-        } catch (WriteException e) {
-            e.printStackTrace();
-        } catch (BiffException e) {
-            e.printStackTrace();
-        }
+        super.saveResult();
     }
 
 

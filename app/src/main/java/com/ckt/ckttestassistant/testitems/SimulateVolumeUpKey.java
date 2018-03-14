@@ -26,8 +26,6 @@ public class SimulateVolumeUpKey extends TestItemBase {
     private static final String TITLE = "Simulate Volume Up Key";
     private static final String TAG = "SimulateVolumeUpKey";
 
-    private int mDelay = 0;
-
     public SimulateVolumeUpKey() {
         super();
         String className = this.getClass().getName();
@@ -44,14 +42,6 @@ public class SimulateVolumeUpKey extends TestItemBase {
         setTitle(TITLE);
     }
 
-    public int getDelay() {
-        return mDelay;
-    }
-
-    public void setDelay(int delay) {
-        this.mDelay = delay;
-    }
-
     @Override
     public boolean isSuccess() {
         return false;
@@ -66,6 +56,7 @@ public class SimulateVolumeUpKey extends TestItemBase {
     public boolean doExecute(UseCaseManager.ExecuteCallback executeCallback, boolean finish) {
         LogUtils.d(TAG, "SimulateVolumeUpKey doExecute");
         //do test,then close progressview
+        task2(true);
         if(finish && executeCallback != null){
             LogUtils.d(TAG, "stop test handler");
             executeCallback.stopTestHandler();
@@ -75,7 +66,7 @@ public class SimulateVolumeUpKey extends TestItemBase {
 
     @Override
     public void saveResult() {
-
+        super.saveResult();
     }
 
     @Override

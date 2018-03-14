@@ -13,6 +13,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -107,7 +108,7 @@ public class CktTestAssistantMainActivity extends AppCompatActivity
         boolean reboot = it.getBooleanExtra("reboot", false);
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tab);
         ViewPager viewPager = (ViewPager) findViewById(R.id.fragment);
-        mUseCaseManager = UseCaseManager.getInstance(getApplicationContext());
+        mUseCaseManager = UseCaseManager.getInstance(getApplicationContext(), this);
         mUseCaseManager.init(mHandler, reboot);
         mUseCaseManager.addFinishExecuteObserver(this);
 
@@ -225,6 +226,12 @@ public class CktTestAssistantMainActivity extends AppCompatActivity
         }catch (Exception e){
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        LogUtils.d(TAG, "keycode = "+ keyCode);
+        return super.onKeyDown(keyCode, event);
     }
 
     @Override

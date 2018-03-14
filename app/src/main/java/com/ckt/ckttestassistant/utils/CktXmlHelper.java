@@ -1,5 +1,6 @@
 package com.ckt.ckttestassistant.utils;
 
+import android.app.Activity;
 import android.content.Context;
 import android.util.Xml;
 import android.widget.Toast;
@@ -331,7 +332,7 @@ public class CktXmlHelper {
     /**
      * pull 解析读取xml文件
      */
-    public static void readxml(Context context, String path, ArrayList<TestBase> allUseCases) throws XmlPullParserException,IOException{
+    public static void readxml(Context context, Activity activity, String path, ArrayList<TestBase> allUseCases) throws XmlPullParserException,IOException{
         LogUtils.d(TAG, "entry readxml!");
         try {
             File file = new File(path);
@@ -550,6 +551,7 @@ public class CktXmlHelper {
                                     // 实例化这个类
                                     testitem = (TestItemBase) catClass.newInstance();
                                     testitem.setContext(context);
+                                    testitem.setActivity(activity);
                                     testitem.setID(id2);
                                     if(usecase2 != null){
                                         testitem.setParent(usecase2);

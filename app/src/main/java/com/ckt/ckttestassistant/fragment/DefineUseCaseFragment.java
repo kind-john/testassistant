@@ -183,7 +183,7 @@ public class DefineUseCaseFragment extends Fragment {
         LogUtils.d(TAG, "onCreate");
         mActivity = getActivity();
         mContext = mActivity.getApplicationContext();
-        mUseCaseManager = UseCaseManager.getInstance(mContext);
+        mUseCaseManager = UseCaseManager.getInstance(mContext, mActivity);
         mShowPanelInfo.append("test item : ");
         for (int i = 0; i < mTestCategory.length; i++){
             mTestCategoryItems.add(new TestCategory(mTestCategory[i]));
@@ -196,6 +196,7 @@ public class DefineUseCaseFragment extends Fragment {
                     // 实例化这个类
                     TestItemBase ti = (TestItemBase) tiClassName.newInstance();
                     ti.setContext(mContext);
+                    ti.setActivity(mActivity);
                     itemList.add(ti);
                 } catch (ClassNotFoundException e) {
                     e.printStackTrace();

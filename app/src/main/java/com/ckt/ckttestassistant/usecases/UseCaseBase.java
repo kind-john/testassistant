@@ -41,12 +41,13 @@ public abstract class UseCaseBase extends TestBase{
     }
 
     public UseCaseBase() {
-        mUseCaseManager = UseCaseManager.getInstance(null);
+        mUseCaseManager = UseCaseManager.getInstance(null, null);
+        setDelay(20);
     }
 
     public UseCaseBase(Context context) {
+        this();
         mContext = context;
-        mUseCaseManager = UseCaseManager.getInstance(null);
     }
 
     public void setContext(Context context) {

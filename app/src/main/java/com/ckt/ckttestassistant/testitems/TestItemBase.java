@@ -1,5 +1,6 @@
 package com.ckt.ckttestassistant.testitems;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
@@ -10,6 +11,7 @@ import com.ckt.ckttestassistant.TestBase;
 import com.ckt.ckttestassistant.UseCaseManager;
 import com.ckt.ckttestassistant.adapter.CktItemDecoration;
 import com.ckt.ckttestassistant.usecases.UseCaseBase;
+import com.ckt.ckttestassistant.utils.ExcelUtils;
 import com.ckt.ckttestassistant.utils.LogUtils;
 import com.ckt.ckttestassistant.utils.MyConstants;
 
@@ -17,7 +19,20 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xmlpull.v1.XmlSerializer;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
+
+import jxl.Cell;
+import jxl.Workbook;
+import jxl.read.biff.BiffException;
+import jxl.write.Label;
+import jxl.write.WritableCellFormat;
+import jxl.write.WritableFont;
+import jxl.write.WritableSheet;
+import jxl.write.WritableWorkbook;
+import jxl.write.WriteException;
+import jxl.write.biff.RowsExceededException;
 
 import static java.lang.Thread.sleep;
 
@@ -31,6 +46,16 @@ public abstract class TestItemBase extends TestBase implements CktResultsHelper.
     protected UseCaseManager mUseCaseManager;
 
     protected Context mContext;
+
+    public Activity getActivity() {
+        return mActivity;
+    }
+
+    public void setActivity(Activity activity) {
+        this.mActivity = activity;
+    }
+
+    protected Activity mActivity;
     //设置下一个测试项，如果结束则必须将其设置为空
     protected TestItemBase mNextTestItem;
 
@@ -40,6 +65,12 @@ public abstract class TestItemBase extends TestBase implements CktResultsHelper.
     protected int mUseCaseSN = -1;
     protected boolean mPassed = false;
 
+    private String[] mExcelTitles = {
+            "result",
+            "total times",
+            "completed times",
+            "fial times"
+    };
     public boolean isPassed() {
         return mPassed;
     }
@@ -88,23 +119,72 @@ public abstract class TestItemBase extends TestBase implements CktResultsHelper.
         return ID;
     }
 
-    public TestItemBase(TestItemBase mNextTestItem) {
-        this.mNextTestItem = mNextTestItem;
-    }
-
-    public TestItemBase() {
-        mUseCaseManager = UseCaseManager.getInstance(null);
-    }
-
     public void setContext(Context context) {
         this.mContext = context;
     }
 
-    public TestItemBase(Context context) {
-        mContext = context;
-        mUseCaseManager = UseCaseManager.getInstance(null);
+    public TestItemBase() {
+        mUseCaseManager = UseCaseManager.getInstance(null, null);
+        setDelay(2000);
     }
 
+    public TestItemBase(Context context) {
+        this();
+        mContext = context;
+    }
+    public void saveResult(){
+        LogUtils.d(TAG, getClass().getSimpleName()+" saveResult");
+        UseCaseManager usm = UseCaseManager.getInstance(null, null);
+        String file = usm.getCurrentExcelFile();
+        try {
+            Workbook wb = Workbook.getWorkbook(new File(file));
+            WritableWorkbook book = Workbook.createWorkbook(new File(file), wb);
+            WritableSheet sheet = book.getSheet(mParent.getTitle());
+            if(sheet == null){
+                LogUtils.e(TAG, "sheet can not find : "+ mParent.getTitle());
+                return ;
+            }else{
+                WritableFont font = new WritableFont(WritableFont.createFont("楷体"), 11, WritableFont.BOLD);
+                WritableCellFormat format = new WritableCellFormat(font);
+                Cell cell = sheet.findCell(getTitle());
+                Label label;
+                if(cell != null){
+                    LogUtils.d(TAG, "found cell of "+ getTitle()+", insert record!");
+                    LogUtils.d(TAG, "rows = " + sheet.getRows());
+                    //找到合适的地方插入一行记录
+                    int row, col;
+                    row = cell.getRow();
+                    col = cell.getColumn();
+                    //在标题后插入一行
+                    sheet.insertRow(row + 2);
+                    //在添加的新空行写入数据
+                    ExcelUtils.addRecordToExcel(sheet, row + 2, col, this);
+                }else{
+                    LogUtils.d(TAG, "there is no cell of "+ getTitle()+", so create it.");
+                    //找到空白地方插入label标记
+                    //int emptyRow = ExcelUtils.findEmptyRowFromSheet(sheet, 2, 1);
+                    int rows = sheet.getRows();
+                    LogUtils.d(TAG, "rows = " + rows);
+                    label = new Label(0, rows, getTitle(), format);
+                    sheet.addCell(label);
+                    ExcelUtils.addRecordTitleToExcel(sheet, rows + 1, 0, mExcelTitles);
+                    //sheet.insertRow(emptyRow + 2);
+                    ExcelUtils.addRecordToExcel(sheet, rows + 2, 0, this);
+                }
+                book.write();
+                book.close();
+                wb.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (RowsExceededException e) {
+            e.printStackTrace();
+        } catch (WriteException e) {
+            e.printStackTrace();
+        } catch (BiffException e) {
+            e.printStackTrace();
+        }
+    }
     protected void task2(boolean passed){
         if(passed){
             mFailTimes--;
@@ -135,7 +215,7 @@ public abstract class TestItemBase extends TestBase implements CktResultsHelper.
                 mFailTimes++;   //先假设本次失败，异步返回成功以后再减1
                 mUseCaseManager.updateTestItemOfSelectedUseCaseXml(this);
                 updateWaitProgress(mUseCaseManager.getHandler(), mCompletedTimes - 1);
-                sleep(mDelay);
+                sleep(500+mDelay);
                 mPassed = doExecute(null, false);
                 List<TestBase> children = getChildren();
                 if(children != null && !children.isEmpty()){
@@ -234,7 +314,6 @@ public abstract class TestItemBase extends TestBase implements CktResultsHelper.
     }*/
 
     public abstract boolean doExecute(UseCaseManager.ExecuteCallback executeCallback, boolean finish);
-    public abstract void saveResult();
     public abstract void saveParametersToXml(XmlSerializer serializer) throws Exception;
     public abstract void showPropertyDialog(Context context, final boolean isNeedUpdateXml);
     public abstract void saveParameters(Document doc, Element element);

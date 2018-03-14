@@ -1,8 +1,10 @@
 package com.ckt.ckttestassistant;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Point;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -15,12 +17,20 @@ import com.ckt.ckttestassistant.usecases.CktUseCase;
 import com.ckt.ckttestassistant.usecases.UseCaseBase;
 import com.ckt.ckttestassistant.utils.CktXmlHelper;
 import com.ckt.ckttestassistant.utils.CktXmlHelper2;
+import com.ckt.ckttestassistant.utils.JSONUtils;
 import com.ckt.ckttestassistant.utils.LogUtils;
 import com.ckt.ckttestassistant.utils.MyConstants;
 
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import jxl.Workbook;
@@ -36,9 +46,11 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
     private static final String TAG = "UseCaseManager";
     private ArrayList<TestBase> mAllUseCases = new ArrayList<TestBase>();
     private ArrayList<TestBase> mSelectedUseCases = new ArrayList<TestBase>();
+    private HashMap<String, Point> mTouchPosConfig = new HashMap<String, Point>();
     private ArrayList<UseCaseChangeObserver> mUseCaseChangeListener = new ArrayList<UseCaseChangeObserver>();
     private ArrayList<SelectedUseCaseChangeObserver> mSelectedUseCaseChangeObserver = new ArrayList<SelectedUseCaseChangeObserver>();
     private static Context mContext;
+    private static Activity mActivity;
     private volatile static UseCaseManager instance;
     private CktXmlHelper mXmlHelper;
     private CktXmlHelper2 mXmlHelper2;
@@ -69,16 +81,26 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
         System.out.println("Singleton has loaded");
     }
 
+    public HashMap<String, Point> getTouchPosConfig() {
+        return mTouchPosConfig;
+    }
+
+    public void setTouchPosConfig(HashMap<String, Point> touchPosConfig) {
+        this.mTouchPosConfig = touchPosConfig;
+    }
     /**
      * 单例模式实现管理类，以方便全区操作，数据操作都在此类完成
      * @param context
      * @return
      */
-    public static UseCaseManager getInstance(Context context){
+    public static UseCaseManager getInstance(Context context, Activity activity){
         if(instance==null){
             synchronized (UseCaseManager.class){
                 if(context != null){
                     mContext = context;
+                }
+                if(activity != null){
+                    mActivity = activity;
                 }
                 if(instance==null){
                     instance=new UseCaseManager();
@@ -92,7 +114,7 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
         ArrayList<TestBase> ucs = new ArrayList<TestBase>();
         try{
             //从配置文件中读取用例信息
-            mXmlHelper.readxml(mContext, path, ucs);
+            mXmlHelper.readxml(mContext, mActivity, path, ucs);
             mAllUseCases.addAll(ucs);
             //将读取的配置文件写入xml
             String target_path = mContext.getFilesDir()+"/usecases.xml";
@@ -112,7 +134,7 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
         try{
             //从本地xml文件中读取用例信息
             String source_path = mContext.getFilesDir()+"/usecases.xml";
-            mXmlHelper.readxml(mContext, source_path, ucs);
+            mXmlHelper.readxml(mContext, mActivity, source_path, ucs);
             //将用例信息写入制定文件
             mXmlHelper.addUsecase(path, ucs, true);
             result = true;
@@ -140,7 +162,7 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
         mHandler = handler;
         mReboot = reboot;
         mXmlHelper = new CktXmlHelper();
-        mXmlHelper2 = new CktXmlHelper2();
+        //mXmlHelper2 = new CktXmlHelper2();
         mPref = PreferenceManager.getDefaultSharedPreferences(mContext);
         mEditor = mPref.edit();
         mStatus = getTestStatus();
@@ -300,7 +322,7 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
         String path = mContext.getFilesDir()+"/usecases.xml";
         try{
             mAllUseCases.clear();
-            mXmlHelper.readxml(mContext, path, mAllUseCases);
+            mXmlHelper.readxml(mContext, mActivity, path, mAllUseCases);
             notifyAllUseCaseChange();
         }catch (Exception e){
             e.printStackTrace();
@@ -315,7 +337,7 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
 
         try {
             mSelectedUseCases.clear();
-            mXmlHelper.readxml(mContext, path, mSelectedUseCases);
+            mXmlHelper.readxml(mContext, mActivity, path, mSelectedUseCases);
             dealWithRebootCase();
             notifySelectedUseCaseChange();
         }catch (Exception e){
@@ -407,6 +429,29 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
         //load from xml
         getAllUseCaseFromXml();
         getSelectedUseCaseFromXml();
+    }
+
+    @Override
+    public void loadTouchPos() {
+        //load position of touch panel
+        mTouchPosConfig.clear();
+        try {
+            File file = new File("/sdcard/pos.json");
+            if(file.exists()){
+                BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
+                StringBuilder sb = new StringBuilder();
+                String str;
+                while ((str = br.readLine()) != null){
+                    sb.append(str);
+                    sb.append("\n");
+                }
+                JSONUtils.parseJsonArray(sb.toString(), mTouchPosConfig);
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**

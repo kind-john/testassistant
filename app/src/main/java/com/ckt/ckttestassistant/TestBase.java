@@ -11,12 +11,13 @@ import java.util.List;
 
 public abstract class TestBase  implements Cloneable {
     private static final int DEFAULT_TIMES = 1;
+    private static final int DEFAULT_DELAY = 200;
     /**
      * 设置开启 关闭的图片
      */
     public int iconExpand=-1, iconNoExpand = -1;
 
-    protected String mTitle = "case";
+    protected String mTitle = "TestBase";
 
     /**
      * 当前的级别
@@ -48,7 +49,7 @@ public abstract class TestBase  implements Cloneable {
         this.mDelay = delay;
     }
 
-    protected int mDelay = 0;
+    protected int mDelay = DEFAULT_DELAY;
     /**
      * 父TestBase
      */
@@ -219,4 +220,8 @@ public abstract class TestBase  implements Cloneable {
     }
 
     public abstract boolean task();
+
+    public boolean isPassed() {
+        return mFailTimes == 0 && mCompletedTimes == mTimes ? true : false;
+    }
 }

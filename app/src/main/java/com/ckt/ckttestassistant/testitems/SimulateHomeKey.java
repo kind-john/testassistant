@@ -28,8 +28,6 @@ public class SimulateHomeKey extends TestItemBase {
     private static final String TITLE = "Simulate Home Key";
     private static final String TAG = "SimulateHomeKey";
 
-    private int mDelay = 0;
-
     public SimulateHomeKey() {
         super();
         String className = this.getClass().getName();
@@ -44,14 +42,6 @@ public class SimulateHomeKey extends TestItemBase {
         setClassName(className);
         setID(ID);
         setTitle(TITLE);
-    }
-
-    public int getDelay() {
-        return mDelay;
-    }
-
-    public void setDelay(int delay) {
-        this.mDelay = delay;
     }
 
     @Override
@@ -78,6 +68,7 @@ public class SimulateHomeKey extends TestItemBase {
                 }
             }
         }.start();
+        task2(true);
         if(finish && executeCallback != null){
             LogUtils.d(TAG, "stop test handler");
             executeCallback.stopTestHandler();
@@ -87,7 +78,7 @@ public class SimulateHomeKey extends TestItemBase {
 
     @Override
     public void saveResult() {
-
+        super.saveResult();
     }
 
     @Override

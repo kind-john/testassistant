@@ -57,9 +57,18 @@ public class LaunchSettings extends TestItemBase {
     @Override
     public boolean doExecute(UseCaseManager.ExecuteCallback executeCallback, boolean finish) {
         LogUtils.d(TAG, "LaunchSettings doExecute");
-        //do test,then close progressview
-        Intent it = new Intent(Settings.ACTION_SETTINGS);
-        mContext.startActivity(it);
+        boolean result = true;
+        try{
+            Intent intent = new Intent(Intent.ACTION_MAIN).
+                    addCategory(Intent.CATEGORY_LAUNCHER).
+                    setClassName("com.android.settings", "com.android.settings.Settings").
+                    setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+            mContext.startActivity(intent);
+        }catch (Exception e){
+            e.printStackTrace();
+            result = false;
+        }
+        task2(result);
         if(finish && executeCallback != null){
             LogUtils.d(TAG, "stop test handler");
             executeCallback.stopTestHandler();
@@ -69,7 +78,7 @@ public class LaunchSettings extends TestItemBase {
 
     @Override
     public void saveResult() {
-
+        super.saveResult();
     }
 
     @Override

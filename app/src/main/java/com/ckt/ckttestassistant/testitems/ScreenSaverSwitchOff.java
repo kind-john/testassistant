@@ -26,8 +26,6 @@ public class ScreenSaverSwitchOff extends TestItemBase {
     private static final String TITLE = "Screen Saver Switch Off";
     private static final String TAG = "ScreenSaverSwitchOff";
 
-    private int mDelay = 0;
-
     public ScreenSaverSwitchOff() {
         super();
         String className = this.getClass().getName();
@@ -44,14 +42,6 @@ public class ScreenSaverSwitchOff extends TestItemBase {
         setTitle(TITLE);
     }
 
-    public int getDelay() {
-        return mDelay;
-    }
-
-    public void setDelay(int delay) {
-        this.mDelay = delay;
-    }
-
     @Override
     public boolean isSuccess() {
         return false;
@@ -66,6 +56,7 @@ public class ScreenSaverSwitchOff extends TestItemBase {
     public boolean doExecute(UseCaseManager.ExecuteCallback executeCallback, boolean finish) {
         LogUtils.d(TAG, "ScreenSaverSwitchOff doExecute");
         //do test,then close progressview
+        task2(true);
         if(finish && executeCallback != null){
             LogUtils.d(TAG, "stop test handler");
             executeCallback.stopTestHandler();
@@ -75,7 +66,7 @@ public class ScreenSaverSwitchOff extends TestItemBase {
 
     @Override
     public void saveResult() {
-
+        super.saveResult();
     }
 
     @Override

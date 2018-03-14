@@ -26,7 +26,6 @@ public class Reboot extends TestItemBase {
     private static final String TAG = "Reboot";
     private static final String TITLE = "Reboot";
     public static final int ID = 5;
-    private int mDelay = 0;
 
     public Reboot() {
         super();
@@ -54,18 +53,11 @@ public class Reboot extends TestItemBase {
 
     }
 
-    public int getDelay() {
-        return mDelay;
-    }
-
-    public void setDelay(int delay) {
-        this.mDelay = delay;
-    }
-
     @Override
     public boolean doExecute(UseCaseManager.ExecuteCallback executeCallback, boolean finish) {
         PowerManager pm = (PowerManager) mContext.getSystemService(Context.POWER_SERVICE);
         pm.reboot("reboot");
+        //task2(true);
         if(finish && executeCallback != null){
             LogUtils.d(TAG, "stop test handler");
             executeCallback.stopTestHandler();
@@ -75,7 +67,7 @@ public class Reboot extends TestItemBase {
 
     @Override
     public void saveResult() {
-
+        super.saveResult();
     }
 
     @Override

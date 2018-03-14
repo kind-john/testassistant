@@ -28,8 +28,6 @@ public class SimulateVolumeDownKey extends TestItemBase {
     private static final String TITLE = "Simulate Volume Down Key";
     private static final String TAG = "SimulateVolumeDownKey";
 
-    private int mDelay = 0;
-
     public SimulateVolumeDownKey() {
         super();
         String className = this.getClass().getName();
@@ -44,14 +42,6 @@ public class SimulateVolumeDownKey extends TestItemBase {
         setClassName(className);
         setID(ID);
         setTitle(TITLE);
-    }
-
-    public int getDelay() {
-        return mDelay;
-    }
-
-    public void setDelay(int delay) {
-        this.mDelay = delay;
     }
 
     @Override
@@ -82,6 +72,7 @@ public class SimulateVolumeDownKey extends TestItemBase {
                 }
             }
         }.start();
+        task2(true);
         if(finish && executeCallback != null){
             LogUtils.d(TAG, "stop test handler");
             executeCallback.stopTestHandler();
@@ -91,7 +82,7 @@ public class SimulateVolumeDownKey extends TestItemBase {
 
     @Override
     public void saveResult() {
-
+        super.saveResult();
     }
 
     @Override

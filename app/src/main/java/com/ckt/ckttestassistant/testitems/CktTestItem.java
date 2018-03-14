@@ -20,26 +20,12 @@ public class CktTestItem extends TestItemBase {
     private static final String TAG = "CktTestItem";
     private static final String TITLE = "Ckt TestItem";
 
-    public int getDelay() {
-        return mDelay;
-    }
-
-    public void setDelay(int delay) {
-        this.mDelay = delay;
-    }
-
-    private int mDelay = 0;
-
     public CktTestItem() {
         super();
         String className = this.getClass().getName();
         setClassName(className);
         setID(ID);
         setTitle(TITLE);
-    }
-
-    public CktTestItem(TestItemBase mNextTestItem) {
-        super(mNextTestItem);
     }
 
     public CktTestItem(Context context) {
@@ -64,6 +50,7 @@ public class CktTestItem extends TestItemBase {
     public boolean doExecute(UseCaseManager.ExecuteCallback executeCallback, boolean finish) {
         LogUtils.d(TAG, "CktTestItem doExecute");
         //do test,then close progressview
+        task2(true);
         if(finish && executeCallback != null){
             LogUtils.d(TAG, "stop test handler");
             executeCallback.stopTestHandler();
@@ -73,7 +60,7 @@ public class CktTestItem extends TestItemBase {
 
     @Override
     public void saveResult() {
-
+        super.saveResult();
     }
 
     @Override

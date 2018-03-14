@@ -35,7 +35,7 @@ public class TreeHelper {
     /**
      * 过滤出所有可见的TestBase
      *
-     * @param TestBases
+     * @param tbs
      * @return
      */
     public static List<TestBase> filterVisibleTestBase(List<TestBase> tbs) {

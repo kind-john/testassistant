@@ -32,11 +32,12 @@ public class DoTestIntentService extends IntentService {
     private HandleCallback mHandleCallback;
     public interface HandleCallback{
         void loadDataFromXml();
+        void loadTouchPos();
         void startExecuteThread();
     }
     public DoTestIntentService() {
         super("DoTestIntentService");
-        setHandleCallback(UseCaseManager.getInstance(null));
+        setHandleCallback(UseCaseManager.getInstance(null, null));
     }
 
     private void setHandleCallback(HandleCallback handleCallback){
@@ -52,6 +53,7 @@ public class DoTestIntentService extends IntentService {
                     LogUtils.d(TAG, "onHandleIntent do init");
                     if(mHandleCallback != null){
                         mHandleCallback.loadDataFromXml();
+                        mHandleCallback.loadTouchPos();
                     }else{
                         throw new RuntimeException("error:There is no define init handler !");
                     }

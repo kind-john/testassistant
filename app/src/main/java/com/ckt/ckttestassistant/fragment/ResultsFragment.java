@@ -1,5 +1,6 @@
 package com.ckt.ckttestassistant.fragment;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
@@ -15,7 +16,10 @@ import com.ckt.ckttestassistant.R;
 import com.ckt.ckttestassistant.TestBase;
 import com.ckt.ckttestassistant.UseCaseManager;
 import com.ckt.ckttestassistant.adapter.ResultsTestItemAdapter;
+import com.ckt.ckttestassistant.adapter.ResultsTreeAdapter;
 import com.ckt.ckttestassistant.adapter.ResultsUseCaseAdapter;
+import com.ckt.ckttestassistant.adapter.TreeListViewAdapter;
+import com.ckt.ckttestassistant.adapter.UseCaseTreeAdapter;
 import com.ckt.ckttestassistant.testitems.TestItemBase;
 import com.ckt.ckttestassistant.usecases.UseCaseBase;
 import com.ckt.ckttestassistant.utils.LogUtils;
@@ -34,10 +38,11 @@ public class ResultsFragment extends Fragment implements UseCaseManager.Selected
     private ArrayList<TestBase> mSelectedItems;
     private ListView mUseCaseListView;
     private ListView mTestItemListView;
-    private ResultsUseCaseAdapter mUseCaseAdapter;
+    private ResultsTreeAdapter mUseCaseAdapter;
     private int mCurrentUseCase = 0;
     private ResultsTestItemAdapter mTestItemAdapter;
     private ArrayList<TestBase> mCurrentTestItems = null;
+    private Activity mActivity;
 
     public void setHandler(Handler handler) {
         this.mHandler = handler;
@@ -46,8 +51,9 @@ public class ResultsFragment extends Fragment implements UseCaseManager.Selected
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mContext = getActivity().getApplicationContext();
-        mUseCaseManager = UseCaseManager.getInstance(mContext);
+        mActivity = getActivity();
+        mContext = mActivity.getApplicationContext();
+        mUseCaseManager = UseCaseManager.getInstance(mContext, mActivity);
         mUseCaseManager.init(mHandler, false);
         mUseCaseManager.addSelectedUseCaseChangeObserver(this);
         mSelectedItems = mUseCaseManager.getSelectItems();
@@ -78,8 +84,18 @@ public class ResultsFragment extends Fragment implements UseCaseManager.Selected
         View rootView = inflater.inflate(R.layout.fragment_results_layout, container, false);
         mUseCaseManager.getSelectedUseCaseFromXml();
         mUseCaseListView = (ListView) rootView.findViewById(R.id.testedusecaselist);
-        initUseCaseListFocus(mSelectedItems);
-        mUseCaseAdapter = new ResultsUseCaseAdapter(mContext, mSelectedItems);
+        //initUseCaseListFocus(mSelectedItems);
+        mUseCaseAdapter = new ResultsTreeAdapter(mContext, mSelectedItems, 1);
+        mUseCaseAdapter.setFocus(0);
+
+        mUseCaseAdapter.setOnTreeTestBaseClickListener(new TreeListViewAdapter.OnTreeTestBaseClickListener() {
+            @Override
+            public void onClick(TestBase tb) {
+                LogUtils.d(TAG, "onItemClick");
+            }
+        });
+        mUseCaseListView.setAdapter(mUseCaseAdapter);
+        /*mUseCaseAdapter = new ResultsUseCaseAdapter(mContext, mSelectedItems);
         mUseCaseListView.setAdapter(mUseCaseAdapter);
         mUseCaseListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -90,7 +106,7 @@ public class ResultsFragment extends Fragment implements UseCaseManager.Selected
             }
         });
         mTestItemListView = (ListView) rootView.findViewById(R.id.testitemresultlist);
-        initTestItemList();
+        initTestItemList();*/
         return rootView;
     }
 
@@ -131,6 +147,6 @@ public class ResultsFragment extends Fragment implements UseCaseManager.Selected
 
     @Override
     public void selectedUseCaseChangeNofify() {
-        mUseCaseAdapter.notifyDataSetChanged();
+        mUseCaseAdapter.notifyData();
     }
 }

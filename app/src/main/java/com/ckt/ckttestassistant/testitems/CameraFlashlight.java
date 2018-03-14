@@ -3,6 +3,7 @@ package com.ckt.ckttestassistant.testitems;
 import android.app.Instrumentation;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.graphics.Point;
 import android.os.SystemClock;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
@@ -23,6 +24,7 @@ import org.xmlpull.v1.XmlSerializer;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 
 import jxl.Cell;
 import jxl.Workbook;
@@ -43,12 +45,6 @@ public class CameraFlashlight extends TestItemBase {
     public static final int ID = 64;
     private static final String TITLE = "Camera Flashlight";
     private static final String TAG = "CameraFlashlight";
-    private String[] mExcelTitles = {
-            "result",
-            "total times",
-            "completed times",
-            "fial times"
-    };
 
     public CameraFlashlight() {
         super();
@@ -79,16 +75,18 @@ public class CameraFlashlight extends TestItemBase {
     @Override
     public boolean doExecute(UseCaseManager.ExecuteCallback executeCallback, boolean finish) {
         LogUtils.d(TAG, "CameraFlashlight doExecute");
-        //do test,then close progressview
         new Thread() {
             public void run() {
                 try{
-                    Instrumentation inst=new Instrumentation();
-                    inst.sendPointerSync(MotionEvent.obtain(SystemClock.uptimeMillis(),
-                            SystemClock.uptimeMillis(), MotionEvent.ACTION_DOWN, 680, 810, 0));
-                    inst.sendPointerSync(MotionEvent.obtain(SystemClock.uptimeMillis(),
-                            SystemClock.uptimeMillis(), MotionEvent.ACTION_UP, 680, 810, 0));
-
+                    HashMap<String, Point> points = mUseCaseManager.getTouchPosConfig();
+                    Point point = points.get(MyConstants.CAMERA_SWITCH_FLASH_POINT);
+                    if(point != null){
+                        Instrumentation inst=new Instrumentation();
+                        inst.sendPointerSync(MotionEvent.obtain(SystemClock.uptimeMillis(),
+                                SystemClock.uptimeMillis(), MotionEvent.ACTION_DOWN, point.x, point.y, 0));
+                        inst.sendPointerSync(MotionEvent.obtain(SystemClock.uptimeMillis(),
+                                SystemClock.uptimeMillis(), MotionEvent.ACTION_UP, point.x, point.y, 0));
+                    }
                 }catch (Exception e){
                     e.printStackTrace();
                 }
@@ -104,57 +102,7 @@ public class CameraFlashlight extends TestItemBase {
 
     @Override
     public void saveResult() {
-        LogUtils.d(TAG, "CameraFlashlight saveResult");
-        UseCaseManager usm = UseCaseManager.getInstance(mContext);
-        String file = usm.getCurrentExcelFile();
-        try {
-            Workbook wb = Workbook.getWorkbook(new File(file));
-            WritableWorkbook book = Workbook.createWorkbook(new File(file), wb);
-            WritableSheet sheet = book.getSheet(mParent.getTitle());
-            if(sheet == null){
-                LogUtils.e(TAG, "sheet can not find : "+ mParent.getTitle());
-                return ;
-            }else{
-                WritableFont font = new WritableFont(WritableFont.createFont("楷体"), 11, WritableFont.BOLD);
-                WritableCellFormat format = new WritableCellFormat(font);
-                Cell cell = sheet.findCell(getTitle());
-                Label label;
-                if(cell != null){
-                    LogUtils.d(TAG, "found cell of "+ getTitle()+", insert record!");
-                    LogUtils.d(TAG, "rows = " + sheet.getRows());
-                    //找到合适的地方插入一行记录
-                    int row, col;
-                    row = cell.getRow();
-                    col = cell.getColumn();
-                    //在标题后插入一行
-                    sheet.insertRow(row + 2);
-                    //在添加的新空行写入数据
-                    ExcelUtils.addRecordToExcel(sheet, row + 2, col, this);
-                }else{
-                    LogUtils.d(TAG, "there is no cell of "+ getTitle()+", so create it.");
-                    //找到空白地方插入label标记
-                    //int emptyRow = ExcelUtils.findEmptyRowFromSheet(sheet, 2, 1);
-                    int rows = sheet.getRows();
-                    LogUtils.d(TAG, "rows = " + rows);
-                    label = new Label(0, rows, getTitle(), format);
-                    sheet.addCell(label);
-                    ExcelUtils.addRecordTitleToExcel(sheet, rows + 1, 0, mExcelTitles);
-                    //sheet.insertRow(emptyRow + 2);
-                    ExcelUtils.addRecordToExcel(sheet, rows + 2, 0, this);
-                }
-                book.write();
-                book.close();
-                wb.close();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (RowsExceededException e) {
-            e.printStackTrace();
-        } catch (WriteException e) {
-            e.printStackTrace();
-        } catch (BiffException e) {
-            e.printStackTrace();
-        }
+        super.saveResult();
     }
 
     @Override

@@ -29,8 +29,6 @@ public class AutoUnlockScreen extends TestItemBase {
     private static final String TITLE = "Auto Unlock Screen";
     private static final String TAG = "AutoUnlockScreen";
 
-    private int mDelay = 0;
-
     public AutoUnlockScreen() {
         super();
         String className = this.getClass().getName();
@@ -45,14 +43,6 @@ public class AutoUnlockScreen extends TestItemBase {
         setClassName(className);
         setID(ID);
         setTitle(TITLE);
-    }
-
-    public int getDelay() {
-        return mDelay;
-    }
-
-    public void setDelay(int delay) {
-        this.mDelay = delay;
     }
 
     @Override
@@ -73,7 +63,7 @@ public class AutoUnlockScreen extends TestItemBase {
                 .getSystemService(KEYGUARD_SERVICE);
         KeyguardManager.KeyguardLock keyguardLock = keyguardManager.newKeyguardLock("unLock");
         keyguardLock.disableKeyguard();
-
+        task2(true);
         if(finish && executeCallback != null){
             LogUtils.d(TAG, "stop test handler");
             executeCallback.stopTestHandler();
@@ -83,7 +73,7 @@ public class AutoUnlockScreen extends TestItemBase {
 
     @Override
     public void saveResult() {
-
+        super.saveResult();
     }
 
     @Override

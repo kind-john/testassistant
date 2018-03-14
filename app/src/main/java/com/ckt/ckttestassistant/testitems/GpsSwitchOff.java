@@ -26,8 +26,6 @@ public class GpsSwitchOff extends TestItemBase {
     private static final String TITLE = "Gps Switch Off";
     private static final String TAG = "WifiSwitchOn";
 
-    private int mDelay = 0;
-
     public GpsSwitchOff() {
         super();
         String className = this.getClass().getName();
@@ -42,14 +40,6 @@ public class GpsSwitchOff extends TestItemBase {
         setClassName(className);
         setID(ID);
         setTitle(TITLE);
-    }
-
-    public int getDelay() {
-        return mDelay;
-    }
-
-    public void setDelay(int delay) {
-        this.mDelay = delay;
     }
 
     @Override
@@ -75,7 +65,7 @@ public class GpsSwitchOff extends TestItemBase {
 
     @Override
     public void saveResult() {
-
+        super.saveResult();
     }
 
     @Override

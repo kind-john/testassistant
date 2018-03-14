@@ -61,7 +61,7 @@ public abstract class TreeListViewAdapter extends BaseAdapter
     public interface UpdateShowPanelListener{
         /**
          *
-         * @param index
+         * @param tb
          */
         void updateShowPanelForAdd(TestBase tb);
     }
@@ -125,23 +125,21 @@ public abstract class TreeListViewAdapter extends BaseAdapter
      * @param position
      */
     public void expandOrCollapse(int position) {
-        TestBase n = mTestBases.get(position);
+        int index = 0;
+        int size = mTestBases.size();
+
+        if(size <= 0){
+            return ;
+        }
+
+        if(position > 0 && position < size){
+            index = position;
+        }
+        TestBase n = mTestBases.get(index);
 
         if (n != null) {// 排除传入参数错误异常
             if (!n.isLeaf()) {
                 n.setExpand(!n.isExpand());
-                mTestBases = TreeHelper.filterVisibleTestBase(mAllTestBases);
-                notifyDataSetChanged();// 刷新视图
-            }
-        }
-    }
-
-    public void expand(int position) {
-        TestBase n = mTestBases.get(position);
-
-        if (n != null) {// 排除传入参数错误异常
-            if (!n.isLeaf()) {
-                n.setExpand(true);
                 mTestBases = TreeHelper.filterVisibleTestBase(mAllTestBases);
                 notifyDataSetChanged();// 刷新视图
             }

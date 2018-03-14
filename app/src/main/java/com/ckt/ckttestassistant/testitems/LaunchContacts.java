@@ -2,6 +2,7 @@ package com.ckt.ckttestassistant.testitems;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,8 +27,6 @@ public class LaunchContacts extends TestItemBase {
     private static final String TITLE = "Launch Contacts";
     private static final String TAG = "LaunchContacts";
 
-    private int mDelay = 0;
-
     public LaunchContacts() {
         super();
         String className = this.getClass().getName();
@@ -44,14 +43,6 @@ public class LaunchContacts extends TestItemBase {
         setTitle(TITLE);
     }
 
-    public int getDelay() {
-        return mDelay;
-    }
-
-    public void setDelay(int delay) {
-        this.mDelay = delay;
-    }
-
     @Override
     public boolean isSuccess() {
         return false;
@@ -65,7 +56,18 @@ public class LaunchContacts extends TestItemBase {
     @Override
     public boolean doExecute(UseCaseManager.ExecuteCallback executeCallback, boolean finish) {
         LogUtils.d(TAG, "LaunchContacts doExecute");
-        //do test,then close progressview
+        boolean result = true;
+        try{
+            Intent intent = new Intent(Intent.ACTION_MAIN).
+                    addCategory(Intent.CATEGORY_LAUNCHER).
+                    setClassName("com.android.contacts", "com.android.contacts.activities.PeopleActivity").
+                    setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+            mContext.startActivity(intent);
+        }catch (Exception e){
+            e.printStackTrace();
+            result = false;
+        }
+        task2(result);
         if(finish && executeCallback != null){
             LogUtils.d(TAG, "stop test handler");
             executeCallback.stopTestHandler();
@@ -75,7 +77,7 @@ public class LaunchContacts extends TestItemBase {
 
     @Override
     public void saveResult() {
-
+        super.saveResult();
     }
 
     @Override

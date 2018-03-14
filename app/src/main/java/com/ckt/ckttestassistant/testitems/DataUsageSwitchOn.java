@@ -3,6 +3,7 @@ package com.ckt.ckttestassistant.testitems;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.support.v7.app.AlertDialog;
+import android.telephony.TelephonyManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
@@ -17,6 +18,9 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xmlpull.v1.XmlSerializer;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
 /**
  * Created by ckt on 18-1-31.
  */
@@ -25,8 +29,7 @@ public class DataUsageSwitchOn extends TestItemBase {
     public static final int ID = 12;
     private static final String TITLE = "Data Usage Switch On";
     private static final String TAG = "DataUsageSwitchOn";
-
-    private int mDelay = 0;
+    private TelephonyManager mTelephonyManager;
 
     public DataUsageSwitchOn() {
         super();
@@ -44,14 +47,6 @@ public class DataUsageSwitchOn extends TestItemBase {
         setTitle(TITLE);
     }
 
-    public int getDelay() {
-        return mDelay;
-    }
-
-    public void setDelay(int delay) {
-        this.mDelay = delay;
-    }
-
     @Override
     public boolean isSuccess() {
         return false;
@@ -65,7 +60,24 @@ public class DataUsageSwitchOn extends TestItemBase {
     @Override
     public boolean doExecute(UseCaseManager.ExecuteCallback executeCallback, boolean finish) {
         LogUtils.d(TAG, "DataUsageSwitchOn doExecute");
-        //do test,then close progressview
+        mTelephonyManager = (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
+        Method getMethod, setMethod;
+        try {
+            getMethod = mTelephonyManager.getClass().getMethod("getDataEnabled");
+            setMethod = mTelephonyManager.getClass().getMethod("setDataEnabled", boolean.class);
+            boolean status = (Boolean) getMethod.invoke(mTelephonyManager);
+            if(!status){
+                setMethod.invoke(mTelephonyManager, true);
+            }
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        } finally {
+            task2(true);
+        }
         if(finish && executeCallback != null){
             LogUtils.d(TAG, "stop test handler");
             executeCallback.stopTestHandler();
@@ -75,7 +87,7 @@ public class DataUsageSwitchOn extends TestItemBase {
 
     @Override
     public void saveResult() {
-
+        super.saveResult();
     }
 
     @Override

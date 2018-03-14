@@ -44,12 +44,6 @@ public class SimulateBackKey extends TestItemBase {
     public static final int ID = 47;
     private static final String TITLE = "Simulate Back Key";
     private static final String TAG = "SimulateBackKey";
-    private String[] mExcelTitles = {
-            "result",
-            "total times",
-            "completed times",
-            "fial times"
-    };
 
     public SimulateBackKey() {
         super();
@@ -76,58 +70,15 @@ public class SimulateBackKey extends TestItemBase {
     public void saveTestData() {
 
     }
-    /*private void sendDownEvents(int keyCode) {
-        final long token = Binder.clearCallingIdentity();
 
-        // Inject down.
-        final long downTime = SystemClock.uptimeMillis();
-        KeyEvent down = KeyEvent.obtain(downTime, downTime, KeyEvent.ACTION_DOWN, keyCode, 0, 0,
-                KeyCharacterMap.VIRTUAL_KEYBOARD, 0, KeyEvent.FLAG_FROM_SYSTEM,
-                InputDevice.SOURCE_KEYBOARD, null);
-        InputManager.getInstance().injectInputEvent(down,
-                InputManager.INJECT_INPUT_EVENT_MODE_ASYNC);
-        down.recycle();
-
-        Binder.restoreCallingIdentity(token);
-    }
-
-    private void sendUpEvents(int keyCode) {
-        final long token = Binder.clearCallingIdentity();
-
-        // Inject down.
-        final long downTime = SystemClock.uptimeMillis();
-        KeyEvent up = KeyEvent.obtain(downTime, downTime, KeyEvent.ACTION_UP, keyCode, 0, 0,
-                KeyCharacterMap.VIRTUAL_KEYBOARD, 0, KeyEvent.FLAG_FROM_SYSTEM,
-                InputDevice.SOURCE_KEYBOARD, null);
-        InputManager.getInstance().injectInputEvent(up,
-                InputManager.INJECT_INPUT_EVENT_MODE_ASYNC);
-        up.recycle();
-
-        Binder.restoreCallingIdentity(token);
-    }*/
     @Override
     public boolean doExecute(UseCaseManager.ExecuteCallback executeCallback, boolean finish) {
         LogUtils.d(TAG, "SimulateBackKey doExecute");
         new Thread() {
             public void run() {
                 try {
-                /*Thread.sleep(100); // TouchEvent
-                long now = SystemClock.uptimeMillis();
-                KeyEvent down = new KeyEvent(now, now,
-                        KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK, 0);
-                KeyEvent up = new KeyEvent(now, now, KeyEvent.ACTION_UP,
-                        KeyEvent.KEYCODE_BACK, 0);
-
-                InputManager.getInstance().injectInputEvent(down,
-                        InputManager.INJECT_INPUT_EVENT_MODE_ASYNC);
-                InputManager.getInstance().injectInputEvent(up,
-                        InputManager.INJECT_INPUT_EVENT_MODE_ASYNC);*/
-                    try {
-                        Instrumentation inst = new Instrumentation();
-                        inst.sendKeyDownUpSync(KeyEvent.KEYCODE_BACK);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+                    Instrumentation inst = new Instrumentation();
+                    inst.sendKeyDownUpSync(KeyEvent.KEYCODE_BACK);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -144,57 +95,7 @@ public class SimulateBackKey extends TestItemBase {
 
     @Override
     public void saveResult() {
-        LogUtils.d(TAG, "SimulateBackKey saveResult");
-        UseCaseManager usm = UseCaseManager.getInstance(mContext);
-        String file = usm.getCurrentExcelFile();
-        try {
-            Workbook wb = Workbook.getWorkbook(new File(file));
-            WritableWorkbook book = Workbook.createWorkbook(new File(file), wb);
-            WritableSheet sheet = book.getSheet(mParent.getTitle());
-            if(sheet == null){
-                LogUtils.e(TAG, "sheet can not find : "+ mParent.getTitle());
-                return ;
-            }else{
-                WritableFont font = new WritableFont(WritableFont.createFont("楷体"), 11, WritableFont.BOLD);
-                WritableCellFormat format = new WritableCellFormat(font);
-                Cell cell = sheet.findCell(getTitle());
-                Label label;
-                if(cell != null){
-                    LogUtils.d(TAG, "found cell of "+ getTitle()+", insert record!");
-                    LogUtils.d(TAG, "rows = " + sheet.getRows());
-                    //找到合适的地方插入一行记录
-                    int row, col;
-                    row = cell.getRow();
-                    col = cell.getColumn();
-                    //在标题后插入一行
-                    sheet.insertRow(row + 2);
-                    //在添加的新空行写入数据
-                    ExcelUtils.addRecordToExcel(sheet, row + 2, col, this);
-                }else{
-                    LogUtils.d(TAG, "there is no cell of "+ getTitle()+", so create it.");
-                    //找到空白地方插入label标记
-                    //int emptyRow = ExcelUtils.findEmptyRowFromSheet(sheet, 2, 1);
-                    int rows = sheet.getRows();
-                    LogUtils.d(TAG, "rows = " + rows);
-                    label = new Label(0, rows, getTitle(), format);
-                    sheet.addCell(label);
-                    ExcelUtils.addRecordTitleToExcel(sheet, rows + 1, 0, mExcelTitles);
-                    //sheet.insertRow(emptyRow + 2);
-                    ExcelUtils.addRecordToExcel(sheet, rows + 2, 0, this);
-                }
-                book.write();
-                book.close();
-                wb.close();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (RowsExceededException e) {
-            e.printStackTrace();
-        } catch (WriteException e) {
-            e.printStackTrace();
-        } catch (BiffException e) {
-            e.printStackTrace();
-        }
+        super.saveResult();
     }
 
     @Override
