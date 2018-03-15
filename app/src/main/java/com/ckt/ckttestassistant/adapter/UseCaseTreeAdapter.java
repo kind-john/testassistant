@@ -88,7 +88,8 @@ public class UseCaseTreeAdapter extends TreeListViewAdapter {
         }
 
         if(tb.isChecked()){
-            viewHolder.mTitle.setBackgroundColor(Color.GREEN);
+            viewHolder.mTitle.setBackgroundResource(R.drawable.button_shap_pressed);
+            //viewHolder.mTitle.setBackgroundColor(Color.GREEN);
         }else{
             viewHolder.mTitle.setBackgroundColor(Color.TRANSPARENT);
         }

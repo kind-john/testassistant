@@ -33,6 +33,7 @@ import com.ckt.ckttestassistant.R;
 import com.ckt.ckttestassistant.usecases.UseCaseBase;
 import com.ckt.ckttestassistant.adapter.TestItemListAdapter;
 import com.ckt.ckttestassistant.adapter.UseCaseListAdapter;
+import com.ckt.ckttestassistant.utils.ParseDurationFromLogs;
 
 import java.io.File;
 import java.io.IOException;
@@ -94,6 +95,7 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         LogUtils.d(TAG, "onCreateView");
+        LogUtils.d(TAG, "mystarttag");
         View rootView = inflater.inflate(R.layout.fragment_usecase_layout, container, false);
         mUseCaseTextView = (TextView) rootView.findViewById(R.id.usecasetext);
         mUseCaseManager.getSelectedUseCaseFromXml(); //及时与数据同步
@@ -238,6 +240,7 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
         mUseCaseList.setAdapter(mAdapter);
         mUseCaseTestItemList = (RecyclerView) rootView.findViewById(R.id.testitemlist);
         initTestItemList();
+        LogUtils.d(TAG, "myendtag");
         return rootView;
     }
 

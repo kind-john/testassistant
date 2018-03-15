@@ -23,17 +23,19 @@ import org.xmlpull.v1.XmlSerializer;
  */
 
 public class BTSwitchOff extends TestItemBase {
-    public static final int ID = 11;
+    private static final int ID = 11;
     private static final String TITLE = "BT Switch Off";
     private static final String TAG = "BTSwitchOff";
+    private static final int MIN_DELAY = 2000;
     private BluetoothAdapter mBluetoothAdapter = null;
     private Object lock = new Object();
     public BTSwitchOff() {
-        super();
         String className = this.getClass().getName();
         setClassName(className);
         setID(ID);
         setTitle(TITLE);
+        setMinDelay(MIN_DELAY);
+        setDelay(MIN_DELAY);
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
     }
 
@@ -43,6 +45,8 @@ public class BTSwitchOff extends TestItemBase {
         setClassName(className);
         setID(ID);
         setTitle(TITLE);
+        setMinDelay(MIN_DELAY);
+        setDelay(MIN_DELAY);
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
     }
 
@@ -54,24 +58,6 @@ public class BTSwitchOff extends TestItemBase {
     @Override
     public void saveTestData() {
 
-    }
-
-    @Override
-    public void setDelay(int delay) {
-        if(delay < 2000){
-            AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);
-            builder.setTitle("value available:").
-                    setMessage("delay must greater than "+2000).
-                    setNeutralButton("OK", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            //do nothing
-                        }
-                    }).create().show();
-
-        }else{
-            mDelay = delay;
-        }
     }
 
     @Override

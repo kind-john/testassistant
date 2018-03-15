@@ -45,17 +45,7 @@ public abstract class TestItemBase extends TestBase implements CktResultsHelper.
     private static final String TAG = "TestItemBase";
     protected UseCaseManager mUseCaseManager;
 
-    protected Context mContext;
 
-    public Activity getActivity() {
-        return mActivity;
-    }
-
-    public void setActivity(Activity activity) {
-        this.mActivity = activity;
-    }
-
-    protected Activity mActivity;
     //设置下一个测试项，如果结束则必须将其设置为空
     protected TestItemBase mNextTestItem;
 
@@ -95,14 +85,6 @@ public abstract class TestItemBase extends TestBase implements CktResultsHelper.
         this.mUseCaseSN = useCaseSN;
     }
 
-    public int getSN() {
-        return SN;
-    }
-
-    public void setSN(int sn) {
-        this.SN = sn;
-    }
-
     public TestItemBase getNextTestItem() {
         return mNextTestItem;
     }
@@ -111,21 +93,8 @@ public abstract class TestItemBase extends TestBase implements CktResultsHelper.
         this.mNextTestItem = nextTestItem;
     }
 
-    public void setID(int id) {
-        this.ID = id;
-    }
-
-    public int getID() {
-        return ID;
-    }
-
-    public void setContext(Context context) {
-        this.mContext = context;
-    }
-
     public TestItemBase() {
         mUseCaseManager = UseCaseManager.getInstance(null, null);
-        setDelay(2000);
     }
 
     public TestItemBase(Context context) {
@@ -215,7 +184,7 @@ public abstract class TestItemBase extends TestBase implements CktResultsHelper.
                 mFailTimes++;   //先假设本次失败，异步返回成功以后再减1
                 mUseCaseManager.updateTestItemOfSelectedUseCaseXml(this);
                 updateWaitProgress(mUseCaseManager.getHandler(), mCompletedTimes - 1);
-                sleep(500+mDelay);
+                sleep(mDelay);
                 mPassed = doExecute(null, false);
                 List<TestBase> children = getChildren();
                 if(children != null && !children.isEmpty()){

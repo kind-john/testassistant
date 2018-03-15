@@ -26,10 +26,10 @@ import java.util.ArrayList;
 public abstract class UseCaseBase extends TestBase{
 
     private static final String TAG = "UseCaseBase";
+    private static final int USECASE_DEFAULT_DELAY = 0;
     protected UseCaseManager mUseCaseManager;
     protected UseCaseBase mNextUseCase;
 
-    protected Context mContext;
     private boolean mPassed = false;
 
     public String getTitle() {
@@ -42,16 +42,12 @@ public abstract class UseCaseBase extends TestBase{
 
     public UseCaseBase() {
         mUseCaseManager = UseCaseManager.getInstance(null, null);
-        setDelay(20);
+        setDelay(USECASE_DEFAULT_DELAY);
     }
 
     public UseCaseBase(Context context) {
         this();
         mContext = context;
-    }
-
-    public void setContext(Context context) {
-        this.mContext = context;
     }
 
     public void setNextUseCase(UseCaseBase nextUseCase){

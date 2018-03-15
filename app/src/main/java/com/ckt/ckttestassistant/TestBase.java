@@ -1,5 +1,10 @@
 package com.ckt.ckttestassistant;
 
+import android.app.Activity;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.support.v7.app.AlertDialog;
+
 import com.ckt.ckttestassistant.usecases.UseCaseBase;
 
 import java.util.ArrayList;
@@ -35,21 +40,63 @@ public abstract class TestBase  implements Cloneable {
     protected ArrayList<TestBase> children = new ArrayList<>();
 
     protected int mTimes = DEFAULT_TIMES;
+    protected int mDelay = DEFAULT_DELAY;
+    protected int mMinDelay = 0;
     protected int mCompletedTimes = 0;
     protected int mFailTimes = 0;
     protected String mClassName = "ClassName";
     protected int ID = -1;
     protected int SN = -1;
 
+    protected Context mContext;
+
+    protected Activity mActivity;
+
+    public Activity getActivity() {
+        return mActivity;
+    }
+
+    public void setActivity(Activity activity) {
+        this.mActivity = activity;
+    }
+
+    public Context getContext() {
+        return mContext;
+    }
+
+    public void setContext(Context context) {
+        this.mContext = context;
+    }
+
     public int getDelay() {
         return mDelay;
     }
 
     public void setDelay(int delay) {
-        this.mDelay = delay;
+        if(delay < mMinDelay){
+            AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);
+            builder.setTitle("value available:").
+                    setMessage("delay must greater than "+mMinDelay).
+                    setNeutralButton("OK", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            //do nothing
+                        }
+                    }).create().show();
+
+        }else{
+            mDelay = delay;
+        }
     }
 
-    protected int mDelay = DEFAULT_DELAY;
+    public int getMinDelay() {
+        return mMinDelay;
+    }
+
+    public void setMinDelay(int minDelay) {
+        this.mMinDelay = minDelay;
+    }
+
     /**
      * 父TestBase
      */
