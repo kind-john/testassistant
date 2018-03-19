@@ -102,8 +102,7 @@ public abstract class UseCaseBase extends TestBase{
                         if(!isPassed) {
                             mFailTimes++;
                         }
-                        String path = mContext.getFilesDir()+"/selected_usecases.xml";
-                        mUseCaseManager.updateUseCaseOfXml(path, this);
+                        mUseCaseManager.updateSelectedUseCaseOfXml(this);
                     }
                 }
             }else{

@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -20,7 +19,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.ckt.ckttestassistant.TestBase;
 import com.ckt.ckttestassistant.UseCaseManager;
@@ -34,15 +32,8 @@ import com.ckt.ckttestassistant.utils.LogUtils;
 import com.ckt.ckttestassistant.R;
 import com.ckt.ckttestassistant.usecases.UseCaseBase;
 import com.ckt.ckttestassistant.adapter.TestItemListAdapter;
-import com.ckt.ckttestassistant.adapter.UseCaseListAdapter;
-import com.ckt.ckttestassistant.utils.ParseDurationFromLogs;
 
-import java.io.File;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
 
 /**
  * Created by ckt on 18-1-30.
@@ -406,7 +397,7 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
     }
 
     public void setShowPanelForAdd(int index){
-        mUseCaseManager.updateSelectedUseCases(index);
+        mUseCaseManager.addUseCaseToSelectedNotSave(index);
         generateShowPanelString(mSelectedItems);
         mUseCaseTextView.setText(mShowPanelInfo.toString());
     }

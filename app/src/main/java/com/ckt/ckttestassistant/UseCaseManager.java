@@ -108,6 +108,12 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
         }
         return instance;
     }
+
+    /**
+     * 导入用例配置
+     * @param path
+     * @return
+     */
     public synchronized boolean importUseCaseConfig(String path){
         LogUtils.d(TAG, "method importUseCaseConfig enter");
         boolean result = false;
@@ -128,6 +134,11 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
         return result;
     }
 
+    /**
+     * 导出用例配置
+     * @param path
+     * @return
+     */
     public synchronized boolean exportUseCaseConfig(String path){
         LogUtils.d(TAG, "exportUseCaseConfig");
         boolean result = false;
@@ -146,16 +157,28 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
         return result;
     }
 
+    /**
+     * 获取主线程handler，方便更新UI
+     * @return
+     */
     public Handler getHandler() {
         return mHandler;
     }
 
+    /**
+     * 设置主线程handler，方便更新UI
+     * @return
+     */
     public void setHandler(Handler handler) {
         this.mHandler = handler;
     }
 
     /**
-     * 初始化数据，UI显示、测试任务需要这些数据
+     * 初始化数据：
+     * 1、加载用例配置
+     * 2、加载触摸位置定义
+     * 3、加载正在测试的用例信息
+     * 4、处理重启后自动启动的善后工作
      * @param handler
      * @param reboot
      */
@@ -179,6 +202,11 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
         LogUtils.d(TAG, "method init exit");
     }
 
+    /**
+     * 关闭进度提示框
+     * @param handler
+     * @param finish
+     */
     private void closeWaitProgress(Handler handler, boolean finish) {
         if(finish){
             Message msg = Message.obtain();
@@ -188,8 +216,9 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
             LogUtils.e(TAG, "error: progress close fail!!!");
         }
     }
+
     /**
-     * 获取测试状态
+     * 从sharedpreference获取测试状态
      * @return
      */
     public boolean getTestStatus(){
@@ -197,15 +226,24 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
         return status;
     }
 
+    /**
+     * 从SharedPreference获取重启标志
+     * @return
+     */
     public boolean getRebootFlagFromSharedPreference(){
         boolean flag = mPref.getBoolean(MyConstants.REBOOT_FLAG, false);
         return flag;
     }
 
+    /**
+     * 设置重启标志到sharedPreference
+     * @param flag
+     */
     public void setRebootFlagToSharedPreference(boolean flag){
         mEditor.putBoolean(MyConstants.REBOOT_FLAG, flag);
         mEditor.apply();
     }
+
     public boolean isTestCompleted() {
         boolean result = true;
         for (TestBase tb : mSelectedUseCases){
@@ -220,6 +258,11 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
         return result;
     }
 
+    /**
+     * 判断子测试项是否都已经完成，用来在重启后决定是否给测试用例次数加1
+     * @param parent
+     * @return
+     */
     public boolean isChildrenTestCompleted(TestBase parent) {
         boolean result = true;
         if(parent != null && !parent.isChecked()){
@@ -278,84 +321,34 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
 
         return true;
     }
-
     /**
-     *将已所有用例序列保存到xml
+     * 自定义用例界面点击保存时，将产生一个用例，调用此方法保存到xml文件
+     * @param selectedTestItems
+     * @param name
      */
-    private synchronized void saveAllUseCasesToXml(){
-        LogUtils.d(TAG, "method saveAllUseCasesToXml enter");
-        if(mAllUseCases == null || mAllUseCases.isEmpty()){
-            LogUtils.d(TAG, "There is no usecase need save,so don't save anything!");
-            return;
-        }
-        String path = mContext.getFilesDir()+"/usecases.xml";
-
-        try {
-            mXmlHelper.addUsecase(path,mAllUseCases, true);
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     *将已选择的用例序列保存到xml
-     */
-    public synchronized void saveSelectedUseCaseToXml(){
-        LogUtils.d(TAG, "method saveSelectedUseCaseToXml enter");
-        if(mSelectedUseCases == null || mSelectedUseCases.isEmpty()){
+    public synchronized void addUsecaseToAllUseCaseXml(ArrayList<TestBase> selectedTestItems, String name) {
+        LogUtils.d(TAG, "method addUsecaseToAllUseCaseXml enter");
+        if(selectedTestItems == null || selectedTestItems.isEmpty()){
             LogUtils.d(TAG, "don't select any testitem,so don't save anything!");
             return;
         }
-        String path = mContext.getFilesDir()+"/selected_usecases.xml";
-        File file = new File(path);
-        if(file != null && file.exists()){
-            file.delete();
-        }
+        String path = mContext.getFilesDir()+"/usecases.xml";
+        UseCaseBase uc = new CktUseCase(mContext);
+        uc.setTitle(name);
+        uc.setChildren(selectedTestItems);
+        uc.setChildrenSN();
+        ArrayList<TestBase> ucs = new ArrayList<TestBase>();
+        ucs.add(uc);
         try {
-            mXmlHelper.addUsecase(path, mSelectedUseCases, true);
-            //mXmlHelper2.reCreateXml(path, mSelectedUseCases);
+            mXmlHelper.addUsecase(path, ucs, false);
+            //mXmlHelper2.addUseCases(mContext, path, uc);
+            getAllUseCaseFromXml();
+            notifyAllUseCaseChange();
         }catch (Exception e){
             e.printStackTrace();
         }
+        LogUtils.d(TAG, "method addUsecaseToAllUseCaseXml exit");
     }
-    public synchronized void updateUseCaseOfXml(String path, UseCaseBase uc){
-        LogUtils.d(TAG, "metod updateUseCaseOfXml enter");
-        ArrayList<UseCaseBase> usecases = new ArrayList<UseCaseBase>();
-        try {
-            mXmlHelper.updateUseCase(path, uc);
-            //mXmlHelper.readxml(mContext, path, usecases);
-            //mXmlHelper2.getUseCases(mContext, path, usecases);
-            if(updateUsecase(uc)){
-                //mXmlHelper.updateUseCase(path, uc);
-                //mXmlHelper2.reCreateXml(path, usecases);
-            }
-
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-    }
-
-    private boolean updateUsecase(UseCaseBase uc) {
-        return false;
-    }
-
-    public synchronized void updateTestItemOfSelectedUseCaseXml(TestItemBase ti){
-        LogUtils.d(TAG, "method updateTestItemOfSelectedUseCaseXml enter");
-        try {
-            String path = mContext.getFilesDir()+"/selected_usecases.xml";
-            mXmlHelper.updateTestItem(path, ti, true);
-            if(updateTestItem(ti)){
-            }
-
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-    }
-
-    private boolean updateTestItem(TestItemBase ti) {
-        return false;
-    }
-
     /**
      * 从usecases.xml文件中读取数据
      */
@@ -389,7 +382,98 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
         }
         LogUtils.d(TAG, "method getSelectedUseCaseFromXml exit");
     }
+    /**
+     *将已选择的用例序列保存到xml
+     */
+    public synchronized void saveSelectedUseCaseToXml(){
+        LogUtils.d(TAG, "method saveSelectedUseCaseToXml enter");
+        if(mSelectedUseCases == null || mSelectedUseCases.isEmpty()){
+            LogUtils.d(TAG, "don't select any testitem,so don't save anything!");
+            return;
+        }
+        String path = mContext.getFilesDir()+"/selected_usecases.xml";
+        File file = new File(path);
+        if(file != null && file.exists()){
+            file.delete();
+        }
+        try {
+            mXmlHelper.addUsecase(path, mSelectedUseCases, true);
+            //mXmlHelper2.reCreateXml(path, mSelectedUseCases);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
 
+    /**
+     * 保存用例到usecase.xml
+     * @param uc
+     */
+    public synchronized void updateAllUseCaseOfXml(UseCaseBase uc){
+        String path = mContext.getFilesDir()+"/usecases.xml";
+        updateUseCaseOfXml(path, uc);
+    }
+    /**
+     * 保存用例到selected_usecase.xml
+     * @param uc
+     */
+    public synchronized void updateSelectedUseCaseOfXml(UseCaseBase uc){
+        String path = mContext.getFilesDir()+"/selected_usecases.xml";
+        updateUseCaseOfXml(path, uc);
+    }
+
+    /**
+     * 保存用例到 path
+     * @param path
+     * @param uc
+     */
+    public synchronized void updateUseCaseOfXml(String path, UseCaseBase uc){
+        LogUtils.d(TAG, "metod updateUseCaseOfXml enter");
+        ArrayList<UseCaseBase> usecases = new ArrayList<UseCaseBase>();
+        try {
+            mXmlHelper.updateUseCase(path, uc);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 保存测试项到 selected_usecase.xml
+     * @param ti
+     */
+    public synchronized void updateTestItemOfAllUseCaseXml(TestItemBase ti) {
+        LogUtils.d(TAG, "method updateTestItemOfAllUseCaseXml enter");
+        String path = mContext.getFilesDir()+"/usecases.xml";
+        updateTestItemOfXml(path, ti);
+
+        LogUtils.d(TAG, "method updateTestItemOfAllUseCaseXml exit");
+    }
+    /**
+     * 保存测试项到 usecase.xml
+     * @param ti
+     */
+    public synchronized void updateTestItemOfSelectedUseCaseXml(TestItemBase ti){
+        LogUtils.d(TAG, "method updateTestItemOfSelectedUseCaseXml enter");
+        String path = mContext.getFilesDir()+"/selected_usecases.xml";
+        updateTestItemOfXml(path, ti);
+    }
+    /**
+     * 保存测试项到 path
+     * @param path
+     * @param ti
+     */
+    public synchronized void updateTestItemOfXml(String path, TestItemBase ti){
+        LogUtils.d(TAG, "method updateTestItemOfXml enter");
+        try {
+            mXmlHelper.updateTestItem(path, ti, true);
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 处理重启后的剩余工作
+     */
     private void dealWithRebootCase() {
         LogUtils.d(TAG, "method dealWithRebootCase enter");
         if(mReboot){
@@ -417,6 +501,11 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
         }
         LogUtils.d(TAG, "method dealWithRebootCase exit");
     }
+
+    /**
+     * 设置父节点completedTimes
+     * @param tb
+     */
     private void setParentParam(TestBase tb){
         LogUtils.d(TAG, "method setParentParam enter");
         TestBase parent = tb.getParent();
@@ -425,8 +514,7 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
                 LogUtils.d(TAG, "update parent node : "+parent.toString());
                 parent.setCompletedTimes(parent.getCompletedTimes()+1);
                 if (parent instanceof UseCaseBase){
-                    String path = mContext.getFilesDir()+"/selected_usecases.xml";
-                    updateUseCaseOfXml(path, (UseCaseBase)parent);
+                    updateSelectedUseCaseOfXml((UseCaseBase)parent);
                 } else if (parent instanceof TestItemBase){
                     updateTestItemOfSelectedUseCaseXml((TestItemBase) parent);
                 }
@@ -436,6 +524,11 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
         LogUtils.d(TAG, "method setParentParam exit");
     }
 
+    /**
+     * 找到正在测试的reboot项
+     * @param tb
+     * @return 找不到则为null
+     */
     private TestBase findTestingRebootNode(TestBase tb) {
         LogUtils.d(TAG, "method findTestingRebootNode enter");
         TestBase result = null;
@@ -473,35 +566,6 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
     }
 
     /**
-     * 自定义用例界面点击保存时，将产生一个用例，调用此方法保存到xml文件
-     * @param selectedTestItems
-     * @param name
-     */
-    public synchronized void addUsecaseToAllUseCaseXml(ArrayList<TestBase> selectedTestItems, String name) {
-        LogUtils.d(TAG, "method addUsecaseToAllUseCaseXml enter");
-        if(selectedTestItems == null || selectedTestItems.isEmpty()){
-            LogUtils.d(TAG, "don't select any testitem,so don't save anything!");
-            return;
-        }
-        String path = mContext.getFilesDir()+"/usecases.xml";
-        UseCaseBase uc = new CktUseCase(mContext);
-        uc.setTitle(name);
-        uc.setChildren(selectedTestItems);
-        uc.setChildrenSN();
-        ArrayList<TestBase> ucs = new ArrayList<TestBase>();
-        ucs.add(uc);
-        try {
-            mXmlHelper.addUsecase(path, ucs, false);
-            //mXmlHelper2.addUseCases(mContext, path, uc);
-            getAllUseCaseFromXml();
-            notifyAllUseCaseChange();
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-        LogUtils.d(TAG, "method addUsecaseToAllUseCaseXml exit");
-    }
-
-    /**
      * 获取所有用例引用
      * @return
      */
@@ -531,6 +595,9 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
         LogUtils.d(TAG, "method loadDataFromXml exit");
     }
 
+    /**
+     * 加载模拟触摸坐标
+     */
     @Override
     public void loadTouchPos() {
         //load position of touch panel
@@ -576,17 +643,30 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
         LogUtils.d(TAG, "method startExecuteThread exit");
     }
 
+    /**
+     * 表示初始化状态的枚举
+     */
     private enum InitStatus {
+        // 还没有初始化
         NOINIT,
+        // 正在初始化
         DOING,
+        // 初始化完成
         DONE
     }
 
+    /**
+     * 初始化回调方法，完成后修改状态
+     */
     @Override
     public void initDone() {
         mInitStatus = InitStatus.DONE;
     }
 
+    /**
+     * 创建Excel文件
+     * @return
+     */
     @Override
     public boolean createExcelFile() {
         LogUtils.d(TAG, "method createExcelFile enter");
@@ -619,23 +699,13 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
         LogUtils.d(TAG, "method addUsecaseToAllUseCaseXml exit");
         return result;
     }
-    /*@Override
-    public void startExecuteThread() {
-        int size = 0;
-        if(mSelectedUseCases == null || mSelectedUseCases.isEmpty()){
-            LogUtils.d(TAG, "startExecuteThread exit : no selected use case");
-            return ;
-        }
-        for (int index = 0; index < mSelectedUseCases.size() - 1; index++){
-            UseCaseBase tmp = mSelectedUseCases.get(index);
-            tmp.setNextUseCase(mSelectedUseCases.get(index + 1));
-        }
-        mSelectedUseCases.get(mSelectedUseCases.size() - 1).setNextUseCase(null);
-        mSelectedUseCases.get(0).execute(mHandler, mExecuteCallback);
-    }*/
 
-    public void updateSelectedUseCases(int index) {
-        LogUtils.d(TAG, "method updateSelectedUseCases enter");
+    /**
+     * UI点击add时调用，将用例保存到内存（ArrayList），执行测试任务时才保存到XML
+     * @param index
+     */
+    public void addUseCaseToSelectedNotSave(int index) {
+        LogUtils.d(TAG, "method addUseCaseToSelectedNotSave enter");
         TestBase tb = mAllUseCases.get(index).deepClone(null);
         //tb.setChecked(true);
         int sn = mSelectedUseCases == null ? 0 : mSelectedUseCases.size();
@@ -643,29 +713,35 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
         List<TestBase> tis = tb.getChildren();
         if(tis != null && !tis.isEmpty()){
             for(TestBase item : tis){
-                //int uc_id = item.getID(); //可以删除
-                //int uc_sn = item.getSN();
-                //LogUtils.d(TAG, "uc_id = "+uc_id+"; uc_sn = "+uc_sn);
                 item.setParent(tb);
-                //item.setUseCaseID(uc_id);
-                //item.setUseCaseSN(uc_sn);
             }
         }
         mSelectedUseCases.add(tb);
-        //saveSelectedUseCaseToXml();
-        notifySelectedUseCaseChange();
-        LogUtils.d(TAG, "method updateSelectedUseCases exit");
+        //notifySelectedUseCaseChange();
+        LogUtils.d(TAG, "method addUseCaseToSelectedNotSave exit");
     }
 
+    /**
+     * 记录当前Excel文件，后续测试结果保存要用到，没启动一次任务创建一个文件
+     * @param fileName
+     */
     public void setCurrentExcelFile(String fileName) {
         mEditor.putString(MyConstants.PREF_CURRENT_EXCEL_FILR, fileName);
         mEditor.commit();
     }
 
+    /**
+     * 获取当前Excel文件
+     * @return
+     */
     public String getCurrentExcelFile(){
         return mPref.getString(MyConstants.PREF_CURRENT_EXCEL_FILR, "error");
     }
 
+    /**
+     * 创建Excel以及一个sheet
+     * @param path
+     */
     public void createExcel(String path) {
         LogUtils.d(TAG, "method createExcel enter");
         LogUtils.d(TAG, "createExcel path : " + path);
@@ -682,18 +758,9 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
         LogUtils.d(TAG, "method createExcel exit");
     }
 
-    public synchronized void updateTestItemOfAllUseCaseXml(TestItemBase ti) {
-        LogUtils.d(TAG, "method updateTestItemOfAllUseCaseXml enter");
-        String path = mContext.getFilesDir()+"/usecases.xml";
-        try{
-            mXmlHelper.updateTestItem(path, ti, false);
-
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-        LogUtils.d(TAG, "method updateTestItemOfAllUseCaseXml exnt");
-    }
-
+    /**
+     * 每次点击start前需要初始化测试项，开始一次新的测试任务
+     */
     public void reInitSelectedUseCase() {
         LogUtils.d(TAG, "method reInitSelectedUseCase enter");
         reInitUseCase(mSelectedUseCases);
@@ -711,6 +778,11 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
         }
     }
 
+    /**
+     * 设置子用例开始测试时是否要将其包含的测试项初始化，
+     * 因为一个用例可能测试多次，而次数等状态就需要合理的重置
+     * @param isNeed
+     */
     public void setUseCaseNeedInitChildren(boolean isNeed) {
         LogUtils.d(TAG, "method setUseCaseNeedInitChildren enter");
         if(mSelectedUseCases != null && !mSelectedUseCases.isEmpty()){
