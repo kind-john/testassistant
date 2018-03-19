@@ -60,7 +60,7 @@ public class CktXmlHelper {
                 LogUtils.d(TAG, path + " not exists, so create it");
                 //file.createNewFile();
                 doc = builder.newDocument();
-                root = doc.createElement(MyConstants.XMLTAG_ROOT);
+                root = doc.createElement(XmlTagConstants.XMLTAG_ROOT);
                 doc.appendChild(root);
             } else {
                 InputStream is = new FileInputStream(path);
@@ -96,23 +96,23 @@ public class CktXmlHelper {
     }
     private Element createTestItemElement(Document doc, Element root, TestItemBase ti) {
         LogUtils.d(TAG, "entry createTestItemElement!");
-        Element testitemE = doc.createElement(MyConstants.XMLTAG_TESTITEM);
-        testitemE.setAttribute(MyConstants.XMLTAG_ID, String.valueOf(ti.getID()));
-        testitemE.setAttribute(MyConstants.XMLTAG_TESTITEM_CLASSNAME, ti.getClassName());
+        Element testitemE = doc.createElement(XmlTagConstants.XMLTAG_TESTITEM);
+        testitemE.setAttribute(XmlTagConstants.XMLTAG_ID, String.valueOf(ti.getID()));
+        testitemE.setAttribute(XmlTagConstants.XMLTAG_TESTITEM_CLASSNAME, ti.getClassName());
 
-        createTextElement(doc, testitemE, MyConstants.XMLTAG_TESTITEM_SN, String.valueOf(ti.getSN()));
+        createTextElement(doc, testitemE, XmlTagConstants.XMLTAG_TESTITEM_SN, String.valueOf(ti.getSN()));
 
-        createTextElement(doc, testitemE, MyConstants.XMLTAG_TESTITEM_USECASEID, String.valueOf(ti.getUseCaseID()));
+        createTextElement(doc, testitemE, XmlTagConstants.XMLTAG_TESTITEM_USECASEID, String.valueOf(ti.getUseCaseID()));
 
-        createTextElement(doc, testitemE, MyConstants.XMLTAG_TESTITEM_USECASESN, String.valueOf(ti.getUseCaseSN()));
+        createTextElement(doc, testitemE, XmlTagConstants.XMLTAG_TESTITEM_USECASESN, String.valueOf(ti.getUseCaseSN()));
 
-        createTextElement(doc, testitemE, MyConstants.XMLTAG_TESTITEM_TITLE, ti.getTitle());
+        createTextElement(doc, testitemE, XmlTagConstants.XMLTAG_TESTITEM_TITLE, ti.getTitle());
 
-        createTextElement(doc, testitemE, MyConstants.XMLTAG_TESTITEM_TIMES, String.valueOf(ti.getTimes()));
+        createTextElement(doc, testitemE, XmlTagConstants.XMLTAG_TESTITEM_TIMES, String.valueOf(ti.getTimes()));
 
-        createTextElement(doc, testitemE, MyConstants.XMLTAG_TESTITEM_FAILTIMES, String.valueOf(ti.getFailTimes()));
+        createTextElement(doc, testitemE, XmlTagConstants.XMLTAG_TESTITEM_FAILTIMES, String.valueOf(ti.getFailTimes()));
 
-        createTextElement(doc, testitemE, MyConstants.XMLTAG_TESTITEM_COMPLETEDTIMES, String.valueOf(ti.getCompletedTimes()));
+        createTextElement(doc, testitemE, XmlTagConstants.XMLTAG_TESTITEM_COMPLETEDTIMES, String.valueOf(ti.getCompletedTimes()));
 
         ti.saveParameters(doc, testitemE);
 
@@ -123,9 +123,9 @@ public class CktXmlHelper {
 
     private Element createUseCaseElement(Document doc, Element root, UseCaseBase uc) {
         LogUtils.d(TAG, "entry createUseCaseElement!");
-        Element usecaseE = doc.createElement(MyConstants.XMLTAG_USECASE);
+        Element usecaseE = doc.createElement(XmlTagConstants.XMLTAG_USECASE);
 
-        int maxID = getMaxID(doc, MyConstants.XMLTAG_USECASE, MyConstants.XMLTAG_ID);
+        int maxID = getMaxID(doc, XmlTagConstants.XMLTAG_USECASE, XmlTagConstants.XMLTAG_ID);
         LogUtils.d(TAG, "max maxID = "+maxID);
         int usecaseID = uc.getID();
         if(usecaseID == -1){
@@ -145,18 +145,18 @@ public class CktXmlHelper {
                 }
             }
         }
-        usecaseE.setAttribute(MyConstants.XMLTAG_ID, String.valueOf(uc.getID()));
-        usecaseE.setAttribute(MyConstants.XMLTAG_USECASE_CLASSNAME, uc.getClassName());
+        usecaseE.setAttribute(XmlTagConstants.XMLTAG_ID, String.valueOf(uc.getID()));
+        usecaseE.setAttribute(XmlTagConstants.XMLTAG_USECASE_CLASSNAME, uc.getClassName());
 
-        createTextElement(doc, usecaseE, MyConstants.XMLTAG_USECASE_SN, String.valueOf(uc.getSN()));
+        createTextElement(doc, usecaseE, XmlTagConstants.XMLTAG_USECASE_SN, String.valueOf(uc.getSN()));
 
-        createTextElement(doc, usecaseE, MyConstants.XMLTAG_USECASE_TITLE, uc.getTitle());
+        createTextElement(doc, usecaseE, XmlTagConstants.XMLTAG_USECASE_TITLE, uc.getTitle());
 
-        createTextElement(doc, usecaseE, MyConstants.XMLTAG_USECASE_TIMES, String.valueOf(uc.getTimes()));
+        createTextElement(doc, usecaseE, XmlTagConstants.XMLTAG_USECASE_TIMES, String.valueOf(uc.getTimes()));
 
-        createTextElement(doc, usecaseE, MyConstants.XMLTAG_USECASE_FAILTIMES, String.valueOf(uc.getFailTimes()));
+        createTextElement(doc, usecaseE, XmlTagConstants.XMLTAG_USECASE_FAILTIMES, String.valueOf(uc.getFailTimes()));
 
-        createTextElement(doc, usecaseE, MyConstants.XMLTAG_USECASE_COMPLETEDTIMES, String.valueOf(uc.getCompletedTimes()));
+        createTextElement(doc, usecaseE, XmlTagConstants.XMLTAG_USECASE_COMPLETEDTIMES, String.valueOf(uc.getCompletedTimes()));
 
         uc.saveParameters(doc, usecaseE);
         for (TestBase tb : uc.getChildren()) {
@@ -184,11 +184,11 @@ public class CktXmlHelper {
             Document doc = bulider.parse(is);
             doc.normalize();
             Element root = doc.getDocumentElement();
-            NodeList uc_listnode = doc.getElementsByTagName(MyConstants.XMLTAG_USECASE);
+            NodeList uc_listnode = doc.getElementsByTagName(XmlTagConstants.XMLTAG_USECASE);
             for (int i = 0; i < uc_listnode.getLength(); i++) {
                 Element uc_node = (Element) uc_listnode.item(i);
-                int id = Integer.parseInt(uc_node.getAttribute(MyConstants.XMLTAG_ID));
-                String str_sn = uc_node.getElementsByTagName(MyConstants.XMLTAG_USECASE_SN).item(0).getTextContent();
+                int id = Integer.parseInt(uc_node.getAttribute(XmlTagConstants.XMLTAG_ID));
+                String str_sn = uc_node.getElementsByTagName(XmlTagConstants.XMLTAG_USECASE_SN).item(0).getTextContent();
                 int sn = Integer.parseInt(str_sn);
                 boolean isMatched = false;
                 int level = computeNodeLevel(uc_node);
@@ -203,11 +203,11 @@ public class CktXmlHelper {
                             (level == parentUC.getLevel());
                 }
                 if (isMatched) {
-                    NodeList ti_listnode = uc_node.getElementsByTagName(MyConstants.XMLTAG_TESTITEM);
+                    NodeList ti_listnode = uc_node.getElementsByTagName(XmlTagConstants.XMLTAG_TESTITEM);
                     for (int j = 0; j < ti_listnode.getLength(); j++){
                         Element ti_element = (Element) ti_listnode.item(j);
-                        int ti_id = Integer.parseInt(ti_element.getAttribute(MyConstants.XMLTAG_ID));
-                        String ti_str_sn = ti_element.getElementsByTagName(MyConstants.XMLTAG_TESTITEM_SN).item(0).getTextContent();
+                        int ti_id = Integer.parseInt(ti_element.getAttribute(XmlTagConstants.XMLTAG_ID));
+                        String ti_str_sn = ti_element.getElementsByTagName(XmlTagConstants.XMLTAG_TESTITEM_SN).item(0).getTextContent();
                         int ti_sn = Integer.parseInt(ti_str_sn);
                         if(ti_id == ti.getID() && ti_sn == ti.getSN()){
                             Element newNode = createTestItemElement(doc, uc_node, ti);
@@ -240,11 +240,11 @@ public class CktXmlHelper {
             Document doc = bulider.parse(is);
             doc.normalize();
             Element root = doc.getDocumentElement();
-            NodeList listnode = doc.getElementsByTagName(MyConstants.XMLTAG_USECASE);
+            NodeList listnode = doc.getElementsByTagName(XmlTagConstants.XMLTAG_USECASE);
             for (int i = 0; i < listnode.getLength(); i++) {
                 Element elink = (Element) listnode.item(i);
-                int id = Integer.parseInt(elink.getAttribute(MyConstants.XMLTAG_ID));
-                String str_sn = elink.getElementsByTagName(MyConstants.XMLTAG_USECASE_SN).item(0).getTextContent();
+                int id = Integer.parseInt(elink.getAttribute(XmlTagConstants.XMLTAG_ID));
+                String str_sn = elink.getElementsByTagName(XmlTagConstants.XMLTAG_USECASE_SN).item(0).getTextContent();
 
                 int sn = Integer.parseInt(str_sn);
                 int level = computeNodeLevel(elink);
@@ -287,13 +287,13 @@ public class CktXmlHelper {
             doc.normalize();
             Element root = doc.getDocumentElement();
             for (UseCaseBase uc : ucs) {
-                NodeList listnode = doc.getElementsByTagName(MyConstants.XMLTAG_USECASE);
+                NodeList listnode = doc.getElementsByTagName(XmlTagConstants.XMLTAG_USECASE);
                 for (int i = 0; i < listnode.getLength(); i++) {
                     Element elink = (Element) listnode.item(i);
-                    elink.getElementsByTagName(MyConstants.XMLTAG_USECASE_SN).item(0).getNodeValue();
-                    int id = Integer.parseInt(elink.getAttribute(MyConstants.XMLTAG_ID));
-                    //int sn = Integer.parseInt(elink.getAttribute(MyConstants.XMLTAG_USECASE_SN));
-                    int sn = Integer.parseInt(elink.getElementsByTagName(MyConstants.XMLTAG_USECASE_SN).item(0).getTextContent());
+                    elink.getElementsByTagName(XmlTagConstants.XMLTAG_USECASE_SN).item(0).getNodeValue();
+                    int id = Integer.parseInt(elink.getAttribute(XmlTagConstants.XMLTAG_ID));
+                    //int sn = Integer.parseInt(elink.getAttribute(XmlTagConstants.XMLTAG_USECASE_SN));
+                    int sn = Integer.parseInt(elink.getElementsByTagName(XmlTagConstants.XMLTAG_USECASE_SN).item(0).getTextContent());
                     int level = computeNodeLevel(elink);
                     if ((id == uc.getID()) && (sn == uc.getSN()) && (level == uc.getLevel())) {
                         if (listnode.getLength() == 1) {
@@ -359,9 +359,9 @@ public class CktXmlHelper {
                         String name = parser.getName();
                         LogUtils.d(TAG, "XmlPullParser.START_TAG name:" + name);
 
-                        if (name.equals(MyConstants.XMLTAG_USECASE)) { // 判断开始标签元素是否是student
+                        if (name.equals(XmlTagConstants.XMLTAG_USECASE)) { // 判断开始标签元素是否是student
                             int id = Integer.parseInt(parser.getAttributeValue(0));
-                            String ttt = parser.getAttributeValue(null, MyConstants.XMLTAG_USECASE_CLASSNAME);
+                            String ttt = parser.getAttributeValue(null, XmlTagConstants.XMLTAG_USECASE_CLASSNAME);
                             LogUtils.d(TAG, "ttt = "+ttt);
                             String className = parser.getAttributeValue(1);
                             LogUtils.d(TAG, "usecase id : " + id + "; className = " + className);
@@ -406,7 +406,7 @@ public class CktXmlHelper {
                             } else {
                                 LogUtils.e(TAG, "error: id < -1 ,from " + path);
                             }
-                        } else if (name.equals(MyConstants.XMLTAG_USECASE_SN)) {
+                        } else if (name.equals(XmlTagConstants.XMLTAG_USECASE_SN)) {
                             int ucsn = Integer.parseInt(parser.nextText());
                             LogUtils.d(TAG, "ucsn : " + ucsn);
                             if(usecase2 != null){
@@ -415,7 +415,7 @@ public class CktXmlHelper {
                                 LogUtils.d(TAG, "usecase ucsn : " + ucsn);
                                 usecase.setSN(ucsn);
                             }
-                        } else if (name.equals(MyConstants.XMLTAG_USECASE_TITLE)) {
+                        } else if (name.equals(XmlTagConstants.XMLTAG_USECASE_TITLE)) {
                             String title = parser.nextText();
                             LogUtils.d(TAG, "title : " + title);
 
@@ -425,7 +425,7 @@ public class CktXmlHelper {
                                 LogUtils.d(TAG, "usecase title : " + title);
                                 usecase.setTitle(title);
                             }
-                        } else if (name.equals(MyConstants.XMLTAG_USECASE_TIMES)) {
+                        } else if (name.equals(XmlTagConstants.XMLTAG_USECASE_TIMES)) {
                             int times = Integer.parseInt(parser.nextText());
                             LogUtils.d(TAG, "times : " + times);
 
@@ -436,7 +436,7 @@ public class CktXmlHelper {
                                 usecase.setTimes(times);
                             }
 
-                        } else if (name.equals(MyConstants.XMLTAG_USECASE_FAILTIMES)) {
+                        } else if (name.equals(XmlTagConstants.XMLTAG_USECASE_FAILTIMES)) {
                             int failtimes = Integer.parseInt(parser.nextText());
                             LogUtils.d(TAG, "failtimes : " + failtimes);
 
@@ -447,7 +447,7 @@ public class CktXmlHelper {
                                 usecase.setFailTimes(failtimes);
                             }
 
-                        } else if (name.equals(MyConstants.XMLTAG_USECASE_COMPLETEDTIMES)) {
+                        } else if (name.equals(XmlTagConstants.XMLTAG_USECASE_COMPLETEDTIMES)) {
                             int completedtimes = Integer.parseInt(parser.nextText());
                             LogUtils.d(TAG, "completedtimes : " + completedtimes);
 
@@ -458,7 +458,7 @@ public class CktXmlHelper {
                                 usecase.setCompletedTimes(completedtimes);
                             }
 
-                        } else if (name.equals(MyConstants.XMLTAG_USECASE_SELECTED)) {
+                        } else if (name.equals(XmlTagConstants.XMLTAG_USECASE_SELECTED)) {
                             boolean isChecked = Boolean.parseBoolean(parser.nextText());
                             LogUtils.d(TAG, "usecase isChecked : " + isChecked);
                             if(usecase2 != null){
@@ -466,7 +466,7 @@ public class CktXmlHelper {
                             }else if (usecase != null) {
                                 usecase.setChecked(isChecked);
                             }
-                        } else if (name.equals(MyConstants.XMLTAG_USECASE_DELAY)) {
+                        } else if (name.equals(XmlTagConstants.XMLTAG_USECASE_DELAY)) {
                             int delay = Integer.parseInt(parser.nextText());
                             LogUtils.d(TAG, "delay : " + delay);
                             if(usecase2 != null){
@@ -475,7 +475,7 @@ public class CktXmlHelper {
                                 LogUtils.d(TAG, "usecase delay : " + delay);
                                 usecase.setDelay(delay);
                             }
-                        } else if (name.equals(MyConstants.XMLTAG_TESTITEM_SN)) {
+                        } else if (name.equals(XmlTagConstants.XMLTAG_TESTITEM_SN)) {
                             int tisn = Integer.parseInt(parser.nextText());
                             LogUtils.d(TAG, "tisn : " + tisn);
 
@@ -483,7 +483,7 @@ public class CktXmlHelper {
                                 LogUtils.d(TAG, "testitem tisn : " + tisn);
                                 testitem.setSN(tisn);
                             }
-                        } else if (name.equals(MyConstants.XMLTAG_TESTITEM_USECASEID)) {
+                        } else if (name.equals(XmlTagConstants.XMLTAG_TESTITEM_USECASEID)) {
                             int ti_ucid = Integer.parseInt(parser.nextText());
                             LogUtils.d(TAG, "ti_ucid : " + ti_ucid);
 
@@ -491,7 +491,7 @@ public class CktXmlHelper {
                                 LogUtils.d(TAG, "testitem ti_ucid : " + ti_ucid);
                                 testitem.setUseCaseID(ti_ucid);
                             }
-                        } else if (name.equals(MyConstants.XMLTAG_TESTITEM_USECASESN)) {
+                        } else if (name.equals(XmlTagConstants.XMLTAG_TESTITEM_USECASESN)) {
                             int ti_ucsn = Integer.parseInt(parser.nextText());
                             LogUtils.d(TAG, "ti_ucsn : " + ti_ucsn);
 
@@ -499,7 +499,7 @@ public class CktXmlHelper {
                                 LogUtils.d(TAG, "testitem ti_ucsn : " + ti_ucsn);
                                 testitem.setUseCaseSN(ti_ucsn);
                             }
-                        } else if (name.equals(MyConstants.XMLTAG_TESTITEM_TITLE)) {
+                        } else if (name.equals(XmlTagConstants.XMLTAG_TESTITEM_TITLE)) {
                             String title = parser.nextText();
                             LogUtils.d(TAG, "title : " + title);
 
@@ -507,7 +507,7 @@ public class CktXmlHelper {
                                 LogUtils.d(TAG, "testitem title : " + title);
                                 testitem.setTitle(title);
                             }
-                        } else if (name.equals(MyConstants.XMLTAG_TESTITEM_TIMES)) {
+                        } else if (name.equals(XmlTagConstants.XMLTAG_TESTITEM_TIMES)) {
                             int times = Integer.parseInt(parser.nextText());
                             LogUtils.d(TAG, "times : " + times);
 
@@ -516,7 +516,7 @@ public class CktXmlHelper {
                                 testitem.setTimes(times);
                             }
 
-                        } else if (name.equals(MyConstants.XMLTAG_TESTITEM_FAILTIMES)) {
+                        } else if (name.equals(XmlTagConstants.XMLTAG_TESTITEM_FAILTIMES)) {
                             int failtimes = Integer.parseInt(parser.nextText());
                             LogUtils.d(TAG, "failtimes : " + failtimes);
 
@@ -525,7 +525,7 @@ public class CktXmlHelper {
                                 testitem.setFailTimes(failtimes);
                             }
 
-                        } else if (name.equals(MyConstants.XMLTAG_TESTITEM_COMPLETEDTIMES)) {
+                        } else if (name.equals(XmlTagConstants.XMLTAG_TESTITEM_COMPLETEDTIMES)) {
                             int completedtimes = Integer.parseInt(parser.nextText());
                             LogUtils.d(TAG, "completedtimes : " + completedtimes);
 
@@ -534,13 +534,13 @@ public class CktXmlHelper {
                                 testitem.setCompletedTimes(completedtimes);
                             }
 
-                        } else if (name.equals(MyConstants.XMLTAG_TESTITEM_SELECTED)) {
+                        } else if (name.equals(XmlTagConstants.XMLTAG_TESTITEM_SELECTED)) {
                             boolean isChecked = Boolean.parseBoolean(parser.nextText());
                             LogUtils.d(TAG, "testitem isChecked : " + isChecked);
                             if (testitem != null) {
                                 testitem.setChecked(isChecked);
                             }
-                        } else if (name.equals(MyConstants.XMLTAG_TESTITEM)) {
+                        } else if (name.equals(XmlTagConstants.XMLTAG_TESTITEM)) {
                             if (usecase != null) {
                                 int id2 = Integer.parseInt(parser.getAttributeValue(0));
                                 String className2 = parser.getAttributeValue(1);
@@ -567,7 +567,7 @@ public class CktXmlHelper {
                                 }
 
                             }
-                        } else if (name.equals(MyConstants.XMLTAG_TESTITEM_DELAY)) {
+                        } else if (name.equals(XmlTagConstants.XMLTAG_TESTITEM_DELAY)) {
                             int delay = Integer.parseInt(parser.nextText());
                             LogUtils.d(TAG, "delay : " + delay);
                             if (testitem != null) {
@@ -582,7 +582,7 @@ public class CktXmlHelper {
                     case XmlPullParser.END_TAG:
                         String endName = parser.getName();
                         LogUtils.d(TAG, "XmlPullParser.END_TAG name:" + endName);
-                        if (endName.equals(MyConstants.XMLTAG_USECASE)) {
+                        if (endName.equals(XmlTagConstants.XMLTAG_USECASE)) {
                             if(usecase != null){
                                 if(usecase2 != null){
                                     usecase.addTestItem(usecase2);
@@ -592,7 +592,7 @@ public class CktXmlHelper {
                                 allUseCases.add(usecase);
                                 usecase = null;
                             }
-                        } else if (endName.equals(MyConstants.XMLTAG_TESTITEM)) {
+                        } else if (endName.equals(XmlTagConstants.XMLTAG_TESTITEM)) {
                             if(usecase2 != null){
                                 usecase2.addTestItem(testitem);
                                 testitem = null;

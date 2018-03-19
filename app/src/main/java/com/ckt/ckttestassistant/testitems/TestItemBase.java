@@ -1,6 +1,5 @@
 package com.ckt.ckttestassistant.testitems;
 
-import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
@@ -9,11 +8,9 @@ import android.os.Message;
 import com.ckt.ckttestassistant.CktResultsHelper;
 import com.ckt.ckttestassistant.TestBase;
 import com.ckt.ckttestassistant.UseCaseManager;
-import com.ckt.ckttestassistant.adapter.CktItemDecoration;
-import com.ckt.ckttestassistant.usecases.UseCaseBase;
 import com.ckt.ckttestassistant.utils.ExcelUtils;
+import com.ckt.ckttestassistant.utils.HandlerMessageWhat;
 import com.ckt.ckttestassistant.utils.LogUtils;
-import com.ckt.ckttestassistant.utils.MyConstants;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -160,22 +157,23 @@ public abstract class TestItemBase extends TestBase implements CktResultsHelper.
             mCompletedTimes++;
             mFailTimes--;
             mUseCaseManager.updateTestItemOfSelectedUseCaseXml(this);
+            saveResult();
         }else{
             if(passed){
                 LogUtils.d(TAG, "测试成功，失败次数减一");
                 mFailTimes--;
                 mUseCaseManager.updateTestItemOfSelectedUseCaseXml(this);
             }
-        }
-        saveResult();
-        if(mCompletedTimes < mTimes){
-            task();
-        }else if(mCompletedTimes == mTimes){
-            if(mFailTimes == 0){
-                mPassed = true;
+            saveResult();
+            if(mCompletedTimes < mTimes){
+                task();
+            }else if(mCompletedTimes == mTimes){
+                if(mFailTimes == 0){
+                    mPassed = true;
+                }
+            }else{
+                LogUtils.e(TAG, "error: mCompletedTimes > mTimes");
             }
-        }else{
-            LogUtils.e(TAG, "error: mCompletedTimes > mTimes");
         }
     }
 
@@ -273,9 +271,9 @@ public abstract class TestItemBase extends TestBase implements CktResultsHelper.
         //LogUtils.d(TAG, "  testItem : " + className + " extends TestItemBase execute times = " + times);
 
         Message msg = Message.obtain();
-        msg.what = MyConstants.UPDATE_PROGRESS_MESSAGE;
+        msg.what = HandlerMessageWhat.UPDATE_PROGRESS_MESSAGE;
         Bundle data = new Bundle();
-        data.putString(MyConstants.PROGRESS_MESSAGE, mTitle + " : "+times);
+        data.putString(HandlerMessageWhat.PROGRESS_MESSAGE, mTitle + " : "+times);
         msg.setData(data);
         handler.sendMessage(msg);
     }

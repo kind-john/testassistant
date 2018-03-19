@@ -3,7 +3,6 @@ package com.ckt.ckttestassistant.testitems;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Handler;
-import android.os.Looper;
 import android.os.Message;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
@@ -13,14 +12,12 @@ import android.widget.EditText;
 import com.ckt.ckttestassistant.R;
 import com.ckt.ckttestassistant.UseCaseManager;
 import com.ckt.ckttestassistant.utils.LogUtils;
-import com.ckt.ckttestassistant.utils.MyConstants;
+import com.ckt.ckttestassistant.utils.XmlTagConstants;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xmlpull.v1.XmlSerializer;
-
-import jxl.Workbook;
 
 /**
  * Created by ckt on 18-1-31.
@@ -148,7 +145,7 @@ public class AutoGenerateContacts extends TestItemBase {
 
     @Override
     public void saveParameters(Document doc, Element element) {
-        Element e1 = doc.createElement(MyConstants.XMLTAG_TESTITEM_DELAY);
+        Element e1 = doc.createElement(XmlTagConstants.XMLTAG_TESTITEM_DELAY);
         Node n1 = doc.createTextNode(""+mDelay);
         e1.appendChild(n1);
         element.appendChild(e1);
@@ -158,9 +155,9 @@ public class AutoGenerateContacts extends TestItemBase {
     public void saveParametersToXml(XmlSerializer serializer) throws Exception {
         try{
             //eg. start
-            serializer.startTag(null, MyConstants.XMLTAG_TESTITEM_DELAY);
+            serializer.startTag(null, XmlTagConstants.XMLTAG_TESTITEM_DELAY);
             serializer.text(""+mDelay);
-            serializer.endTag(null, MyConstants.XMLTAG_TESTITEM_DELAY);
+            serializer.endTag(null, XmlTagConstants.XMLTAG_TESTITEM_DELAY);
             //eg. end
         }catch (Exception e) {
             throw new Exception();

@@ -3,15 +3,12 @@ package com.ckt.ckttestassistant.usecases;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 
-import com.ckt.ckttestassistant.UseCaseManager;
-import com.ckt.ckttestassistant.testitems.TestItemBase;
-import com.ckt.ckttestassistant.utils.ExcelUtils;
 import com.ckt.ckttestassistant.utils.LogUtils;
-import com.ckt.ckttestassistant.utils.MyConstants;
+import com.ckt.ckttestassistant.utils.HandlerMessageWhat;
+import com.ckt.ckttestassistant.utils.XmlTagConstants;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -20,20 +17,12 @@ import org.xmlpull.v1.XmlSerializer;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
 
-import jxl.Cell;
 import jxl.Workbook;
 import jxl.read.biff.BiffException;
-import jxl.write.Label;
-import jxl.write.WritableCellFormat;
-import jxl.write.WritableFont;
 import jxl.write.WritableSheet;
 import jxl.write.WritableWorkbook;
 import jxl.write.WriteException;
-import jxl.write.biff.RowsExceededException;
 
 /**
  * Created by ckt on 18-1-26.
@@ -64,9 +53,9 @@ public class CktUseCase extends UseCaseBase {
         //String className = this.getClass().getSimpleName();
         //LogUtils.d(TAG, "UseCase : " + className + " extends UseCaseBase execute times = " + times);
         Message msg = Message.obtain();
-        msg.what = MyConstants.UPDATE_PROGRESS_TITLE;
+        msg.what = HandlerMessageWhat.UPDATE_PROGRESS_TITLE;
         Bundle data = new Bundle();
-        data.putString(MyConstants.PROGRESS_TITLE, mTitle +" : "+times);
+        data.putString(HandlerMessageWhat.PROGRESS_TITLE, mTitle +" : "+times);
         msg.setData(data);
         handler.sendMessage(msg);
     }
@@ -123,7 +112,7 @@ public class CktUseCase extends UseCaseBase {
 
     @Override
     public void saveParameters(Document doc, Element root) {
-        Element e1 = doc.createElement(MyConstants.XMLTAG_USECASE_DELAY);
+        Element e1 = doc.createElement(XmlTagConstants.XMLTAG_USECASE_DELAY);
         Node n1 = doc.createTextNode(""+mDelay);
         e1.appendChild(n1);
         root.appendChild(e1);

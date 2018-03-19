@@ -4,7 +4,7 @@ import android.content.Context;
 
 import com.ckt.ckttestassistant.UseCaseManager;
 import com.ckt.ckttestassistant.utils.LogUtils;
-import com.ckt.ckttestassistant.utils.MyConstants;
+import com.ckt.ckttestassistant.utils.XmlTagConstants;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -87,7 +87,7 @@ public class CktTestItem extends TestItemBase {
 
     @Override
     public void saveParameters(Document doc, Element element) {
-        Element e1 = doc.createElement(MyConstants.XMLTAG_TESTITEM_DELAY);
+        Element e1 = doc.createElement(XmlTagConstants.XMLTAG_TESTITEM_DELAY);
         Node n1 = doc.createTextNode(""+mDelay);
         e1.appendChild(n1);
         element.appendChild(e1);

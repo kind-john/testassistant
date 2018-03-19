@@ -46,19 +46,19 @@ public class JSONUtils {
                 JSONObject jsonObject = jsonArray.getJSONObject(i);
 
                 if (jsonObject != null) {
-                    parseJsonObject(jsonObject, MyConstants.CAMERA_CAPTURE_POINT, points);
-                    parseJsonObject(jsonObject, MyConstants.CAMERA_RECORDVIDEO_POINT, points);
-                    parseJsonObject(jsonObject, MyConstants.CAMERA_SWITCH_FB_POINT, points);
-                    parseJsonObject(jsonObject, MyConstants.CAMERA_SWITCH_FLASH_POINT, points);
-                    parseJsonObject(jsonObject, MyConstants.CAMERA_FOCUS_POINT, points);
-                    parseJsonObject(jsonObject, MyConstants.CAMERA_SETTINGS_POINT, points);
-                    parseJsonObject(jsonObject, MyConstants.CAMERA_HDR_POINT, points);
-                    parseJsonObject(jsonObject, MyConstants.CAMERA_PANORAMA_POINT, points);
-                    parseJsonObject(jsonObject, MyConstants.CAMERA_ZOOM_IN_POINT, points);
-                    parseJsonObject(jsonObject, MyConstants.CAMERA_ZOOM_OUT_POINT, points);
-                    parseJsonObject(jsonObject, MyConstants.CAMERA_VIEW_PHOTO_POINT, points);
-                    parseJsonObject(jsonObject, MyConstants.CAMERA_PHOTOMODE_POINT, points);
-                    parseJsonObject(jsonObject, MyConstants.CAMERA_VIDEOMODE_POINT, points);
+                    parseJsonObject(jsonObject, PointConstants.CAMERA_CAPTURE_POINT, points);
+                    parseJsonObject(jsonObject, PointConstants.CAMERA_RECORDVIDEO_POINT, points);
+                    parseJsonObject(jsonObject, PointConstants.CAMERA_SWITCH_FB_POINT, points);
+                    parseJsonObject(jsonObject, PointConstants.CAMERA_SWITCH_FLASH_POINT, points);
+                    parseJsonObject(jsonObject, PointConstants.CAMERA_FOCUS_POINT, points);
+                    parseJsonObject(jsonObject, PointConstants.CAMERA_SETTINGS_POINT, points);
+                    parseJsonObject(jsonObject, PointConstants.CAMERA_HDR_POINT, points);
+                    parseJsonObject(jsonObject, PointConstants.CAMERA_PANORAMA_POINT, points);
+                    parseJsonObject(jsonObject, PointConstants.CAMERA_ZOOM_IN_POINT, points);
+                    parseJsonObject(jsonObject, PointConstants.CAMERA_ZOOM_OUT_POINT, points);
+                    parseJsonObject(jsonObject, PointConstants.CAMERA_VIEW_PHOTO_POINT, points);
+                    parseJsonObject(jsonObject, PointConstants.CAMERA_PHOTOMODE_POINT, points);
+                    parseJsonObject(jsonObject, PointConstants.CAMERA_VIDEOMODE_POINT, points);
                 }
             }
         } catch (JSONException e) {

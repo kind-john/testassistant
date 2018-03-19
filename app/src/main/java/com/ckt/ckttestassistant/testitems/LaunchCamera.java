@@ -1,8 +1,10 @@
 package com.ckt.ckttestassistant.testitems;
 
+import android.app.ActivityManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.Build;
 import android.provider.MediaStore;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
@@ -14,6 +16,7 @@ import com.ckt.ckttestassistant.UseCaseManager;
 import com.ckt.ckttestassistant.utils.ExcelUtils;
 import com.ckt.ckttestassistant.utils.LogUtils;
 import com.ckt.ckttestassistant.utils.MyConstants;
+import com.ckt.ckttestassistant.utils.XmlTagConstants;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -22,6 +25,7 @@ import org.xmlpull.v1.XmlSerializer;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import jxl.Cell;
 import jxl.Workbook;
@@ -69,18 +73,51 @@ public class LaunchCamera extends TestItemBase {
 
     }
 
+    private boolean launchSuccess(){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            final ActivityManager am = (ActivityManager)
+                    mContext.getSystemService(Context.ACTIVITY_SERVICE);
+            final List<ActivityManager.RecentTaskInfo> recentTasks =
+                    am.getRecentTasks(1, ActivityManager.RECENT_IGNORE_UNAVAILABLE);
+            ActivityManager.RecentTaskInfo rt = recentTasks.get(0);
+            String packageName = rt.topActivity.getPackageName();
+            String topActivityName = rt.topActivity.getClassName();
+            if("com.mediatek.camera".equals(packageName) &&
+                    "com.android.camera.CameraActivity".equals(topActivityName)){
+                return true;
+            }
+        }
+        return false;
+    }
     @Override
     public boolean doExecute(UseCaseManager.ExecuteCallback executeCallback, boolean finish) {
         LogUtils.d(TAG, mClassName+" doExecute");
-        //do test,then close progressview
+        boolean passed = false;
         Intent intent = new Intent(MediaStore.INTENT_ACTION_STILL_IMAGE_CAMERA);
         mContext.startActivity(intent);
+
+        int count = 0;
+        while(!launchSuccess()){
+            count++;
+            if(count < 5){
+                LogUtils.d(TAG, "sleep count = "+count);
+                try{
+                    Thread.sleep(1000);
+                }catch (InterruptedException e){
+                    e.printStackTrace();
+                }
+            }
+        }
+        if (launchSuccess()){
+            passed = true;
+        }
+        task2(passed);
+
         if(finish && executeCallback != null){
             LogUtils.d(TAG, "stop test handler");
             executeCallback.stopTestHandler();
         }
-        task2(true);
-        return false;
+        return passed;
     }
 
     @Override
@@ -133,7 +170,7 @@ public class LaunchCamera extends TestItemBase {
 
     @Override
     public void saveParameters(Document doc, Element element) {
-        Element e1 = doc.createElement(MyConstants.XMLTAG_TESTITEM_DELAY);
+        Element e1 = doc.createElement(XmlTagConstants.XMLTAG_TESTITEM_DELAY);
         Node n1 = doc.createTextNode(""+mDelay);
         e1.appendChild(n1);
         element.appendChild(e1);
@@ -143,9 +180,9 @@ public class LaunchCamera extends TestItemBase {
     public void saveParametersToXml(XmlSerializer serializer) throws Exception {
         try{
             //eg. start
-            serializer.startTag(null, MyConstants.XMLTAG_TESTITEM_DELAY);
+            serializer.startTag(null, XmlTagConstants.XMLTAG_TESTITEM_DELAY);
             serializer.text(""+mDelay);
-            serializer.endTag(null, MyConstants.XMLTAG_TESTITEM_DELAY);
+            serializer.endTag(null, XmlTagConstants.XMLTAG_TESTITEM_DELAY);
             //eg. end
         }catch (Exception e) {
             throw new Exception();

@@ -1,7 +1,6 @@
 package com.ckt.ckttestassistant;
 
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -13,14 +12,12 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
-import android.view.Menu;
 import android.view.View;
-import android.widget.Button;
 import android.widget.TextView;
 
 import com.ckt.ckttestassistant.fragment.FragmentAdapter;
-import com.ckt.ckttestassistant.fragment.FragmentFactory;
 import com.ckt.ckttestassistant.testitems.TestItemBase;
+import com.ckt.ckttestassistant.utils.HandlerMessageWhat;
 import com.ckt.ckttestassistant.utils.LogUtils;
 import com.ckt.ckttestassistant.utils.MyConstants;
 import com.ckt.ckttestassistant.utils.PermissionUtil;
@@ -55,34 +52,34 @@ public class CktTestAssistantMainActivity extends AppCompatActivity
             Bundle data = msg.getData();
             //update UI
             switch (msg.what){
-                case MyConstants.UPDATE_PROGRESS:
-                    LogUtils.d(TAG,"MyConstants.UPDATE_PROGRESS");
+                case HandlerMessageWhat.UPDATE_PROGRESS:
+                    LogUtils.d(TAG,"HandlerMessageWhat.UPDATE_PROGRESS");
                     break;
-                case MyConstants.UPDATE_PROGRESS_TITLE:
-                    LogUtils.d(TAG,"MyConstants.UPDATE_PROGRESS_TITLE");
-                    String title = data.getString(MyConstants.PROGRESS_TITLE);
+                case HandlerMessageWhat.UPDATE_PROGRESS_TITLE:
+                    LogUtils.d(TAG,"HandlerMessageWhat.UPDATE_PROGRESS_TITLE");
+                    String title = data.getString(HandlerMessageWhat.PROGRESS_TITLE);
                     updateProgressTitle(title);
                     break;
-                case MyConstants.UPDATE_PROGRESS_MESSAGE:
-                    LogUtils.d(TAG,"MyConstants.UPDATE_PROGRESS_MESSAGE");
-                    String message = data.getString(MyConstants.PROGRESS_MESSAGE);
+                case HandlerMessageWhat.UPDATE_PROGRESS_MESSAGE:
+                    LogUtils.d(TAG,"HandlerMessageWhat.UPDATE_PROGRESS_MESSAGE");
+                    String message = data.getString(HandlerMessageWhat.PROGRESS_MESSAGE);
                     updateProgressMessage(message);
                     break;
-                case MyConstants.UPDATE_PROGRESS_CLOSE:
-                    LogUtils.d(TAG,"MyConstants.UPDATE_PROGRESS_CLOSE");
+                case HandlerMessageWhat.UPDATE_PROGRESS_CLOSE:
+                    LogUtils.d(TAG,"HandlerMessageWhat.UPDATE_PROGRESS_CLOSE");
                     closeProgressView();
                     break;
-                case MyConstants.UPDATE_USECASEFRAGMENT_USECASELIST:
+                case HandlerMessageWhat.UPDATE_USECASEFRAGMENT_USECASELIST:
                     ArrayList<UseCaseManager.UseCaseChangeObserver> ul = mUseCaseManager.getUseCaseChangeListener();
                     if(ul != null && !ul.isEmpty()){
                         for (UseCaseManager.UseCaseChangeObserver observer : ul){
-                            int position = data.getInt(MyConstants.UPDATE_USECASEFRAGMENT_POSITION, 0);
-                            int type = data.getInt(MyConstants.UPDATE_USECASEFRAGMENT_TYPE, 3);
+                            int position = data.getInt(HandlerMessageWhat.UPDATE_USECASEFRAGMENT_POSITION, 0);
+                            int type = data.getInt(HandlerMessageWhat.UPDATE_USECASEFRAGMENT_TYPE, 3);
                             observer.allUseCaseChangeNofify(position, type);
                         }
                     }
                     break;
-                case MyConstants.UPDATE_SELECTEDUSECASES_UI:
+                case HandlerMessageWhat.UPDATE_SELECTEDUSECASES_UI:
                     ArrayList<UseCaseManager.SelectedUseCaseChangeObserver> sl = mUseCaseManager.getSelectedUseCaseChangeListener();
                     if(sl != null && !sl.isEmpty()){
                         for (UseCaseManager.SelectedUseCaseChangeObserver observer : sl){
@@ -107,11 +104,13 @@ public class CktTestAssistantMainActivity extends AppCompatActivity
         LogUtils.d(TAG, "onCreate");
         setContentView(R.layout.activity_ckt_test_assistant_main);
         Intent it = getIntent();
-        boolean reboot = it.getBooleanExtra("reboot", false);
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tab);
         ViewPager viewPager = (ViewPager) findViewById(R.id.fragment);
         mUseCaseManager = UseCaseManager.getInstance(getApplicationContext(), this);
-        mUseCaseManager.init(mHandler, reboot);
+        boolean flag = mUseCaseManager.getRebootFlagFromSharedPreference();
+        boolean reboot = it.getBooleanExtra("reboot", false);
+        boolean isRebootTest = flag && reboot;
+        mUseCaseManager.init(mHandler, isRebootTest);
         mUseCaseManager.addFinishExecuteObserver(this);
 
         FragmentAdapter adapter = new FragmentAdapter(getSupportFragmentManager(), getTabTitles(), mHandler);

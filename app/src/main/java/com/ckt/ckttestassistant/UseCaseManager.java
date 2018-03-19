@@ -9,7 +9,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
-import android.support.v4.view.MenuItemCompat;
 
 import com.ckt.ckttestassistant.services.DoTestIntentService;
 import com.ckt.ckttestassistant.testitems.TestItemBase;
@@ -17,15 +16,13 @@ import com.ckt.ckttestassistant.usecases.CktUseCase;
 import com.ckt.ckttestassistant.usecases.UseCaseBase;
 import com.ckt.ckttestassistant.utils.CktXmlHelper;
 import com.ckt.ckttestassistant.utils.CktXmlHelper2;
+import com.ckt.ckttestassistant.utils.HandlerMessageWhat;
 import com.ckt.ckttestassistant.utils.JSONUtils;
 import com.ckt.ckttestassistant.utils.LogUtils;
 import com.ckt.ckttestassistant.utils.MyConstants;
 
-import org.json.JSONObject;
-
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -185,7 +182,7 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
     private void closeWaitProgress(Handler handler, boolean finish) {
         if(finish){
             Message msg = Message.obtain();
-            msg.what = MyConstants.UPDATE_PROGRESS_CLOSE;
+            msg.what = HandlerMessageWhat.UPDATE_PROGRESS_CLOSE;
             handler.sendMessage(msg);
         }else{
             LogUtils.e(TAG, "error: progress close fail!!!");
@@ -200,6 +197,15 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
         return status;
     }
 
+    public boolean getRebootFlagFromSharedPreference(){
+        boolean flag = mPref.getBoolean(MyConstants.REBOOT_FLAG, false);
+        return flag;
+    }
+
+    public void setRebootFlagToSharedPreference(boolean flag){
+        mEditor.putBoolean(MyConstants.REBOOT_FLAG, flag);
+        mEditor.apply();
+    }
     public boolean isTestCompleted() {
         boolean result = true;
         for (TestBase tb : mSelectedUseCases){
@@ -256,7 +262,7 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
      */
     public void setTestStatus(boolean status){
         mEditor.putBoolean(MyConstants.PREF_TEST_STATUS, status);
-        mEditor.commit();
+        mEditor.apply();
     }
 
     /**
@@ -389,6 +395,7 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
         if(mReboot){
             LogUtils.d(TAG, "is reboot : true");
             mReboot = false;
+            setRebootFlagToSharedPreference(false);
             //找到正在重启的任务
             if(mSelectedUseCases != null && !mSelectedUseCases.isEmpty()){
                 for (TestBase tb : mSelectedUseCases){
@@ -796,7 +803,7 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
      * 通知所有观察者数据已经变化
      */
     public void notifySelectedUseCaseChange(){
-        mHandler.sendEmptyMessage(MyConstants.UPDATE_SELECTEDUSECASES_UI);
+        mHandler.sendEmptyMessage(HandlerMessageWhat.UPDATE_SELECTEDUSECASES_UI);
     }
 
     /**
@@ -809,10 +816,10 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
             }
         }*/
         Message msg = Message.obtain();
-        msg.what = MyConstants.UPDATE_USECASEFRAGMENT_USECASELIST;
+        msg.what = HandlerMessageWhat.UPDATE_USECASEFRAGMENT_USECASELIST;
         Bundle b = new Bundle();
-        b.putInt(MyConstants.UPDATE_USECASEFRAGMENT_POSITION, 0);
-        b.putInt(MyConstants.UPDATE_USECASEFRAGMENT_TYPE, 3);
+        b.putInt(HandlerMessageWhat.UPDATE_USECASEFRAGMENT_POSITION, 0);
+        b.putInt(HandlerMessageWhat.UPDATE_USECASEFRAGMENT_TYPE, 3);
         msg.setData(b);
         mHandler.sendMessage(msg);
     }

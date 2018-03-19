@@ -14,7 +14,8 @@ import android.widget.EditText;
 import com.ckt.ckttestassistant.R;
 import com.ckt.ckttestassistant.UseCaseManager;
 import com.ckt.ckttestassistant.utils.LogUtils;
-import com.ckt.ckttestassistant.utils.MyConstants;
+import com.ckt.ckttestassistant.utils.PointConstants;
+import com.ckt.ckttestassistant.utils.XmlTagConstants;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -65,7 +66,7 @@ public class CameraEnterVideoMode extends TestItemBase {
             public void run() {
                 try{
                     HashMap<String, Point> points = mUseCaseManager.getTouchPosConfig();
-                    Point point = points.get(MyConstants.CAMERA_VIDEOMODE_POINT);
+                    Point point = points.get(PointConstants.CAMERA_VIDEOMODE_POINT);
                     if(point != null){
                         Instrumentation inst=new Instrumentation();
                         inst.sendPointerSync(MotionEvent.obtain(SystemClock.uptimeMillis(),
@@ -136,7 +137,7 @@ public class CameraEnterVideoMode extends TestItemBase {
 
     @Override
     public void saveParameters(Document doc, Element element) {
-        Element e1 = doc.createElement(MyConstants.XMLTAG_TESTITEM_DELAY);
+        Element e1 = doc.createElement(XmlTagConstants.XMLTAG_TESTITEM_DELAY);
         Node n1 = doc.createTextNode(""+mDelay);
         e1.appendChild(n1);
         element.appendChild(e1);
@@ -146,9 +147,9 @@ public class CameraEnterVideoMode extends TestItemBase {
     public void saveParametersToXml(XmlSerializer serializer) throws Exception {
         try{
             //eg. start
-            serializer.startTag(null, MyConstants.XMLTAG_TESTITEM_DELAY);
+            serializer.startTag(null, XmlTagConstants.XMLTAG_TESTITEM_DELAY);
             serializer.text(""+mDelay);
-            serializer.endTag(null, MyConstants.XMLTAG_TESTITEM_DELAY);
+            serializer.endTag(null, XmlTagConstants.XMLTAG_TESTITEM_DELAY);
             //eg. end
         }catch (Exception e) {
             throw new Exception();

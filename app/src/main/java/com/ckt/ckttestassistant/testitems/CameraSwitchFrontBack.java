@@ -13,29 +13,16 @@ import android.widget.EditText;
 
 import com.ckt.ckttestassistant.R;
 import com.ckt.ckttestassistant.UseCaseManager;
-import com.ckt.ckttestassistant.utils.ExcelUtils;
 import com.ckt.ckttestassistant.utils.LogUtils;
-import com.ckt.ckttestassistant.utils.MyConstants;
+import com.ckt.ckttestassistant.utils.PointConstants;
+import com.ckt.ckttestassistant.utils.XmlTagConstants;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xmlpull.v1.XmlSerializer;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.HashMap;
-
-import jxl.Cell;
-import jxl.Workbook;
-import jxl.read.biff.BiffException;
-import jxl.write.Label;
-import jxl.write.WritableCellFormat;
-import jxl.write.WritableFont;
-import jxl.write.WritableSheet;
-import jxl.write.WritableWorkbook;
-import jxl.write.WriteException;
-import jxl.write.biff.RowsExceededException;
 
 /**
  * Created by ckt on 18-1-31.
@@ -79,7 +66,7 @@ public class CameraSwitchFrontBack extends TestItemBase {
             public void run() {
                 try{
                     HashMap<String, Point> points = mUseCaseManager.getTouchPosConfig();
-                    Point point = points.get(MyConstants.CAMERA_SWITCH_FB_POINT);
+                    Point point = points.get(PointConstants.CAMERA_SWITCH_FB_POINT);
                     if(point != null){
                         Instrumentation inst=new Instrumentation();
                         inst.sendPointerSync(MotionEvent.obtain(SystemClock.uptimeMillis(),
@@ -151,7 +138,7 @@ public class CameraSwitchFrontBack extends TestItemBase {
 
     @Override
     public void saveParameters(Document doc, Element element) {
-        Element e1 = doc.createElement(MyConstants.XMLTAG_TESTITEM_DELAY);
+        Element e1 = doc.createElement(XmlTagConstants.XMLTAG_TESTITEM_DELAY);
         Node n1 = doc.createTextNode(""+mDelay);
         e1.appendChild(n1);
         element.appendChild(e1);
@@ -161,9 +148,9 @@ public class CameraSwitchFrontBack extends TestItemBase {
     public void saveParametersToXml(XmlSerializer serializer) throws Exception {
         try{
             //eg. start
-            serializer.startTag(null, MyConstants.XMLTAG_TESTITEM_DELAY);
+            serializer.startTag(null, XmlTagConstants.XMLTAG_TESTITEM_DELAY);
             serializer.text(""+mDelay);
-            serializer.endTag(null, MyConstants.XMLTAG_TESTITEM_DELAY);
+            serializer.endTag(null, XmlTagConstants.XMLTAG_TESTITEM_DELAY);
             //eg. end
         }catch (Exception e) {
             throw new Exception();
