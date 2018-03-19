@@ -4,6 +4,7 @@ package com.ckt.ckttestassistant.fragment;
 import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -27,6 +28,7 @@ import com.ckt.ckttestassistant.adapter.CktItemDecoration;
 import com.ckt.ckttestassistant.adapter.TreeListViewAdapter;
 import com.ckt.ckttestassistant.adapter.UseCaseTreeAdapter;
 import com.ckt.ckttestassistant.interfaces.OnItemClickListener;
+import com.ckt.ckttestassistant.services.DoTestIntentService;
 import com.ckt.ckttestassistant.testitems.TestItemBase;
 import com.ckt.ckttestassistant.utils.LogUtils;
 import com.ckt.ckttestassistant.R;
@@ -83,7 +85,6 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
         mUseCaseManager.addUseCaseChangeObserver(this);
         mUseCaseManager.addSelectedUseCaseChangeObserver(this);
         mUseCaseManager.addFinishExecuteObserver(this);
-        mShowPanelInfo.append("use case : ");
         mAllItems = mUseCaseManager.getAllItems();
         mSelectedItems = mUseCaseManager.getSelectItems();
         if(mAllItems != null && !mAllItems.isEmpty()){
@@ -98,8 +99,8 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
         LogUtils.d(TAG, "mystarttag");
         View rootView = inflater.inflate(R.layout.fragment_usecase_layout, container, false);
         mUseCaseTextView = (TextView) rootView.findViewById(R.id.usecasetext);
-        mUseCaseManager.getSelectedUseCaseFromXml(); //及时与数据同步
-
+        mUseCaseManager.getSelectItems(); //及时与数据同步
+        generateShowPanelString(mSelectedItems);
         mUseCaseTextView.setText(mShowPanelInfo.toString());
         mStartTestButton = (Button) rootView.findViewById(R.id.starttest);
         mStartTestButton.setOnClickListener(new View.OnClickListener() {
@@ -108,20 +109,19 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
                 if(mSelectedItems == null || mSelectedItems.isEmpty()){
                     return;
                 }
-                if(createResultExcel()){
-                    //保存数据，为了重启或者中断之后能继续执行
-                    mUseCaseManager.reInitSelectedUseCase();
-                    mUseCaseManager.saveSelectedUseCaseToXml();
-                    mUseCaseManager.startExecute();
-                    mStartTestButton.setClickable(false);
-                }else{
-                    Toast.makeText(mContext, R.string.createresultfail,Toast.LENGTH_LONG);
-                }
+                createResultExcel();
+                //保存数据，为了重启或者中断之后能继续执行
+                mUseCaseManager.reInitSelectedUseCase();
+                mUseCaseManager.saveSelectedUseCaseToXml();
+                mUseCaseManager.startExecute();
+                mStartTestButton.setClickable(false);
+
             }
         });
 
         if(needStartTest()){
             LogUtils.d(TAG, "continue start execute test work!");
+            mUseCaseManager.setUseCaseNeedInitChildren(false);
             mUseCaseManager.startExecute();
             mStartTestButton.setClickable(false);
         }
@@ -260,38 +260,10 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
         }
     }
 
-    private boolean createResultExcel() {
-        boolean result = false;
-        if(isNeedCreateNewFile()){
-            try {
-                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
-                Date date = new Date(System.currentTimeMillis());
-                String fileName = simpleDateFormat.format(date)+".xls";
-                LogUtils.d(TAG, "fileName = "+fileName);
-                String dirPath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/ckttestassistant";
-                //String path2 = Environment.getExternalStorageDirectory().getAbsolutePath();
-                //String dirPath = mContext.getFilesDir()+"/ckttestassistant";
-
-                //File dir = new File(MyConstants.TEST_RESULT_EXCEL_DIR);
-                File dir = new File(dirPath);
-                if(!dir.exists()){
-                    if(!dir.mkdirs()){
-                        return false;
-                    }
-                }
-                String filePath = dirPath+"/"+fileName;
-                File excelfile = new File(filePath);
-                excelfile.createNewFile();
-                mUseCaseManager.setCurrentExcelFile(filePath);
-                mUseCaseManager.createExcel(filePath);
-                result = true;
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }else{
-            result = true;
-        }
-        return result;
+    private void createResultExcel() {
+        Intent it = new Intent(mContext, DoTestIntentService.class);
+        it.putExtra(DoTestIntentService.COMMAND, DoTestIntentService.CREATEEXCELFILE_COMMAND);
+        mContext.startService(it);
     }
 
     private boolean isNeedCreateNewFile() {
@@ -440,6 +412,8 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
     }
 
     private void generateShowPanelString(ArrayList<TestBase> selectItems) {
+        mShowPanelInfo.delete(0, mShowPanelInfo.length());
+        mShowPanelInfo.append("use case : ");
         if (selectItems != null && !selectItems.isEmpty()){
             mShowPanelInfo.delete(11, mShowPanelInfo.length());
             for (int i = 0; i < selectItems.size(); i++){

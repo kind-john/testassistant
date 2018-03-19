@@ -59,7 +59,8 @@ public class DataUsageSwitchOff extends TestItemBase {
 
     @Override
     public boolean doExecute(UseCaseManager.ExecuteCallback executeCallback, boolean finish) {
-        LogUtils.d(TAG, "DataUsageSwitchOff doExecute");
+        LogUtils.d(TAG, mClassName+" doExecute");
+        boolean passed = false;
         try {
             mTelephonyManager = (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
             Method getMethod, setMethod;
@@ -68,6 +69,22 @@ public class DataUsageSwitchOff extends TestItemBase {
             boolean status = (Boolean) getMethod.invoke(mTelephonyManager);
             if(status){
                 setMethod.invoke(mTelephonyManager, false);
+                int count = 0;
+                while(((Boolean)getMethod.invoke(mTelephonyManager))){
+                    count++;
+                    LogUtils.d(TAG, mClassName+" sleep count = "+count);
+                    if(count > MyConstants.MAX_TRY){
+                        break;
+                    }
+                    Thread.sleep(1000);
+                    LogUtils.d(TAG, mClassName+" sleep end");
+                }
+                if(!(Boolean)getMethod.invoke(mTelephonyManager)){
+                    LogUtils.d(TAG, mClassName+" passed");
+                    passed = true;
+                }
+            }else{
+                passed = true;
             }
         } catch (NoSuchMethodException e) {
             e.printStackTrace();
@@ -75,8 +92,10 @@ public class DataUsageSwitchOff extends TestItemBase {
             e.printStackTrace();
         } catch (InvocationTargetException e) {
             e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         } finally {
-            task2(true);
+            task2(passed);
         }
         if(finish && executeCallback != null){
             LogUtils.d(TAG, "stop test handler");

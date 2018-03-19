@@ -82,7 +82,7 @@ public class ResultsFragment extends Fragment implements UseCaseManager.Selected
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         LogUtils.d(TAG, "onCreateView");
         View rootView = inflater.inflate(R.layout.fragment_results_layout, container, false);
-        mUseCaseManager.getSelectedUseCaseFromXml();
+        mUseCaseManager.getSelectItems();
         mUseCaseListView = (ListView) rootView.findViewById(R.id.testedusecaselist);
         //initUseCaseListFocus(mSelectedItems);
         mUseCaseAdapter = new ResultsTreeAdapter(mContext, mSelectedItems, 1);

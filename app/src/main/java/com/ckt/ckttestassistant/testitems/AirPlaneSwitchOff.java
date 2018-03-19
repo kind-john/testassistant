@@ -1,9 +1,12 @@
 package com.ckt.ckttestassistant.testitems;
 
 import android.annotation.TargetApi;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.net.ConnectivityManager;
 import android.os.Build;
 import android.provider.Settings;
 import android.support.v7.app.AlertDialog;
@@ -48,6 +51,8 @@ public class AirPlaneSwitchOff extends TestItemBase {
     public static final int ID = 16;
     private static final String TITLE = "AirPlane Switch Off";
     private static final String TAG = "AirPlaneSwitchOff";
+    private boolean mState = false;
+    private boolean aSyncTaskCompleted = false;
 
     public AirPlaneSwitchOff() {
         super();
@@ -79,6 +84,7 @@ public class AirPlaneSwitchOff extends TestItemBase {
     @Override
     public boolean doExecute(UseCaseManager.ExecuteCallback executeCallback, boolean finish) {
         LogUtils.d(TAG, mClassName+" doExecute");
+        boolean passed = false;
         try {
             boolean isOff = Settings.Global.getInt(mContext.getContentResolver(),
                     Settings.Global.AIRPLANE_MODE_ON) == 0 ? true : false;
@@ -90,12 +96,34 @@ public class AirPlaneSwitchOff extends TestItemBase {
                 intent.addFlags(Intent.FLAG_RECEIVER_REPLACE_PENDING);
                 intent.putExtra("state", false);
                 mContext.sendBroadcast(intent);
+                mContext.registerReceiver(new MyReceiver(),
+                        new IntentFilter(Intent.ACTION_AIRPLANE_MODE_CHANGED));
+                int count = 0;
+                while (!aSyncTaskCompleted){
+                    count++;
+                    LogUtils.d(TAG, mClassName+" sleep count = "+count);
+                    if(count > MyConstants.MAX_TRY){
+                        break;
+                    }
+                    Thread.sleep(1000);
+                    LogUtils.d(TAG, mClassName+" sleep end");
+                }
+
+                if(mState){
+                    LogUtils.d(TAG, mClassName+" passed");
+                    passed = true;
+                }
+            }else{
+                passed = true;
             }
         } catch (Settings.SettingNotFoundException e) {
             e.printStackTrace();
-        }finally {
-            task2(true);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } finally {
+            task2(passed);
         }
+
         if(finish && executeCallback != null){
             LogUtils.d(TAG, "stop test handler");
             //executeCallback.stopTestHandler();
@@ -171,6 +199,15 @@ public class AirPlaneSwitchOff extends TestItemBase {
             //eg. end
         }catch (Exception e) {
             throw new Exception();
+        }
+    }
+    private class MyReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if(Intent.ACTION_AIRPLANE_MODE_CHANGED.equals(intent.getAction())){
+                aSyncTaskCompleted = true;
+                mState = !intent.getBooleanExtra("state", true);
+            }
         }
     }
 }

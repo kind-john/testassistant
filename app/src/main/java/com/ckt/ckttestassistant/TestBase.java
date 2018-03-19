@@ -14,9 +14,10 @@ import java.util.List;
  * Created by ckt on 18-3-9.
  */
 
-public abstract class TestBase  implements Cloneable {
+public abstract class TestBase implements Cloneable{
     private static final int DEFAULT_TIMES = 1;
-    private static final int DEFAULT_DELAY = 200;
+    private static final int DEFAULT_DELAY = 0;
+    private static final int DEFAULT_MIN_DELAY = 0;
     /**
      * 设置开启 关闭的图片
      */
@@ -41,7 +42,7 @@ public abstract class TestBase  implements Cloneable {
 
     protected int mTimes = DEFAULT_TIMES;
     protected int mDelay = DEFAULT_DELAY;
-    protected int mMinDelay = 0;
+    protected int mMinDelay = DEFAULT_MIN_DELAY;
     protected int mCompletedTimes = 0;
     protected int mFailTimes = 0;
     protected String mClassName = "ClassName";
@@ -255,11 +256,19 @@ public abstract class TestBase  implements Cloneable {
             }
         }
     }
-    @Override
-    public TestBase clone() {
+
+    public TestBase deepClone(TestBase parent) {
         TestBase clone = null;
         try {
             clone = (TestBase) super.clone();
+            clone.mParent = parent;
+            ArrayList<TestBase> tmpTestBase = new ArrayList<TestBase>();
+            clone.setChildren(tmpTestBase);
+            if(children != null && !children.isEmpty()){
+                for (TestBase child : children){
+                    tmpTestBase.add(child.deepClone(clone));
+                }
+            }
         } catch (CloneNotSupportedException e) {
             e.printStackTrace();
         }
@@ -270,5 +279,22 @@ public abstract class TestBase  implements Cloneable {
 
     public boolean isPassed() {
         return mFailTimes == 0 && mCompletedTimes == mTimes ? true : false;
+    }
+
+    @Override
+    public String toString() {
+        return "TestBase{" +
+                "mTitle='" + mTitle + '\'' +
+                ", level=" + level +
+                ", isExpand=" + isExpand +
+                ", mTimes=" + mTimes +
+                ", mDelay=" + mDelay +
+                ", mCompletedTimes=" + mCompletedTimes +
+                ", mFailTimes=" + mFailTimes +
+                ", mClassName='" + mClassName + '\'' +
+                ", ID=" + ID +
+                ", SN=" + SN +
+                ", isChecked=" + isChecked +
+                '}';
     }
 }

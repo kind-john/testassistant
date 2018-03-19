@@ -55,8 +55,10 @@ public class Reboot extends TestItemBase {
 
     @Override
     public boolean doExecute(UseCaseManager.ExecuteCallback executeCallback, boolean finish) {
+        LogUtils.d(TAG, mClassName+" doExecute");
         PowerManager pm = (PowerManager) mContext.getSystemService(Context.POWER_SERVICE);
         pm.reboot("reboot");
+        //System.exit(0);
         //task2(true);
         if(finish && executeCallback != null){
             LogUtils.d(TAG, "stop test handler");

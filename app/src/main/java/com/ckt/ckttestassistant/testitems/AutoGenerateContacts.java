@@ -2,6 +2,9 @@ package com.ckt.ckttestassistant.testitems;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,6 +20,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xmlpull.v1.XmlSerializer;
 
+import jxl.Workbook;
+
 /**
  * Created by ckt on 18-1-31.
  */
@@ -25,7 +30,7 @@ public class AutoGenerateContacts extends TestItemBase {
     public static final int ID = 78;
     private static final String TITLE = "Auto Generate Contacts";
     private static final String TAG = "AutoGenerateContacts";
-
+    private volatile boolean passed = false;
     public AutoGenerateContacts() {
         super();
         String className = this.getClass().getName();
@@ -51,17 +56,46 @@ public class AutoGenerateContacts extends TestItemBase {
     public void saveTestData() {
 
     }
+    private H myHandler;
+    private Object lock = new Object();
+    private int flag = 0;
+    private class WorkThread extends Thread{
+        public WorkThread() {
+            super("generate contacts");
+        }
+
+        @Override
+        public void run() {
+            LogUtils.d(TAG, mClassName+"run start");
+            try {
+                //do task
+                sleep(3000);
+                passed = true;
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
     @Override
     public boolean doExecute(UseCaseManager.ExecuteCallback executeCallback, boolean finish) {
-        LogUtils.d(TAG, "AutoGenerateContacts doExecute");
+        LogUtils.d(TAG, mClassName+" doExecute");
         //do test,then close progressview
-        task2(true);
+        LogUtils.d(TAG,"doExecute current thread :"+Thread.currentThread().getId());
+        WorkThread wt = new WorkThread();
+        wt.start();
+        try {
+            wt.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        task2(passed);
         if(finish && executeCallback != null){
             LogUtils.d(TAG, "stop test handler");
             executeCallback.stopTestHandler();
         }
-        return false;
+        return passed;
     }
 
     @Override
@@ -130,6 +164,15 @@ public class AutoGenerateContacts extends TestItemBase {
             //eg. end
         }catch (Exception e) {
             throw new Exception();
+        }
+    }
+
+    private class H extends Handler{
+        @Override
+        public void handleMessage(Message msg) {
+            if(msg.what == 1){
+                LogUtils.d(TAG,"handleMessage current thread :"+Thread.currentThread().getId());
+            }
         }
     }
 }

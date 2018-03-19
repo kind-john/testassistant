@@ -3,6 +3,7 @@ package com.ckt.ckttestassistant.testitems;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.os.AsyncTask;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,7 +27,7 @@ public class BTSwitchOn extends TestItemBase {
     public static final int ID = 10;
     private static final String TITLE = "BT Switch On";
     private static final String TAG = "BTSwitchOn";
-    private static final int MIN_DELAY = 2000;
+    private static final int MIN_DELAY = 20;
     private BluetoothAdapter mBluetoothAdapter = null;
     private Object lock = new Object();
 
@@ -65,19 +66,45 @@ public class BTSwitchOn extends TestItemBase {
     @Override
     public boolean doExecute(UseCaseManager.ExecuteCallback executeCallback, boolean finish) {
         LogUtils.d(TAG, mClassName+" doExecute");
-        if(mBluetoothAdapter != null){
-            if (mBluetoothAdapter.getState() != BluetoothAdapter.STATE_ON){
-                LogUtils.d(TAG, mClassName+" start run");
-                mBluetoothAdapter.enable();
+        boolean passed = false;
+        try{
+            if(mBluetoothAdapter != null){
+                if (mBluetoothAdapter.getState() != BluetoothAdapter.STATE_ON){
+                    LogUtils.d(TAG, mClassName+" start run");
+                    mBluetoothAdapter.enable();
+                    int count = 0;
+                    while(mBluetoothAdapter.getState() != BluetoothAdapter.STATE_ON){
+                        try {
+                            count++;
+                            LogUtils.d(TAG, mClassName+" sleep count = "+count);
+                            if(count > MyConstants.MAX_TRY){
+                                break;
+                            }
+                            Thread.sleep(1000);
+                            LogUtils.d(TAG, mClassName+" sleep end");
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    if(mBluetoothAdapter.getState() == BluetoothAdapter.STATE_ON){
+                        LogUtils.d(TAG, mClassName+" passed");
+                        passed = true;
+                    }
+                }else{
+                    passed = true;
+                }
             }
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            task2(passed);
         }
-        task2(true);
 
         if(finish && executeCallback != null){
             LogUtils.d(TAG, "stop test handler");
             executeCallback.stopTestHandler();
         }
-        return false;
+        return passed;
     }
 
     @Override

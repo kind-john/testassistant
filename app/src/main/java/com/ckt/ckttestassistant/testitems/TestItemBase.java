@@ -154,11 +154,18 @@ public abstract class TestItemBase extends TestBase implements CktResultsHelper.
             e.printStackTrace();
         }
     }
-    protected void task2(boolean passed){
-        if(passed){
+    public void task2(boolean passed){
+        if("com.ckt.ckttestassistant.testitems.Reboot".equals(mClassName)){
+            LogUtils.d(TAG, "完成重启后剩余的工作");
+            mCompletedTimes++;
             mFailTimes--;
-            String path = mContext.getFilesDir()+"/selected_usecases.xml";
             mUseCaseManager.updateTestItemOfSelectedUseCaseXml(this);
+        }else{
+            if(passed){
+                LogUtils.d(TAG, "测试成功，失败次数减一");
+                mFailTimes--;
+                mUseCaseManager.updateTestItemOfSelectedUseCaseXml(this);
+            }
         }
         saveResult();
         if(mCompletedTimes < mTimes){
@@ -180,10 +187,15 @@ public abstract class TestItemBase extends TestBase implements CktResultsHelper.
         LogUtils.d(TAG, "mFailTimes = "+mFailTimes);
         if(mCompletedTimes < mTimes){
             try{
-                mCompletedTimes++;
+                int progress = mCompletedTimes;
+                if("com.ckt.ckttestassistant.testitems.Reboot".equals(mClassName)){
+                    //重启的次数等到开机后再累计
+                }else{
+                    mCompletedTimes++;
+                }
                 mFailTimes++;   //先假设本次失败，异步返回成功以后再减1
                 mUseCaseManager.updateTestItemOfSelectedUseCaseXml(this);
-                updateWaitProgress(mUseCaseManager.getHandler(), mCompletedTimes - 1);
+                updateWaitProgress(mUseCaseManager.getHandler(), progress);
                 sleep(mDelay);
                 mPassed = doExecute(null, false);
                 List<TestBase> children = getChildren();
@@ -201,9 +213,6 @@ public abstract class TestItemBase extends TestBase implements CktResultsHelper.
             }
         }else{
             //completed
-        }
-        if(mCompletedTimes == mTimes){
-            initTestItems();
         }
         return mPassed;
     }
@@ -258,13 +267,6 @@ public abstract class TestItemBase extends TestBase implements CktResultsHelper.
         }
         return isPassed;
     }*/
-
-    private void initTestItems() {
-        if(mTimes > 0 && (mCompletedTimes == mTimes)){
-            mCompletedTimes = 0;
-            mFailTimes = 0;
-        }
-    }
 
     private void updateWaitProgress(Handler handler, int times) {
         //String className = this.getClass().getSimpleName();

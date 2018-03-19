@@ -17,6 +17,8 @@ import java.util.List;
  */
 
 public class PermissionUtil {
+    private static final String TAG = "PermissionUtil";
+
     /**
      * 是否需要检查权限
      */
@@ -31,6 +33,7 @@ public class PermissionUtil {
         List<String> deniedPermissions = new ArrayList<>();
         for (String permission : permissions) {
             if (activity.checkSelfPermission(permission) != PackageManager.PERMISSION_GRANTED) {
+                LogUtils.d(TAG, "need permission : "+permission);
                 deniedPermissions.add(permission);
             }
         }

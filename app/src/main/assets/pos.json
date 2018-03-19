@@ -1,0 +1,26 @@
+[
+	{
+		"camera capture" : {"x" : 430, "y" : 1100}
+	},
+	{
+		"camera record video" : {"x" : 285, "y" : 1100}
+	},
+	{
+		"camera HDR" : {"x" : 670, "y" : 710}
+	},	
+	{
+		"camera switch flashlight" : {"x" : 670, "y" : 810}
+	},	
+	{
+		"camera switch fb" : {"x" : 670, "y" : 910}
+	},
+	{
+		"camera focus" : {"x" : 430, "y" : 1100}
+	},
+	{
+		"camera open settings" : {"x" : 45, "y" : 1130}
+	},	
+	{
+		"camera view photo" : {"x" : 650, "y" : 1130}
+	}	
+]

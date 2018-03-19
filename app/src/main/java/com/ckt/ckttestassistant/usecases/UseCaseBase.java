@@ -30,6 +30,17 @@ public abstract class UseCaseBase extends TestBase{
     protected UseCaseManager mUseCaseManager;
     protected UseCaseBase mNextUseCase;
 
+    public boolean isNeedInitFlag() {
+        return mNeedInitFlag;
+    }
+
+    public void setNeedInitFlag(boolean needInitFlag) {
+        LogUtils.d(TAG, "setNeedInitFlag = "+needInitFlag);
+        this.mNeedInitFlag = needInitFlag;
+    }
+
+    protected boolean mNeedInitFlag = true;
+
     private boolean mPassed = false;
 
     public String getTitle() {
@@ -62,6 +73,7 @@ public abstract class UseCaseBase extends TestBase{
                 return true;
             }
             createExcelSheet();
+
             int needTimes = mTimes - mCompletedTimes;
             LogUtils.d(TAG, "mCompletedTimes = "+mCompletedTimes);
             LogUtils.d(TAG, "mTimes = "+mTimes);
@@ -69,12 +81,14 @@ public abstract class UseCaseBase extends TestBase{
             if(needTimes > 0){
                 for (int times = 0; times < needTimes; times++) {
                     try{
+                        LogUtils.d(TAG, "isNeedInitFlag = "+isNeedInitFlag());
+                        if (isNeedInitFlag()) {
+                            initChildrenTimes();
+                        } else {
+                            setNeedInitFlag(true);
+                        }
                         Thread.sleep(mDelay);
-                        mCompletedTimes++;
-                        mFailTimes++;
-                        String path = mContext.getFilesDir()+"/selected_usecases.xml";
-                        mUseCaseManager.updateUseCaseOfXml(path, this);
-                        updateWaitProgress(mUseCaseManager.getHandler(), mCompletedTimes - 1);
+                        updateWaitProgress(mUseCaseManager.getHandler(), mCompletedTimes);
                         for (TestBase tb : children){
                             if(!tb.task()){
                                 isPassed = false;
@@ -84,18 +98,16 @@ public abstract class UseCaseBase extends TestBase{
                         isPassed = false;
                         e.printStackTrace();
                     }finally {
-                        if(isPassed){
-                            mFailTimes--;
-                            String path = mContext.getFilesDir()+"/selected_usecases.xml";
-                            mUseCaseManager.updateUseCaseOfXml(path, this);
+                        mCompletedTimes++;
+                        if(!isPassed) {
+                            mFailTimes++;
                         }
+                        String path = mContext.getFilesDir()+"/selected_usecases.xml";
+                        mUseCaseManager.updateUseCaseOfXml(path, this);
                     }
                 }
             }else{
                 //is completed
-            }
-            if(mCompletedTimes == mTimes){
-                initTestItemOfUseCase();
             }
         }catch (Exception e){
             isPassed = false;
@@ -141,7 +153,7 @@ public abstract class UseCaseBase extends TestBase{
                         }
                         String path = mContext.getFilesDir()+"/selected_usecases.xml";
                         mUseCaseManager.updateUseCaseOfXml(path, this);
-                        initTestItemOfUseCase();
+                        initChildrenTimes();
                     }
                 }
             }
@@ -158,13 +170,14 @@ public abstract class UseCaseBase extends TestBase{
         return true;
     }*/
 
-    private void initTestItemOfUseCase() {
+    private void initChildrenTimes() {
         for (TestBase ti : children){
             if(ti instanceof UseCaseBase){
-                ((UseCaseBase)ti).initTestItemOfUseCase();
+                ((UseCaseBase)ti).initChildrenTimes();
             }else if(ti instanceof TestItemBase){
                 ((TestItemBase)ti).setCompletedTimes(0);
                 ((TestItemBase)ti).setFailTimes(0);
+                mUseCaseManager.updateTestItemOfSelectedUseCaseXml((TestItemBase) ti);
             }
         }
     }

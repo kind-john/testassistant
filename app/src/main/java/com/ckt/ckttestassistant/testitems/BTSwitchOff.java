@@ -26,9 +26,9 @@ public class BTSwitchOff extends TestItemBase {
     private static final int ID = 11;
     private static final String TITLE = "BT Switch Off";
     private static final String TAG = "BTSwitchOff";
-    private static final int MIN_DELAY = 2000;
+    private static final int MIN_DELAY = 20;
     private BluetoothAdapter mBluetoothAdapter = null;
-    private Object lock = new Object();
+
     public BTSwitchOff() {
         String className = this.getClass().getName();
         setClassName(className);
@@ -63,20 +63,45 @@ public class BTSwitchOff extends TestItemBase {
     @Override
     public boolean doExecute(UseCaseManager.ExecuteCallback executeCallback, boolean finish) {
         LogUtils.d(TAG, mClassName+" doExecute");
-        if(mBluetoothAdapter != null){
-            if (mBluetoothAdapter.getState() != BluetoothAdapter.STATE_OFF){
-                LogUtils.d(TAG, mClassName+" start run");
-                mBluetoothAdapter.disable();
+        boolean passed = false;
+        try{
+            if(mBluetoothAdapter != null){
+                if (mBluetoothAdapter.getState() != BluetoothAdapter.STATE_OFF){
+                    LogUtils.d(TAG, mClassName+" start run");
+                    mBluetoothAdapter.disable();
+                    int count = 0;
+                    while(mBluetoothAdapter.getState() != BluetoothAdapter.STATE_OFF){
+                        try {
+                            count++;
+                            LogUtils.d(TAG, mClassName+" sleep count = "+count);
+                            if(count > MyConstants.MAX_TRY){
+                                break;
+                            }
+                            Thread.sleep(1000);
+                            LogUtils.d(TAG, mClassName+" sleep end");
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    if(mBluetoothAdapter.getState() == BluetoothAdapter.STATE_OFF){
+                        LogUtils.d(TAG, mClassName+" close BT passed");
+                        passed = true;
+                    }
+                }else{
+                    passed = true;
+                }
             }
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            task2(passed);
         }
-
-        task2(true);
 
         if(finish && executeCallback != null){
             LogUtils.d(TAG, "stop test handler");
             executeCallback.stopTestHandler();
         }
-        return false;
+        return passed;
     }
 
     @Override

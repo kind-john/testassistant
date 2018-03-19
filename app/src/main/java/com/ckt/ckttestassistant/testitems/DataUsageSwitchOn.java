@@ -1,7 +1,9 @@
 package com.ckt.ckttestassistant.testitems;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.support.v7.app.AlertDialog;
 import android.telephony.TelephonyManager;
 import android.view.LayoutInflater;
@@ -30,6 +32,8 @@ public class DataUsageSwitchOn extends TestItemBase {
     private static final String TITLE = "Data Usage Switch On";
     private static final String TAG = "DataUsageSwitchOn";
     private TelephonyManager mTelephonyManager;
+    private boolean aSyncTaskCompleted = false;
+    private boolean mState = false;
 
     public DataUsageSwitchOn() {
         super();
@@ -59,15 +63,32 @@ public class DataUsageSwitchOn extends TestItemBase {
 
     @Override
     public boolean doExecute(UseCaseManager.ExecuteCallback executeCallback, boolean finish) {
-        LogUtils.d(TAG, "DataUsageSwitchOn doExecute");
-        mTelephonyManager = (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
-        Method getMethod, setMethod;
+        LogUtils.d(TAG, mClassName+" doExecute");
+        boolean passed = false;
         try {
+            mTelephonyManager = (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
+            Method getMethod, setMethod;
             getMethod = mTelephonyManager.getClass().getMethod("getDataEnabled");
             setMethod = mTelephonyManager.getClass().getMethod("setDataEnabled", boolean.class);
             boolean status = (Boolean) getMethod.invoke(mTelephonyManager);
             if(!status){
                 setMethod.invoke(mTelephonyManager, true);
+                int count = 0;
+                while(!((Boolean)getMethod.invoke(mTelephonyManager))){
+                    count++;
+                    LogUtils.d(TAG, mClassName+" sleep count = "+count);
+                    if(count > MyConstants.MAX_TRY){
+                        break;
+                    }
+                    Thread.sleep(1000);
+                    LogUtils.d(TAG, mClassName+" sleep end");
+                }
+                if((Boolean)getMethod.invoke(mTelephonyManager)){
+                    LogUtils.d(TAG, mClassName+" passed");
+                    passed = true;
+                }
+            }else{
+                passed = true;
             }
         } catch (NoSuchMethodException e) {
             e.printStackTrace();
@@ -75,8 +96,10 @@ public class DataUsageSwitchOn extends TestItemBase {
             e.printStackTrace();
         } catch (InvocationTargetException e) {
             e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         } finally {
-            task2(true);
+            task2(passed);
         }
         if(finish && executeCallback != null){
             LogUtils.d(TAG, "stop test handler");
@@ -151,6 +174,15 @@ public class DataUsageSwitchOn extends TestItemBase {
             //eg. end
         }catch (Exception e) {
             throw new Exception();
+        }
+    }
+    private class MyReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if(Intent.ACTION_LOCALE_CHANGED.equals(intent.getAction())){
+                aSyncTaskCompleted = true;
+                mState = intent.getBooleanExtra("state", false);
+            }
         }
     }
 }

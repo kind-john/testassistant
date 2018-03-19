@@ -24,6 +24,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class DoTestIntentService extends IntentService {
     private static final String TAG = "DoTestIntentService";
     public static final String COMMAND = "command";
+    public static final String INIT_COMMAND = "init";
+    public static final String STARTEXECUTE_COMMAND = "start";
+    public static final String CREATEEXCELFILE_COMMAND = "createexcelfile";
     private ArrayList<UseCaseBase> mSelectedUseCases;
     private Handler mHandler;
     private CktXmlHelper2 mXmlHelper;
@@ -34,6 +37,8 @@ public class DoTestIntentService extends IntentService {
         void loadDataFromXml();
         void loadTouchPos();
         void startExecuteThread();
+        void initDone();
+        boolean createExcelFile();
     }
     public DoTestIntentService() {
         super("DoTestIntentService");
@@ -43,29 +48,48 @@ public class DoTestIntentService extends IntentService {
     private void setHandleCallback(HandleCallback handleCallback){
         mHandleCallback = handleCallback;
     }
+
+    private synchronized void createExcelFile(){
+        LogUtils.d(TAG, "onHandleIntent do createExcelFile threadid = "+Thread.currentThread().getId());
+        if(mHandleCallback != null){
+            mHandleCallback.createExcelFile();
+        }else{
+            throw new RuntimeException("error:There is no define createExcelFile handler !");
+        }
+    }
+
+    private synchronized void initHandler(){
+        LogUtils.d(TAG, "onHandleIntent do init threadid = "+Thread.currentThread().getId());
+        if(mHandleCallback != null){
+            mHandleCallback.loadDataFromXml();
+            mHandleCallback.loadTouchPos();
+            mHandleCallback.initDone();
+        }else{
+            throw new RuntimeException("error:There is no define init handler !");
+        }
+    }
+
+    private synchronized void startTestHandler(){
+        LogUtils.d(TAG, "onHandleIntent do start threadid = "+Thread.currentThread().getId());
+        if(mHandleCallback != null){
+            mHandleCallback.startExecuteThread();
+        }else{
+            throw new RuntimeException("error:There is no define start handler !");
+        }
+    }
     @Override
     protected void onHandleIntent(Intent intent) {
         LogUtils.d(TAG, "onHandleIntent");
         if (intent != null) {
             String cmd = intent.getStringExtra(COMMAND);
             if (cmd != null){
-                if(cmd.equals("init")) {
-                    LogUtils.d(TAG, "onHandleIntent do init");
-                    if(mHandleCallback != null){
-                        mHandleCallback.loadDataFromXml();
-                        mHandleCallback.loadTouchPos();
-                    }else{
-                        throw new RuntimeException("error:There is no define init handler !");
-                    }
-                }else if(cmd.equals("start")){
-                    LogUtils.d(TAG, "onHandleIntent do start");
-                    if(mHandleCallback != null){
-                        mHandleCallback.startExecuteThread();
-                    }else{
-                        throw new RuntimeException("error:There is no define start handler !");
-                    }
+                if(cmd.equals(INIT_COMMAND)) {
+                    initHandler();
+                }else if(cmd.equals(STARTEXECUTE_COMMAND)){
+                    startTestHandler();
+                }else if(cmd.equals(CREATEEXCELFILE_COMMAND)){
+                    createExcelFile();
                 }
-
             }
         }
     }

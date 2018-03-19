@@ -69,6 +69,7 @@ public final class MyConstants {
     public static final String CAMERA_PHOTOMODE_POINT = "camera photo mode";
     public static final String CAMERA_VIDEOMODE_POINT = "camera video mode";
 
+    public static final int MAX_TRY = 5;
     /**
      * @Description 私有化构造方法
      */

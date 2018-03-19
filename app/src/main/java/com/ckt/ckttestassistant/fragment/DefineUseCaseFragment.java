@@ -184,7 +184,6 @@ public class DefineUseCaseFragment extends Fragment {
         mActivity = getActivity();
         mContext = mActivity.getApplicationContext();
         mUseCaseManager = UseCaseManager.getInstance(mContext, mActivity);
-        mShowPanelInfo.append("test item : ");
         for (int i = 0; i < mTestCategory.length; i++){
             mTestCategoryItems.add(new TestCategory(mTestCategory[i]));
         }
@@ -241,6 +240,7 @@ public class DefineUseCaseFragment extends Fragment {
         LogUtils.d(TAG, "onCreateView");
         View rootView = inflater.inflate(R.layout.fragment_defineusecase_layout, container, false);
         mTestItemTextView = (TextView) rootView.findViewById(R.id.usecasetext);
+        generateShowPanelString(mSelectedTestItems);
         mTestItemTextView.setText(mShowPanelInfo.toString());
         mDeleteButton = (Button) rootView.findViewById(R.id.delete);
         mDeleteButton.setOnClickListener(new View.OnClickListener() {
@@ -391,6 +391,8 @@ public class DefineUseCaseFragment extends Fragment {
     }
 
     private void generateShowPanelString(ArrayList<TestBase> selectItems) {
+        mShowPanelInfo.delete(0, mShowPanelInfo.length());
+        mShowPanelInfo.append("test item : ");
         if (selectItems != null && !selectItems.isEmpty()){
             mShowPanelInfo.delete(12, mShowPanelInfo.length());
             for (int i = 0; i < selectItems.size(); i++){

@@ -106,7 +106,7 @@ public class TestItemListAdapter extends RecyclerView.Adapter<TestItemListAdapte
                                 if(mSelectedItems != null){
                                     TestBase tb2 = mAllItems.get(index);
                                     if(tb2 instanceof TestItemBase){
-                                        TestItemBase ti2 = (TestItemBase)tb2.clone();
+                                        TestItemBase ti2 = (TestItemBase)tb2.deepClone(null);
                                         mSelectedItems.add(ti2);
                                     }
                                 }

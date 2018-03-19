@@ -3,6 +3,7 @@ package com.ckt.ckttestassistant.testitems;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.v7.app.AlertDialog;
@@ -77,14 +78,14 @@ public class LaunchBrowser extends TestItemBase {
         Intent intent = new Intent(Intent.ACTION_VIEW,uri);
         intent.setClassName("com.android.chrome","org.chromium.chrome.browser.ChromeTabbedActivity");*/
         boolean result = true;
-        try{
-            Intent intent = new Intent(Intent.ACTION_MAIN).
-                    addCategory(Intent.CATEGORY_LAUNCHER).
-                    setClassName("org.chromium.webview_shell", "org.chromium.webview_shell.WebViewBrowserActivity").
-                    setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+
+        Intent intent = new Intent(Intent.ACTION_MAIN).
+                addCategory(Intent.CATEGORY_LAUNCHER).
+                setClassName("org.chromium.webview_shell", "org.chromium.webview_shell.WebViewBrowserActivity").
+                setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+        if(mContext.getPackageManager().resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY) != null){
             mContext.startActivity(intent);
-        }catch (Exception e){
-            e.printStackTrace();
+        }else{
             result = false;
         }
         task2(result);

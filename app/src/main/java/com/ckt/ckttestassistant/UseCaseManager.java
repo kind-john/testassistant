@@ -29,7 +29,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -42,7 +44,6 @@ import jxl.write.WriteException;
  */
 
 public class UseCaseManager implements DoTestIntentService.HandleCallback{
-    private static final String FILENAME = "usecases.xml";
     private static final String TAG = "UseCaseManager";
     private ArrayList<TestBase> mAllUseCases = new ArrayList<TestBase>();
     private ArrayList<TestBase> mSelectedUseCases = new ArrayList<TestBase>();
@@ -68,9 +69,10 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
     };
     private ArrayList<FinishExecuteObserver> mFinishExecuteObservers = new ArrayList<FinishExecuteObserver>();
     private boolean mReboot = false;
+    private InitStatus mInitStatus = InitStatus.NOINIT;
 
     private void notifyAllObserverOfFinishExecute() {
-        LogUtils.d(TAG, "enter notifyAllObserverOfFinishExecute");
+        LogUtils.d(TAG, "method notifyAllObserverOfFinishExecute enter");
         for (FinishExecuteObserver observer : mFinishExecuteObservers){
             observer.finishExecueHandler();
         }
@@ -78,7 +80,7 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
 
 
     private UseCaseManager(){
-        System.out.println("Singleton has loaded");
+        LogUtils.d(TAG, "Singleton has loaded");
     }
 
     public HashMap<String, Point> getTouchPosConfig() {
@@ -109,7 +111,8 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
         }
         return instance;
     }
-    public boolean importUseCaseConfig(String path){
+    public synchronized boolean importUseCaseConfig(String path){
+        LogUtils.d(TAG, "method importUseCaseConfig enter");
         boolean result = false;
         ArrayList<TestBase> ucs = new ArrayList<TestBase>();
         try{
@@ -128,7 +131,8 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
         return result;
     }
 
-    public boolean exportUseCaseConfig(String path){
+    public synchronized boolean exportUseCaseConfig(String path){
+        LogUtils.d(TAG, "exportUseCaseConfig");
         boolean result = false;
         ArrayList<TestBase> ucs = new ArrayList<TestBase>();
         try{
@@ -159,16 +163,23 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
      * @param reboot
      */
     public void init(Handler handler, boolean reboot){
-        mHandler = handler;
-        mReboot = reboot;
-        mXmlHelper = new CktXmlHelper();
-        //mXmlHelper2 = new CktXmlHelper2();
-        mPref = PreferenceManager.getDefaultSharedPreferences(mContext);
-        mEditor = mPref.edit();
-        mStatus = getTestStatus();
-        Intent it = new Intent(mContext, DoTestIntentService.class);
-        it.putExtra(DoTestIntentService.COMMAND, "init");
-        mContext.startService(it);
+        LogUtils.d(TAG, "method init enter");
+        LogUtils.d(TAG, "mInitStatus = " + mInitStatus);
+        if(mInitStatus == InitStatus.NOINIT){
+            mInitStatus = InitStatus.DOING;
+            mHandler = handler;
+            mReboot = reboot;
+            mXmlHelper = new CktXmlHelper();
+            //mXmlHelper2 = new CktXmlHelper2();
+            mPref = PreferenceManager.getDefaultSharedPreferences(mContext);
+            mEditor = mPref.edit();
+            mStatus = getTestStatus();
+            LogUtils.d(TAG,"init current threadid :"+Thread.currentThread().getId());
+            Intent it = new Intent(mContext, DoTestIntentService.class);
+            it.putExtra(DoTestIntentService.COMMAND, DoTestIntentService.INIT_COMMAND);
+            mContext.startService(it);
+        }
+        LogUtils.d(TAG, "method init exit");
     }
 
     private void closeWaitProgress(Handler handler, boolean finish) {
@@ -197,6 +208,25 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
             } else {
                 if(tb.getChildren() != null && !tb.getChildren().isEmpty()){
                     result = isUseCaseTestCompleted(tb);
+                }
+            }
+        }
+        return result;
+    }
+
+    public boolean isChildrenTestCompleted(TestBase parent) {
+        boolean result = true;
+        if(parent != null && !parent.isChecked()){
+            ArrayList<TestBase> children = parent.getChildren();
+            for (TestBase child : children){
+                if(child.getCompletedTimes() < child.getTimes()){
+                    return false;
+                }
+
+                if(child.getChildren().size() > 0){
+                    if(!isChildrenTestCompleted(child)){
+                        return false;
+                    }
                 }
             }
         }
@@ -234,9 +264,10 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
      * @return
      */
     public boolean startExecute(){
+        LogUtils.d(TAG, "method startExecute enter");
         setTestStatus(true);
         Intent it = new Intent(mContext, DoTestIntentService.class);
-        it.putExtra(DoTestIntentService.COMMAND, "start");
+        it.putExtra(DoTestIntentService.COMMAND, DoTestIntentService.STARTEXECUTE_COMMAND);
         mContext.startService(it);
 
         return true;
@@ -245,7 +276,8 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
     /**
      *将已所有用例序列保存到xml
      */
-    private void saveAllUseCasesToXml(){
+    private synchronized void saveAllUseCasesToXml(){
+        LogUtils.d(TAG, "method saveAllUseCasesToXml enter");
         if(mAllUseCases == null || mAllUseCases.isEmpty()){
             LogUtils.d(TAG, "There is no usecase need save,so don't save anything!");
             return;
@@ -262,7 +294,8 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
     /**
      *将已选择的用例序列保存到xml
      */
-    public void saveSelectedUseCaseToXml(){
+    public synchronized void saveSelectedUseCaseToXml(){
+        LogUtils.d(TAG, "method saveSelectedUseCaseToXml enter");
         if(mSelectedUseCases == null || mSelectedUseCases.isEmpty()){
             LogUtils.d(TAG, "don't select any testitem,so don't save anything!");
             return;
@@ -279,7 +312,8 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
             e.printStackTrace();
         }
     }
-    public void updateUseCaseOfXml(String path, UseCaseBase uc){
+    public synchronized void updateUseCaseOfXml(String path, UseCaseBase uc){
+        LogUtils.d(TAG, "metod updateUseCaseOfXml enter");
         ArrayList<UseCaseBase> usecases = new ArrayList<UseCaseBase>();
         try {
             mXmlHelper.updateUseCase(path, uc);
@@ -299,7 +333,8 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
         return false;
     }
 
-    public void updateTestItemOfSelectedUseCaseXml(TestItemBase ti){
+    public synchronized void updateTestItemOfSelectedUseCaseXml(TestItemBase ti){
+        LogUtils.d(TAG, "method updateTestItemOfSelectedUseCaseXml enter");
         try {
             String path = mContext.getFilesDir()+"/selected_usecases.xml";
             mXmlHelper.updateTestItem(path, ti, true);
@@ -318,8 +353,10 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
     /**
      * 从usecases.xml文件中读取数据
      */
-    private void getAllUseCaseFromXml() {
+    private synchronized void getAllUseCaseFromXml() {
+        LogUtils.d(TAG, "method getAllUseCaseFromXml enter");
         String path = mContext.getFilesDir()+"/usecases.xml";
+        LogUtils.d(TAG, "getAllUseCaseFromXml");
         try{
             mAllUseCases.clear();
             mXmlHelper.readxml(mContext, mActivity, path, mAllUseCases);
@@ -327,27 +364,31 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
         }catch (Exception e){
             e.printStackTrace();
         }
+        LogUtils.d(TAG, "method getAllUseCaseFromXml exit");
     }
 
     /**
      * 从selected_usecases.xml文件中读取数据
      */
-    public void getSelectedUseCaseFromXml(){
+    public synchronized void getSelectedUseCaseFromXml(){
+        LogUtils.d(TAG, "method getSelectedUseCaseFromXml enter");
         String path = mContext.getFilesDir()+"/selected_usecases.xml";
-
+        LogUtils.d(TAG, "getSelectedUseCaseFromXml");
         try {
             mSelectedUseCases.clear();
             mXmlHelper.readxml(mContext, mActivity, path, mSelectedUseCases);
-            dealWithRebootCase();
             notifySelectedUseCaseChange();
         }catch (Exception e){
             e.printStackTrace();
         }
+        LogUtils.d(TAG, "method getSelectedUseCaseFromXml exit");
     }
 
     private void dealWithRebootCase() {
+        LogUtils.d(TAG, "method dealWithRebootCase enter");
         if(mReboot){
             LogUtils.d(TAG, "is reboot : true");
+            mReboot = false;
             //找到正在重启的任务
             if(mSelectedUseCases != null && !mSelectedUseCases.isEmpty()){
                 for (TestBase tb : mSelectedUseCases){
@@ -356,18 +397,64 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
                     if(ucCompletedTimes == ucTotalTimes){
                         continue;
                     }
-                    if(tb.getClassName().equals("com.ckt.ckttestassistant.testitems.Reboot")){
+                    TestBase rebootItem = findTestingRebootNode(tb);
+                    LogUtils.d(TAG, "find reboot node : "+rebootItem.toString());
+                    if(rebootItem != null){
+                        LogUtils.d(TAG, "found ... TestingRebootNode");
+                        ((TestItemBase)rebootItem).task2(true);
+                        setParentParam(rebootItem);
+                        return;
+                    }
+                }
+            }
+        }
+        LogUtils.d(TAG, "method dealWithRebootCase exit");
+    }
+    private void setParentParam(TestBase tb){
+        LogUtils.d(TAG, "method setParentParam enter");
+        TestBase parent = tb.getParent();
+        if(parent != null){
+            if(isChildrenTestCompleted(parent)){
+                LogUtils.d(TAG, "update parent node : "+parent.toString());
+                parent.setCompletedTimes(parent.getCompletedTimes()+1);
+                if (parent instanceof UseCaseBase){
+                    String path = mContext.getFilesDir()+"/selected_usecases.xml";
+                    updateUseCaseOfXml(path, (UseCaseBase)parent);
+                } else if (parent instanceof TestItemBase){
+                    updateTestItemOfSelectedUseCaseXml((TestItemBase) parent);
+                }
+                setParentParam(parent);
+            }
+        }
+        LogUtils.d(TAG, "method setParentParam exit");
+    }
+
+    private TestBase findTestingRebootNode(TestBase tb) {
+        LogUtils.d(TAG, "method findTestingRebootNode enter");
+        TestBase result = null;
+        ArrayList<TestBase> children = tb.getChildren();
+        if(children != null && !children.isEmpty()){
+            for (TestBase child : children){
+                if (child instanceof UseCaseBase){
+                    result = findTestingRebootNode(child);
+                    if(result != null){
+                        break;
+                    }
+                }else{
+                    if("com.ckt.ckttestassistant.testitems.Reboot".equals(child.getClassName())){
                         LogUtils.d(TAG, "change reboot times");
-                        int tiFailTimes = tb.getFailTimes();
-                        if(tiFailTimes > 0){
-                            tiFailTimes--;
-                            tb.setFailTimes(tiFailTimes);
-                            updateTestItemOfSelectedUseCaseXml((TestItemBase) tb);
+                        int total = child.getTimes();
+                        int done = child.getCompletedTimes();
+                        if(done < total){
+                            result = child;
+                            break;
                         }
                     }
                 }
             }
         }
+        LogUtils.d(TAG, "method findTestingRebootNode exit");
+        return result;
     }
 
     /**
@@ -383,7 +470,8 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
      * @param selectedTestItems
      * @param name
      */
-    public void addUsecaseToAllUseCaseXml(ArrayList<TestBase> selectedTestItems, String name) {
+    public synchronized void addUsecaseToAllUseCaseXml(ArrayList<TestBase> selectedTestItems, String name) {
+        LogUtils.d(TAG, "method addUsecaseToAllUseCaseXml enter");
         if(selectedTestItems == null || selectedTestItems.isEmpty()){
             LogUtils.d(TAG, "don't select any testitem,so don't save anything!");
             return;
@@ -403,6 +491,7 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
         }catch (Exception e){
             e.printStackTrace();
         }
+        LogUtils.d(TAG, "method addUsecaseToAllUseCaseXml exit");
     }
 
     /**
@@ -427,18 +516,23 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
     @Override
     public void loadDataFromXml() {
         //load from xml
+        LogUtils.d(TAG, "method loadDataFromXml enter");
+        LogUtils.d(TAG,"loadDataFromXml current thread :"+Thread.currentThread().getId());
         getAllUseCaseFromXml();
         getSelectedUseCaseFromXml();
+        dealWithRebootCase();
+        LogUtils.d(TAG, "method loadDataFromXml exit");
     }
 
     @Override
     public void loadTouchPos() {
         //load position of touch panel
+        LogUtils.d(TAG, "method loadTouchPos enter");
+        LogUtils.d(TAG,"loadTouchPos current thread :"+Thread.currentThread().getId());
         mTouchPosConfig.clear();
         try {
-            File file = new File("/sdcard/pos.json");
-            if(file.exists()){
-                BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
+                BufferedReader br = new BufferedReader(
+                        new InputStreamReader(mContext.getAssets().open("pos.json")));
                 StringBuilder sb = new StringBuilder();
                 String str;
                 while ((str = br.readLine()) != null){
@@ -446,12 +540,12 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
                     sb.append("\n");
                 }
                 JSONUtils.parseJsonArray(sb.toString(), mTouchPosConfig);
-            }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
+        LogUtils.d(TAG, "method loadTouchPos exit");
     }
 
     /**
@@ -459,6 +553,8 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
      */
     @Override
     public void startExecuteThread() {
+        LogUtils.d(TAG, "method startExecuteThread enter");
+        LogUtils.d(TAG,"startExecuteThread current thread :"+Thread.currentThread().getId());
         int size = 0;
         if(mSelectedUseCases == null || mSelectedUseCases.isEmpty()){
             LogUtils.d(TAG, "startExecuteThread exit : no selected use case");
@@ -470,6 +566,51 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
         }
         closeWaitProgress(mHandler, true);
         notifyAllObserverOfFinishExecute();
+        LogUtils.d(TAG, "method startExecuteThread exit");
+    }
+
+    private enum InitStatus {
+        NOINIT,
+        DOING,
+        DONE
+    }
+
+    @Override
+    public void initDone() {
+        mInitStatus = InitStatus.DONE;
+    }
+
+    @Override
+    public boolean createExcelFile() {
+        LogUtils.d(TAG, "method createExcelFile enter");
+        boolean result = false;
+        try {
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
+            Date date = new Date(System.currentTimeMillis());
+            String fileName = simpleDateFormat.format(date)+".xls";
+            LogUtils.d(TAG, "fileName = "+fileName);
+            //String dirPath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/ckttestassistant";
+            //String path2 = Environment.getExternalStorageDirectory().getAbsolutePath();
+            String dirPath = mContext.getFilesDir()+"/ckttestassistant";
+
+            //File dir = new File(MyConstants.TEST_RESULT_EXCEL_DIR);
+            File dir = new File(dirPath);
+            if(!dir.exists()){
+                if(!dir.mkdirs()){
+                    return false;
+                }
+            }
+            String filePath = dirPath+"/"+fileName;
+            File excelfile = new File(filePath);
+            excelfile.createNewFile();
+            setCurrentExcelFile(filePath);
+            createExcel(filePath);
+            result = true;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        LogUtils.d(TAG, "method addUsecaseToAllUseCaseXml exit");
+        return result;
     }
     /*@Override
     public void startExecuteThread() {
@@ -487,7 +628,8 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
     }*/
 
     public void updateSelectedUseCases(int index) {
-        TestBase tb = mAllUseCases.get(index).clone();
+        LogUtils.d(TAG, "method updateSelectedUseCases enter");
+        TestBase tb = mAllUseCases.get(index).deepClone(null);
         //tb.setChecked(true);
         int sn = mSelectedUseCases == null ? 0 : mSelectedUseCases.size();
         tb.setSN(sn);
@@ -505,6 +647,7 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
         mSelectedUseCases.add(tb);
         //saveSelectedUseCaseToXml();
         notifySelectedUseCaseChange();
+        LogUtils.d(TAG, "method updateSelectedUseCases exit");
     }
 
     public void setCurrentExcelFile(String fileName) {
@@ -517,6 +660,7 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
     }
 
     public void createExcel(String path) {
+        LogUtils.d(TAG, "method createExcel enter");
         LogUtils.d(TAG, "createExcel path : " + path);
         try {
             WritableWorkbook book = Workbook.createWorkbook(new File(getCurrentExcelFile()));
@@ -528,9 +672,11 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
         } catch (IOException e) {
             e.printStackTrace();
         }
+        LogUtils.d(TAG, "method createExcel exit");
     }
 
-    public void updateTestItemOfAllUseCaseXml(TestItemBase ti) {
+    public synchronized void updateTestItemOfAllUseCaseXml(TestItemBase ti) {
+        LogUtils.d(TAG, "method updateTestItemOfAllUseCaseXml enter");
         String path = mContext.getFilesDir()+"/usecases.xml";
         try{
             mXmlHelper.updateTestItem(path, ti, false);
@@ -538,11 +684,13 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
         }catch (Exception e){
             e.printStackTrace();
         }
+        LogUtils.d(TAG, "method updateTestItemOfAllUseCaseXml exnt");
     }
 
     public void reInitSelectedUseCase() {
-        LogUtils.d(TAG, "clear selected usecase,and read original from all usecase");
+        LogUtils.d(TAG, "method reInitSelectedUseCase enter");
         reInitUseCase(mSelectedUseCases);
+        LogUtils.d(TAG, "method reInitSelectedUseCase exit");
     }
 
     private void reInitUseCase(List<TestBase> tbs) {
@@ -556,6 +704,28 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
         }
     }
 
+    public void setUseCaseNeedInitChildren(boolean isNeed) {
+        LogUtils.d(TAG, "method setUseCaseNeedInitChildren enter");
+        if(mSelectedUseCases != null && !mSelectedUseCases.isEmpty()){
+            for (TestBase tb : mSelectedUseCases){
+                setNeedInitChildren(tb, isNeed);
+            }
+        }
+        LogUtils.d(TAG, "method setUseCaseNeedInitChildren exit");
+    }
+    private void setNeedInitChildren(TestBase tb, boolean isNeed) {
+        if (tb instanceof UseCaseBase){
+            ((UseCaseBase) tb).setNeedInitFlag(isNeed);
+            List<TestBase> children = tb.getChildren();
+            if(children != null && !children.isEmpty()){
+                for (TestBase child : children){
+                    if(child instanceof UseCaseBase){
+                        setNeedInitChildren(child, isNeed);
+                    }
+                }
+            }
+        }
+    }
     /**
      * Created by ckt on 18-2-1.
      * 需要监听所有用例数据变化的类，必需实现此接口

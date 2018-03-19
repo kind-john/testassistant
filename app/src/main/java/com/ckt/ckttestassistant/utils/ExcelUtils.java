@@ -37,7 +37,7 @@ import jxl.write.WriteException;
  */
 public final class ExcelUtils {
 
-    public static final String TAG = ExcelUtils.class.getSimpleName();
+    private static final String TAG = ExcelUtils.class.getSimpleName();
     //add by gongpeng.wang for webtest in 2017-12-05
     private static String[] title = {"编号", "开始时间", "结束时间", "是否成功", "加载时长（秒）", "是否超时", "失败原因"};
     public static WritableFont arial14font = null;

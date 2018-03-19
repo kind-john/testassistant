@@ -37,7 +37,9 @@ public class CktTestAssistantMainActivity extends AppCompatActivity
     private UseCaseManager mUseCaseManager;
     private String[] mPermissions = {
             "android.permission.WRITE_EXTERNAL_STORAGE",
-            //"android.permission.INJECT_EVENTS"
+            "android.intent.action.AIRPLANE_MODE",
+            "android.permission.WRITE_SECURE_SETTINGS",
+            "android.permission.ACCESS_FINE_LOCATION"
     };
 
     @Override
@@ -116,7 +118,19 @@ public class CktTestAssistantMainActivity extends AppCompatActivity
         viewPager.setAdapter(adapter);
         tabLayout.setupWithViewPager(viewPager);
 
-        PermissionUtil.requestPerssions(this, REQUEST_CODE, mPermissions);
+        //PermissionUtil.requestPerssions(this, REQUEST_CODE, mPermissions);
+        List<String> deniedPermissions = PermissionUtil.getDeniedPermissions(this, mPermissions);
+        if(deniedPermissions != null){
+            for (String p : deniedPermissions){
+                LogUtils.d(TAG, "permission: "+p);
+            }
+            if (deniedPermissions != null) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    requestPermissions(deniedPermissions.toArray(new String[deniedPermissions.size()]), 1);
+                }
+                //返回结果onRequestPermissionsResult
+            }
+        }
     }
 
     @Override

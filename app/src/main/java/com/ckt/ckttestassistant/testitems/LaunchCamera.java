@@ -41,7 +41,7 @@ import jxl.write.biff.RowsExceededException;
 public class LaunchCamera extends TestItemBase {
     public static final int ID = 29;
     private static final String TITLE = "Launch Camera";
-    private static final String TAG = "WifiSwitchOn";
+    private static final String TAG = "LaunchCamera";
 
     public LaunchCamera() {
         super();
@@ -71,7 +71,7 @@ public class LaunchCamera extends TestItemBase {
 
     @Override
     public boolean doExecute(UseCaseManager.ExecuteCallback executeCallback, boolean finish) {
-        LogUtils.d(TAG, "WifiSwitchOn doExecute");
+        LogUtils.d(TAG, mClassName+" doExecute");
         //do test,then close progressview
         Intent intent = new Intent(MediaStore.INTENT_ACTION_STILL_IMAGE_CAMERA);
         mContext.startActivity(intent);
