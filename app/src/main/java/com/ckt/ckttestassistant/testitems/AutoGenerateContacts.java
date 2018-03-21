@@ -27,7 +27,6 @@ public class AutoGenerateContacts extends TestItemBase {
     public static final int ID = 78;
     private static final String TITLE = "Auto Generate Contacts";
     private static final String TAG = "AutoGenerateContacts";
-    private volatile boolean passed = false;
     public AutoGenerateContacts() {
         super();
         String className = this.getClass().getName();
@@ -67,7 +66,7 @@ public class AutoGenerateContacts extends TestItemBase {
             try {
                 //do task
                 sleep(3000);
-                passed = true;
+                mPassed = true;
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -87,12 +86,12 @@ public class AutoGenerateContacts extends TestItemBase {
             e.printStackTrace();
         }
 
-        task2(passed);
+        task2();
         if(finish && executeCallback != null){
             LogUtils.d(TAG, "stop test handler");
             executeCallback.stopTestHandler();
         }
-        return passed;
+        return mPassed;
     }
 
     @Override

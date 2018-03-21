@@ -43,7 +43,23 @@ import javax.xml.xpath.XPathFactory;
 
 public class CktXmlHelper {
     private static final String TAG = "CktXmlHelper";
-    private static int allUseCaseMaxID = -1;
+    private static volatile int allUseCaseMaxID = -1;
+    private static CktXmlHelper instance = null;
+    private static int MAX_LEVEL = 2;
+    private CktXmlHelper() {
+
+    }
+
+    public static CktXmlHelper getInstance(){
+        if (instance == null) {
+            synchronized (CktXmlHelper.class){
+                if (instance == null) {
+                    instance = new CktXmlHelper();
+                }
+            }
+        }
+        return instance;
+    }
 
     public void addUsecase(String path, ArrayList<TestBase> usecases, boolean isNeedClean) throws Exception{
         LogUtils.d(TAG, "entry addUsecase!");
@@ -184,7 +200,32 @@ public class CktXmlHelper {
             Document doc = bulider.parse(is);
             doc.normalize();
             Element root = doc.getDocumentElement();
-            NodeList uc_listnode = doc.getElementsByTagName(XmlTagConstants.XMLTAG_USECASE);
+
+            NodeList uc_listnode = doc.getElementsByTagName(XmlTagConstants.XMLTAG_TESTITEM);
+            ArrayList<Element> parents = new ArrayList<>();
+            for (int i = 0; i < uc_listnode.getLength(); i++) {
+                Element node = (Element) uc_listnode.item(i);
+                int level = findParents(node, parents);
+                // 为了减少对比次数，先对比level是否相等
+                boolean isMatched = false;
+                if (level == ti.getLevel()) {
+                    isMatched = compareParents(ti, parents);
+                } else {
+                    continue;
+                }
+                if (isMatched) {
+                    String str_sn = node.getElementsByTagName(XmlTagConstants.XMLTAG_TESTITEM_SN)
+                            .item(0)
+                            .getTextContent();
+                    int sn = Integer.parseInt(str_sn);
+                    if (sn == ti.getSN()) {
+                        Element newNode = createTestItemElement(doc, parents.get(0), ti);
+                        parents.get(0).replaceChild(newNode, node);
+                        break;
+                    }
+                }
+            }
+            /*NodeList uc_listnode = doc.getElementsByTagName(XmlTagConstants.XMLTAG_USECASE);
             for (int i = 0; i < uc_listnode.getLength(); i++) {
                 Element uc_node = (Element) uc_listnode.item(i);
                 int id = Integer.parseInt(uc_node.getAttribute(XmlTagConstants.XMLTAG_ID));
@@ -216,7 +257,7 @@ public class CktXmlHelper {
                         }
                     }
                 }
-            }
+            }*/
             TransformerFactory tfactory = TransformerFactory.newInstance();
             Transformer trans = tfactory.newTransformer();
             DOMSource source = new DOMSource(doc);
@@ -226,6 +267,36 @@ public class CktXmlHelper {
             e.printStackTrace();
         }
     }
+
+    private boolean compareParents(TestBase ti, ArrayList<Element> parents) {
+        if (parents != null && !parents.isEmpty()) {
+            TestBase tbParent = ti;
+            for (int index = parents.size() - 1; index >= 0; index--) {
+                tbParent = tbParent.getParent();
+                Element parent = parents.get(index);
+                String parent_str_sn = parent.getElementsByTagName(XmlTagConstants.XMLTAG_USECASE_SN)
+                        .item(0)
+                        .getTextContent();
+                int parent_sn = Integer.parseInt(parent_str_sn);
+                if(tbParent.getSN() != parent_sn){
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    private int findParents(Element node, ArrayList<Element> parents) {
+        Element parent = (Element) node.getParentNode();
+        int level = 0;
+        while (!"usecases".equals(parent.getTagName())) {
+            level++;
+            parents.add(parent);
+            parent = (Element) parent.getParentNode();
+        }
+        return level;
+    }
+
     public void updateUseCase(String path, UseCaseBase uc) {
         LogUtils.d(TAG, "entry updateUseCase!");
         try {
@@ -241,7 +312,36 @@ public class CktXmlHelper {
             doc.normalize();
             Element root = doc.getDocumentElement();
             NodeList listnode = doc.getElementsByTagName(XmlTagConstants.XMLTAG_USECASE);
+            ArrayList<Element> parents = new ArrayList<>();
             for (int i = 0; i < listnode.getLength(); i++) {
+                Element node = (Element) listnode.item(i);
+                int level = findParents(node, parents);
+                // 为了减少对比次数，先对比level是否相等
+                boolean isMatched = false;
+                if (level == uc.getLevel()) {
+                    isMatched = compareParents(uc, parents);
+                } else {
+                    continue;
+                }
+                if (isMatched) {
+                    String mySNStr = node.getElementsByTagName(XmlTagConstants.XMLTAG_USECASE_SN)
+                            .item(0)
+                            .getTextContent();
+                    int mySn = Integer.parseInt(mySNStr);
+                    if (mySn == uc.getSN()) {
+                        Element parent = null;
+                        if (parents.isEmpty()){
+                            parent = root;
+                        } else {
+                            parent = parents.get(0);
+                        }
+                        Element newNode = createUseCaseElement(doc, parent, uc);
+                        parent.replaceChild(newNode, node);
+                        break;
+                    }
+                }
+            }
+            /*for (int i = 0; i < listnode.getLength(); i++) {
                 Element elink = (Element) listnode.item(i);
                 int id = Integer.parseInt(elink.getAttribute(XmlTagConstants.XMLTAG_ID));
                 String str_sn = elink.getElementsByTagName(XmlTagConstants.XMLTAG_USECASE_SN).item(0).getTextContent();
@@ -253,7 +353,7 @@ public class CktXmlHelper {
                     elink.getParentNode().replaceChild(newNode, elink);
                     break;
                 }
-            }
+            }*/
             TransformerFactory tfactory = TransformerFactory.newInstance();
             Transformer trans = tfactory.newTransformer();
             DOMSource source = new DOMSource(doc);
@@ -272,7 +372,7 @@ public class CktXmlHelper {
         element.appendChild(e);
     }
 
-    private void deleteUseCase(String path, ArrayList<UseCaseBase> ucs) {
+    public void deleteUseCase(String path, ArrayList<UseCaseBase> ucs) {
         LogUtils.d(TAG, "entry deleteUseCase!");
         try {
             File file = new File(path);
@@ -630,143 +730,5 @@ public class CktXmlHelper {
             }
         }
         return num;
-    }
-
-    /*private int getMaxId(String fileName, String code, String idnum) {
-        int num = -1;
-        try {
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder bulider = factory.newDocumentBuilder();
-            Document doc = bulider.parse(fileName);
-            doc.normalize();
-
-            NodeList listnode = doc.getElementsByTagName(code);
-            for (int i = 0; i < listnode.getLength(); i++) {
-                Element elink = (Element) listnode.item(i);
-                String id = elink.getAttribute(idnum);
-                if (Integer.valueOf(id) > num) {
-                    num = Integer.valueOf(id);
-                }
-            }
-            return num;
-        } catch (ParserConfigurationException e) {
-            e.printStackTrace();
-            return num;
-        } catch (SAXException e) {
-            e.printStackTrace();
-            return num;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return num;
-        }
-    }*/
-
-    /*private void updateUsecasetoxml(String path, ArrayList<UseCaseBase> usecases) {
-        try {
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder bulider = factory.newDocumentBuilder();
-            Document doc = bulider.parse(path);
-            doc.normalize();
-            Element root = doc.getDocumentElement();
-            for (UseCaseBase usecase : usecases){
-                NodeList usecaseNodes = root.getChildNodes();
-
-                if (usecases != null) {
-                    int flag = 0;
-                    for (int i = 0; i < usecaseNodes.getLength(); i++) {
-                        Node mycode = usecaseNodes.item(i);
-                        if (mycode.getNodeName().equals("usecase")) {
-                            flag++;
-                            if(mycode.getAttributes().getNamedItem("id").equals(usecase.getID()))
-                            Element per = (Element) selectSingleNode("/Object/" + bigCode, root);
-                            Element codeNode = doc.createElement(code);
-                            codeNode.setAttributeNS("", "id", String.valueOf(getMaxId(code, "id") + 1));
-                            codeNode.setAttributeNS("", "type", type);
-                            for (String key : map.keySet()) {
-                                Node node = codeNode.appendChild(doc.createElement(key)).appendChild(doc.createTextNode(map.get(key)));
-                            }
-                            per.appendChild(codeNode);
-                        }
-                    }
-
-                }
-
-                if (flag == 0) {
-                    addUsecasetoxml(path, usecases);
-                    return;
-                }
-
-            }
-
-            TransformerFactory tfactory = TransformerFactory.newInstance();
-            Transformer trans = tfactory.newTransformer();
-            DOMSource source = new DOMSource(doc);
-            StreamResult result = new StreamResult(path);
-            trans.transform(source, result);
-        } catch (ParserConfigurationException e) {
-            LogUtils.d(TAG, "ParserConfigurationException");
-            e.printStackTrace();
-        } catch (SAXException e) {
-            LogUtils.d(TAG,"SAXException");
-            e.printStackTrace();
-        } catch (IOException e) {
-            LogUtils.d(TAG, "IOException");
-            e.printStackTrace();
-        } catch (TransformerConfigurationException e) {
-            LogUtils.d(TAG, "TransformerConfigurationException");
-            e.printStackTrace();
-        } catch (TransformerException e) {
-            LogUtils.d(TAG, "TransformerException");
-            e.printStackTrace();
-        }
-    }*/
-
-    /**
-     * 选择具体某一结点
-     */
-    public static Node selectSingleNode(String express, Element source) {
-        Node result = null;
-        XPathFactory xpathFactory = XPathFactory.newInstance();
-        XPath xpath = xpathFactory.newXPath();
-        try {
-            result = (Node) xpath.evaluate(express, source, XPathConstants.NODE);
-        } catch (XPathExpressionException e) {
-            e.printStackTrace();
-        }
-        return result;
-    }
-
-    public static void createXML(Context context, String path, ArrayList<UseCaseBase> list) {
-        XmlSerializer serializer = Xml.newSerializer();
-        File file = new File(path);
-        FileOutputStream fos = null;
-        try {
-            fos = new FileOutputStream(file);
-            serializer.setOutput(fos, "utf-8");
-            serializer.startDocument("utf-8", true);
-            serializer.startTag(null, "usecases");
-
-            if (list != null) {
-                for (UseCaseBase item : list) {
-                    item.saveParametersToXml(serializer);
-                }
-            }
-            serializer.endTag(null, "usecases");// 结束标签
-            serializer.endDocument();// 结束xml文档
-            Toast.makeText(context, "生成成功。", Toast.LENGTH_SHORT);
-        } catch (Exception e) {
-            Toast.makeText(context, "生成失败！ ", Toast.LENGTH_SHORT);
-            e.printStackTrace();
-        } finally {
-            try {
-                fos.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    public static void updateXML(Context context, String path, UseCaseBase usecase) {
-
     }
 }

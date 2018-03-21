@@ -38,7 +38,6 @@ public class GpsSwitchOn extends TestItemBase {
     public static final int ID = 21;
     private static final String TITLE = "Gps Switch On";
     private static final String TAG = "GotoSleep";
-    private boolean mState = false;
     private boolean aSyncTaskCompleted = false;
 
     public GpsSwitchOn() {
@@ -70,7 +69,6 @@ public class GpsSwitchOn extends TestItemBase {
     @Override
     public boolean doExecute(UseCaseManager.ExecuteCallback executeCallback, boolean finish) {
         LogUtils.d(TAG, mClassName+" doExecute");
-        boolean passed = false;
         try {
             ContentResolver resolver = mContext.getContentResolver();
             if(!gpsEnabled(resolver)){
@@ -83,6 +81,7 @@ public class GpsSwitchOn extends TestItemBase {
                         new IntentFilter(Intent.ACTION_LOCALE_CHANGED));
                 int count = 0;
                 while (!aSyncTaskCompleted){
+                    aSyncTaskCompleted = false;
                     count++;
                     LogUtils.d(TAG, mClassName+" sleep count = "+count);
                     if(count > MyConstants.MAX_TRY){
@@ -91,25 +90,20 @@ public class GpsSwitchOn extends TestItemBase {
                     Thread.sleep(1000);
                     LogUtils.d(TAG, mClassName+" sleep end");
                 }
-                if(mState){
-                    LogUtils.d(TAG, mClassName+" passed");
-                    passed = true;
-                }
             }else{
-                passed = true;
+                mPassed = true;
             }
-
         }catch (Exception e){
             e.printStackTrace();
         }finally {
-            task2(passed);
+            task2();
         }
 
         if(finish && executeCallback != null){
             LogUtils.d(TAG, "stop test handler");
             executeCallback.stopTestHandler();
         }
-        return false;
+        return mPassed;
     }
 
     private void setGpsEnabled(ContentResolver resolver, boolean enabled) {
@@ -193,7 +187,7 @@ public class GpsSwitchOn extends TestItemBase {
         public void onReceive(Context context, Intent intent) {
             if(Intent.ACTION_LOCALE_CHANGED.equals(intent.getAction())){
                 aSyncTaskCompleted = true;
-                mState = intent.getBooleanExtra("state", false);
+                mPassed = intent.getBooleanExtra("state", false);
             }
         }
     }

@@ -257,18 +257,6 @@ public class UseCaseFragment extends Fragment implements UseCaseManager.UseCaseC
         mContext.startService(it);
     }
 
-    private boolean isNeedCreateNewFile() {
-        boolean result = true;
-        boolean status = mUseCaseManager.getTestStatus();
-        if(status){
-            result = false;
-        }else{
-            result = mUseCaseManager.isTestCompleted();
-        }
-        //return result;   //后续要优化，暂时返回true测试excel读写
-        return true;
-    }
-
     private void showPropertySetting(final UseCaseBase uc, final int index) {
         LogUtils.d(TAG, "showPropertySetting :"+this.getClass().getName());
         AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);

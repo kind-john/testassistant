@@ -11,6 +11,8 @@ import com.ckt.ckttestassistant.UseCaseManager;
 import com.ckt.ckttestassistant.utils.ExcelUtils;
 import com.ckt.ckttestassistant.utils.HandlerMessageWhat;
 import com.ckt.ckttestassistant.utils.LogUtils;
+import com.ckt.ckttestassistant.utils.SystemInvokeImpl;
+import com.ckt.ckttestassistant.utils.SystemInvokeInterface;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -40,24 +42,23 @@ import static java.lang.Thread.sleep;
 public abstract class TestItemBase extends TestBase implements CktResultsHelper.ResultCallBack {
     private static final int DEFAULT_TESTITEM_TIMES = 1;
     private static final String TAG = "TestItemBase";
-    protected UseCaseManager mUseCaseManager;
-
+    protected final SystemInvokeInterface mSystemInvoke;
 
     //设置下一个测试项，如果结束则必须将其设置为空
     protected TestItemBase mNextTestItem;
 
-    protected int ID = -1;
-    protected int SN = -1;
     protected int mUseCaseID = -1;
     protected int mUseCaseSN = -1;
-    protected boolean mPassed = false;
+    protected volatile boolean mPassed = false;
 
+    private boolean mAllTimesPassed = true;
     private String[] mExcelTitles = {
             "result",
             "total times",
             "completed times",
             "fial times"
     };
+
     public boolean isPassed() {
         return mPassed;
     }
@@ -91,7 +92,7 @@ public abstract class TestItemBase extends TestBase implements CktResultsHelper.
     }
 
     public TestItemBase() {
-        mUseCaseManager = UseCaseManager.getInstance(null, null);
+        mSystemInvoke = SystemInvokeImpl.getInstance();
     }
 
     public TestItemBase(Context context) {
@@ -151,7 +152,11 @@ public abstract class TestItemBase extends TestBase implements CktResultsHelper.
             e.printStackTrace();
         }
     }
-    public void task2(boolean passed){
+
+    /**
+     * 调用此方法前必须先确定mPassed，否则状态不能记录到excel
+     */
+    public void task2(){
         if("com.ckt.ckttestassistant.testitems.Reboot".equals(mClassName)){
             LogUtils.d(TAG, "完成重启后剩余的工作");
             mCompletedTimes++;
@@ -159,7 +164,7 @@ public abstract class TestItemBase extends TestBase implements CktResultsHelper.
             mUseCaseManager.updateTestItemOfSelectedUseCaseXml(this);
             saveResult();
         }else{
-            if(passed){
+            if(mPassed){
                 LogUtils.d(TAG, "测试成功，失败次数减一");
                 mFailTimes--;
                 mUseCaseManager.updateTestItemOfSelectedUseCaseXml(this);
@@ -168,9 +173,7 @@ public abstract class TestItemBase extends TestBase implements CktResultsHelper.
             if(mCompletedTimes < mTimes){
                 task();
             }else if(mCompletedTimes == mTimes){
-                if(mFailTimes == 0){
-                    mPassed = true;
-                }
+                // TODO
             }else{
                 LogUtils.e(TAG, "error: mCompletedTimes > mTimes");
             }
@@ -194,25 +197,28 @@ public abstract class TestItemBase extends TestBase implements CktResultsHelper.
                 mFailTimes++;   //先假设本次失败，异步返回成功以后再减1
                 mUseCaseManager.updateTestItemOfSelectedUseCaseXml(this);
                 updateWaitProgress(mUseCaseManager.getHandler(), progress);
-                sleep(mDelay);
-                mPassed = doExecute(null, false);
+                Thread.sleep(mDelay);
+                mPassed = false;
+                if (!doExecute(null, false)) {
+                    mAllTimesPassed = false;
+                }
                 List<TestBase> children = getChildren();
                 if(children != null && !children.isEmpty()){
                     //这里理论上不会执行，因为目前的设计测试项不包含子测试项
                     for (TestBase child : children){
                         if(!child.task()){
-                            mPassed = false;
+                            mAllTimesPassed = false;
                         }
                     }
                 }
             }catch (Exception e){
-                mPassed = false;
+                mAllTimesPassed = false;
                 e.printStackTrace();
             }
         }else{
             //completed
         }
-        return mPassed;
+        return mAllTimesPassed;
     }
 /*public boolean execute(Handler handler, UseCaseManager.ExecuteCallback executeCallback, boolean usecaseFinish){
         int needTimes = mTimes - mCompletedTimes;

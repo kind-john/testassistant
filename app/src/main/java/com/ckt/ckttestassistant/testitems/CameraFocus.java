@@ -65,26 +65,26 @@ public class CameraFocus extends TestItemBase {
         new Thread() {
             public void run() {
                 try{
-                    HashMap<String, Point> points = mUseCaseManager.getTouchPosConfig();
-                    Point point = points.get(PointConstants.CAMERA_FOCUS_POINT);
+                    Point point = mUseCaseManager.getTouchPosConfig(PointConstants.CAMERA_FOCUS_POINT);
                     if(point != null){
                         Instrumentation inst=new Instrumentation();
                         inst.sendPointerSync(MotionEvent.obtain(SystemClock.uptimeMillis(),
                                 SystemClock.uptimeMillis(), MotionEvent.ACTION_DOWN, point.x, point.y, 0));
                         inst.sendPointerSync(MotionEvent.obtain(SystemClock.uptimeMillis(),
                                 SystemClock.uptimeMillis(), MotionEvent.ACTION_UP, point.x, point.y, 0));
+                        mPassed = true;
                     }
                 }catch (Exception e){
                     e.printStackTrace();
                 }
             }
         }.start();
-        task2(true);
+        task2();
         if(finish && executeCallback != null){
             LogUtils.d(TAG, "stop test handler");
             executeCallback.stopTestHandler();
         }
-        return false;
+        return mPassed;
     }
 
     @Override

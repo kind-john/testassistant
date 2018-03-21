@@ -56,12 +56,12 @@ public class CameraSetBackground extends TestItemBase {
     public boolean doExecute(UseCaseManager.ExecuteCallback executeCallback, boolean finish) {
         LogUtils.d(TAG, "CameraSetBackground doExecute");
         //do test,then close progressview
-        task2(true);
+        task2();
         if(finish && executeCallback != null){
             LogUtils.d(TAG, "stop test handler");
             executeCallback.stopTestHandler();
         }
-        return false;
+        return mPassed;
     }
 
     @Override

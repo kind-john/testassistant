@@ -34,10 +34,8 @@ public class DoTestIntentService extends IntentService {
     private ArrayList<UseCaseBase> mAllUseCases;
     private HandleCallback mHandleCallback;
     public interface HandleCallback{
-        void loadDataFromXml();
-        void loadTouchPos();
+        void initHandler();
         void startExecuteThread();
-        void initDone();
         boolean createExcelFile();
     }
     public DoTestIntentService() {
@@ -61,9 +59,7 @@ public class DoTestIntentService extends IntentService {
     private synchronized void initHandler(){
         LogUtils.d(TAG, "onHandleIntent do init threadid = "+Thread.currentThread().getId());
         if(mHandleCallback != null){
-            mHandleCallback.loadDataFromXml();
-            mHandleCallback.loadTouchPos();
-            mHandleCallback.initDone();
+            mHandleCallback.initHandler();
         }else{
             throw new RuntimeException("error:There is no define init handler !");
         }

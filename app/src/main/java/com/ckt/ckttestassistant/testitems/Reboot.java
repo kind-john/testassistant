@@ -59,13 +59,14 @@ public class Reboot extends TestItemBase {
         mUseCaseManager.setRebootFlagToSharedPreference(true);
         PowerManager pm = (PowerManager) mContext.getSystemService(Context.POWER_SERVICE);
         pm.reboot("reboot");
+        mPassed = true;
         //System.exit(0);
-        //task2(true);
+        //task2();
         if(finish && executeCallback != null){
             LogUtils.d(TAG, "stop test handler");
             executeCallback.stopTestHandler();
         }
-        return false;
+        return mPassed;
     }
 
     @Override

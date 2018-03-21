@@ -10,6 +10,7 @@ import android.widget.EditText;
 import com.ckt.ckttestassistant.R;
 import com.ckt.ckttestassistant.UseCaseManager;
 import com.ckt.ckttestassistant.utils.LogUtils;
+import com.ckt.ckttestassistant.utils.SystemInvokeImpl;
 import com.ckt.ckttestassistant.utils.XmlTagConstants;
 
 import org.w3c.dom.Document;
@@ -55,13 +56,13 @@ public class GetNetworkStatus extends TestItemBase {
     @Override
     public boolean doExecute(UseCaseManager.ExecuteCallback executeCallback, boolean finish) {
         LogUtils.d(TAG, "GetNetworkStatus doExecute");
-        //do test,then close progressview
-        task2(true);
+        mPassed = mSystemInvoke.checkAllSimIsReady(mContext);
+        task2();
         if(finish && executeCallback != null){
             LogUtils.d(TAG, "stop test handler");
             executeCallback.stopTestHandler();
         }
-        return false;
+        return mPassed;
     }
 
     @Override

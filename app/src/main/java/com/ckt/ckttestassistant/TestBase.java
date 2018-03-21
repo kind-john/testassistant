@@ -28,12 +28,12 @@ public abstract class TestBase implements Cloneable{
     /**
      * 当前的级别
      */
-    private int level = 0;
+    protected int level = 0;
 
     /**
      * 是否展开
      */
-    private boolean isExpand = false;
+    protected boolean isExpand = false;
     
     /**
      * 下一级的子TestBase
@@ -48,6 +48,8 @@ public abstract class TestBase implements Cloneable{
     protected String mClassName = "ClassName";
     protected int ID = -1;
     protected int SN = -1;
+
+    protected UseCaseManager mUseCaseManager;
 
     protected Context mContext;
 
@@ -115,10 +117,12 @@ public abstract class TestBase implements Cloneable{
         this.isChecked = isChecked;
     }
 
-    public TestBase() {}
+    public TestBase() {
+        mUseCaseManager = UseCaseManager.getInstance(null, null);
+    }
 
     public TestBase(String title) {
-        super();
+        this();
         this.mTitle = title;
     }
 

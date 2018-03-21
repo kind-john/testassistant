@@ -44,7 +44,6 @@ public class AirPlaneSwitchOn extends TestItemBase {
     private static final String EXCEL_TITLE_TOTAL_TIMES = "total times";
     private static final String EXCEL_TITLE_COMPLETED_TIMES = "completed times";
     private static final String EXCEL_TITLE_FAIL_TIMES = "fial times";
-    private boolean mState = false;
     private boolean aSyncTaskCompleted = false;
 
     public AirPlaneSwitchOn() {
@@ -76,12 +75,11 @@ public class AirPlaneSwitchOn extends TestItemBase {
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     @Override
     public boolean doExecute(UseCaseManager.ExecuteCallback executeCallback, boolean finish) {
-        LogUtils.d(TAG, mClassName+" doExecute");
-        boolean passed = false;
+        LogUtils.d(TAG, mClassName + " doExecute");
         try {
             boolean isOn = Settings.Global.getInt(mContext.getContentResolver(),
                     Settings.Global.AIRPLANE_MODE_ON) == 1 ? true : false;
-            if(!isOn){
+            if (!isOn) {
                 Settings.Global.putInt(mContext.getContentResolver(),
                         Settings.Global.AIRPLANE_MODE_ON,
                         1);
@@ -92,35 +90,32 @@ public class AirPlaneSwitchOn extends TestItemBase {
                 mContext.registerReceiver(new MyReceiver(),
                         new IntentFilter(Intent.ACTION_AIRPLANE_MODE_CHANGED));
                 int count = 0;
-                while (!aSyncTaskCompleted){
+                while (!aSyncTaskCompleted) {
+                    aSyncTaskCompleted = false;
                     count++;
-                    LogUtils.d(TAG, mClassName+" sleep count = "+count);
-                    if(count > MyConstants.MAX_TRY){
+                    LogUtils.d(TAG, mClassName + " sleep count = " + count);
+                    if (count > MyConstants.MAX_TRY) {
                         break;
                     }
                     Thread.sleep(1000);
-                    LogUtils.d(TAG, mClassName+" sleep end");
+                    LogUtils.d(TAG, mClassName + " sleep end");
                 }
-                if(mState){
-                    LogUtils.d(TAG, mClassName+" passed");
-                    passed = true;
-                }
-            }else{
-                passed = true;
+            } else {
+                mPassed = true;
             }
         } catch (Settings.SettingNotFoundException e) {
             e.printStackTrace();
         } catch (InterruptedException e) {
             e.printStackTrace();
         } finally {
-            task2(passed);
+            task2();
         }
 
-        if(finish && executeCallback != null){
+        if (finish && executeCallback != null) {
             LogUtils.d(TAG, "stop test handler");
             executeCallback.stopTestHandler();
         }
-        return false;
+        return mPassed;
     }
 
     private void addRecordTitleToExcel(WritableSheet sheet, int row, int col) throws WriteException {
@@ -142,10 +137,10 @@ public class AirPlaneSwitchOn extends TestItemBase {
         String result;
         WritableCellFormat labelFormat = new WritableCellFormat();
         WritableCellFormat failFormat = new WritableCellFormat();
-        if(isSuccess()){
+        if (isSuccess()) {
             result = MyConstants.SUCCESS;
             labelFormat.setBackground(Colour.GREEN);
-        }else{
+        } else {
             result = MyConstants.FAIL;
             labelFormat.setBackground(Colour.RED);
         }
@@ -156,11 +151,12 @@ public class AirPlaneSwitchOn extends TestItemBase {
         Number completedTimes = new Number(col + 2, row, mCompletedTimes);
         sheet.addCell(completedTimes);
         Number failTimes = new Number(col + 3, row, mFailTimes);
-        if(mFailTimes > 0){
+        if (mFailTimes > 0) {
             failFormat.setBackground(Colour.RED);
         }
         sheet.addCell(failTimes);
     }
+
     @Override
     public void saveResult() {
         super.saveResult();
@@ -168,12 +164,12 @@ public class AirPlaneSwitchOn extends TestItemBase {
 
     @Override
     public void showPropertyDialog(Context context, final boolean isNeedUpdateXml) {
-        LogUtils.d(TAG, "showPropertyDialog :"+this.getClass().getName());
+        LogUtils.d(TAG, "showPropertyDialog :" + this.getClass().getName());
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         View v = LayoutInflater.from(context).inflate(R.layout.settings_wifi_switch_on, null);
-        final EditText delayEditText = (EditText)v.findViewById(R.id.delay);
+        final EditText delayEditText = (EditText) v.findViewById(R.id.delay);
         delayEditText.setText(String.valueOf(getDelay()));
-        final EditText timesEditText = (EditText)v.findViewById(R.id.times);
+        final EditText timesEditText = (EditText) v.findViewById(R.id.times);
         timesEditText.setText(String.valueOf(getTimes()));
 
         builder.setTitle("AirPlaneSwitchOn settings")
@@ -185,11 +181,11 @@ public class AirPlaneSwitchOn extends TestItemBase {
                         LogUtils.d(TAG, "Positive onClick");
                         int delay = Integer.parseInt(delayEditText.getText().toString());
                         int times = Integer.parseInt(timesEditText.getText().toString());
-                        LogUtils.d(TAG, "delay = "+delay+"; times = "+times);
-                        if(delay >= 0 && times > 0){
+                        LogUtils.d(TAG, "delay = " + delay + "; times = " + times);
+                        if (delay >= 0 && times > 0) {
                             setDelay(delay);
                             setTimes(times);
-                            if(isNeedUpdateXml){
+                            if (isNeedUpdateXml) {
                                 mUseCaseManager.updateTestItemOfAllUseCaseXml(AirPlaneSwitchOn.this);
                             }
                         }
@@ -212,20 +208,20 @@ public class AirPlaneSwitchOn extends TestItemBase {
     @Override
     public void saveParameters(Document doc, Element element) {
         Element e1 = doc.createElement(XmlTagConstants.XMLTAG_TESTITEM_DELAY);
-        Node n1 = doc.createTextNode(""+mDelay);
+        Node n1 = doc.createTextNode("" + mDelay);
         e1.appendChild(n1);
         element.appendChild(e1);
     }
 
     @Override
     public void saveParametersToXml(XmlSerializer serializer) throws Exception {
-        try{
+        try {
             //eg. start
             serializer.startTag(null, XmlTagConstants.XMLTAG_TESTITEM_DELAY);
-            serializer.text(""+mDelay);
+            serializer.text("" + mDelay);
             serializer.endTag(null, XmlTagConstants.XMLTAG_TESTITEM_DELAY);
             //eg. end
-        }catch (Exception e) {
+        } catch (Exception e) {
             throw new Exception();
         }
     }
@@ -233,9 +229,9 @@ public class AirPlaneSwitchOn extends TestItemBase {
     private class MyReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if(Intent.ACTION_AIRPLANE_MODE_CHANGED.equals(intent.getAction())){
+            if (Intent.ACTION_AIRPLANE_MODE_CHANGED.equals(intent.getAction())) {
                 aSyncTaskCompleted = true;
-                mState = intent.getBooleanExtra("state", false);
+                mPassed = intent.getBooleanExtra("state", false);
             }
         }
     }

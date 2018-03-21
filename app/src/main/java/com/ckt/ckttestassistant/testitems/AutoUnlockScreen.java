@@ -63,12 +63,13 @@ public class AutoUnlockScreen extends TestItemBase {
                 .getSystemService(KEYGUARD_SERVICE);
         KeyguardManager.KeyguardLock keyguardLock = keyguardManager.newKeyguardLock("unLock");
         keyguardLock.disableKeyguard();
-        task2(true);
+        mPassed = true;
+        task2();
         if(finish && executeCallback != null){
             LogUtils.d(TAG, "stop test handler");
             executeCallback.stopTestHandler();
         }
-        return false;
+        return mPassed;
     }
 
     @Override

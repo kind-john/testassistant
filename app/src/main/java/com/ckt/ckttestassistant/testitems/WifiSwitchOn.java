@@ -2,6 +2,7 @@ package com.ckt.ckttestassistant.testitems;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.net.wifi.WifiManager;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,6 +11,7 @@ import android.widget.EditText;
 import com.ckt.ckttestassistant.R;
 import com.ckt.ckttestassistant.UseCaseManager;
 import com.ckt.ckttestassistant.utils.LogUtils;
+import com.ckt.ckttestassistant.utils.MyConstants;
 import com.ckt.ckttestassistant.utils.XmlTagConstants;
 
 import org.w3c.dom.Document;
@@ -54,14 +56,29 @@ public class WifiSwitchOn extends TestItemBase {
 
     @Override
     public boolean doExecute(UseCaseManager.ExecuteCallback executeCallback, boolean finish) {
-        LogUtils.d(TAG, "WifiSwitchOn doExecute");
-        //do test,then close progressview
-        task2(true);
+        LogUtils.d(TAG, mClassName+" doExecute");
+        mSystemInvoke.openWifi(mContext);
+        int count = 0;
+        while (!mSystemInvoke.wifiIsEnabled()){
+            try {
+                LogUtils.d(TAG, "sleep count : " + count);
+                count++;
+                if(count <= MyConstants.MAX_TRY){
+                    Thread.sleep(1000);
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        if(mSystemInvoke.wifiIsEnabled()){
+            mPassed = true;
+        }
+        task2();
         if(finish && executeCallback != null){
             LogUtils.d(TAG, "stop test handler");
             executeCallback.stopTestHandler();
         }
-        return false;
+        return mPassed;
     }
 
     @Override

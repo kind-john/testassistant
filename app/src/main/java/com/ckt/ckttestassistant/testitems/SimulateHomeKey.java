@@ -63,17 +63,18 @@ public class SimulateHomeKey extends TestItemBase {
                 try {
                     Instrumentation inst = new Instrumentation();
                     inst.sendKeyDownUpSync(KeyEvent.KEYCODE_HOME);
+                    mPassed = true;
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
         }.start();
-        task2(true);
+        task2();
         if(finish && executeCallback != null){
             LogUtils.d(TAG, "stop test handler");
             executeCallback.stopTestHandler();
         }
-        return false;
+        return mPassed;
     }
 
     @Override

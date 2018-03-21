@@ -36,7 +36,6 @@ public class GpsSwitchOff extends TestItemBase {
     public static final int ID = 22;
     private static final String TITLE = "Gps Switch Off";
     private static final String TAG = "WifiSwitchOn";
-    private boolean mState = false;
     private boolean aSyncTaskCompleted = false;
 
     public GpsSwitchOff() {
@@ -68,7 +67,6 @@ public class GpsSwitchOff extends TestItemBase {
     @Override
     public boolean doExecute(UseCaseManager.ExecuteCallback executeCallback, boolean finish) {
         LogUtils.d(TAG, mClassName+" doExecute");
-        boolean passed = false;
         try {
             ContentResolver resolver = mContext.getContentResolver();
             if(gpsEnabled(resolver)){
@@ -81,6 +79,7 @@ public class GpsSwitchOff extends TestItemBase {
                         new IntentFilter(Intent.ACTION_LOCALE_CHANGED));
                 int count = 0;
                 while (!aSyncTaskCompleted){
+                    aSyncTaskCompleted = false;
                     count++;
                     LogUtils.d(TAG, mClassName+" sleep count = "+count);
                     if(count > MyConstants.MAX_TRY){
@@ -89,25 +88,21 @@ public class GpsSwitchOff extends TestItemBase {
                     Thread.sleep(1000);
                     LogUtils.d(TAG, mClassName+" sleep end");
                 }
-                if(mState){
-                    LogUtils.d(TAG, mClassName+" passed");
-                    passed = true;
-                }
             }else{
-                passed = true;
+                mPassed = true;
             }
 
         }catch (Exception e){
             e.printStackTrace();
         }finally {
-            task2(passed);
+            task2();
         }
 
         if(finish && executeCallback != null){
             LogUtils.d(TAG, "stop test handler");
             executeCallback.stopTestHandler();
         }
-        return false;
+        return mPassed;
     }
 
     private void setGpsEnabled(ContentResolver resolver, boolean enabled) {
@@ -191,7 +186,7 @@ public class GpsSwitchOff extends TestItemBase {
         public void onReceive(Context context, Intent intent) {
             if(Intent.ACTION_LOCALE_CHANGED.equals(intent.getAction())){
                 aSyncTaskCompleted = true;
-                mState = !intent.getBooleanExtra("state", true);
+                mPassed = !intent.getBooleanExtra("state", true);
             }
         }
     }

@@ -60,18 +60,6 @@ public class CktUseCase extends UseCaseBase {
         handler.sendMessage(msg);
     }
 
-    private boolean isNeedCreateNewFile() {
-        boolean result = true;
-        boolean status = mUseCaseManager.getTestStatus();
-        if(status){
-            result = false;
-        }else{
-            result = mUseCaseManager.isTestCompleted();
-        }
-        //return result;   //后续要优化，暂时返回true测试excel读写
-        return true;
-    }
-
     @Override
     protected void createExcelSheet() {
         LogUtils.d(TAG, "createExcelSheet");

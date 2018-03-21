@@ -4,8 +4,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.net.Uri;
-import android.os.AsyncTask;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,9 +11,9 @@ import android.widget.EditText;
 
 import com.ckt.ckttestassistant.R;
 import com.ckt.ckttestassistant.UseCaseManager;
-import com.ckt.ckttestassistant.utils.ExcelUtils;
 import com.ckt.ckttestassistant.utils.LogUtils;
 import com.ckt.ckttestassistant.utils.MyConstants;
+import com.ckt.ckttestassistant.utils.SystemInvokeImpl;
 import com.ckt.ckttestassistant.utils.XmlTagConstants;
 
 import org.w3c.dom.Document;
@@ -23,19 +21,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xmlpull.v1.XmlSerializer;
 
-import java.io.File;
-import java.io.IOException;
-
-import jxl.Cell;
-import jxl.Workbook;
-import jxl.read.biff.BiffException;
-import jxl.write.Label;
-import jxl.write.WritableCellFormat;
-import jxl.write.WritableFont;
-import jxl.write.WritableSheet;
-import jxl.write.WritableWorkbook;
-import jxl.write.WriteException;
-import jxl.write.biff.RowsExceededException;
+import static android.provider.ContactsContract.Directory.PACKAGE_NAME;
 
 /**
  * Created by ckt on 18-1-31.
@@ -45,6 +31,8 @@ public class LaunchBrowser extends TestItemBase {
     public static final int ID = 34;
     private static final String TITLE = "Launch Browser";
     private static final String TAG = "LaunchBrowser";
+    private static final String TARGET_PACKAGE_NAME = "org.chromium.webview_shell";
+    private static final String TARGET_ACTIVITY_NAME = "org.chromium.webview_shell.WebViewBrowserActivity";
 
     public LaunchBrowser() {
         super();
@@ -75,28 +63,41 @@ public class LaunchBrowser extends TestItemBase {
     @Override
     public boolean doExecute(UseCaseManager.ExecuteCallback executeCallback, boolean finish) {
         LogUtils.d(TAG, "LaunchBrowser doExecute");
-        /*Uri uri = Uri.parse("https://www.baidu.com");
-        Intent intent = new Intent(Intent.ACTION_VIEW,uri);
-        intent.setClassName("com.android.chrome","org.chromium.chrome.browser.ChromeTabbedActivity");*/
-        boolean result = true;
 
         Intent intent = new Intent(Intent.ACTION_MAIN).
                 addCategory(Intent.CATEGORY_LAUNCHER).
-                setClassName("org.chromium.webview_shell", "org.chromium.webview_shell.WebViewBrowserActivity").
+                setClassName(TARGET_PACKAGE_NAME, TARGET_ACTIVITY_NAME).
                 setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
         if(mContext.getPackageManager().resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY) != null){
             mContext.startActivity(intent);
-        }else{
-            result = false;
+            int count = 0;
+            while(!mSystemInvoke.launchSuccess(mContext,
+                    TARGET_PACKAGE_NAME,
+                    TARGET_ACTIVITY_NAME)){
+                count++;
+                if(count < MyConstants.MAX_TRY){
+                    LogUtils.d(TAG, "sleep count = "+count);
+                    try{
+                        Thread.sleep(1000);
+                    }catch (InterruptedException e){
+                        e.printStackTrace();
+                    }
+                }
+            }
+            if (mSystemInvoke.launchSuccess(mContext,
+                    TARGET_PACKAGE_NAME,
+                    TARGET_ACTIVITY_NAME)){
+                mPassed = true;
+            }
         }
-        task2(result);
+        task2();
 
         //do test,then close progressview
         if(finish && executeCallback != null){
             LogUtils.d(TAG, "stop test handler");
             executeCallback.stopTestHandler();
         }
-        return false;
+        return mPassed;
     }
 
     @Override

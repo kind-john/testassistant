@@ -27,7 +27,7 @@ public abstract class UseCaseBase extends TestBase{
 
     private static final String TAG = "UseCaseBase";
     private static final int USECASE_DEFAULT_DELAY = 0;
-    protected UseCaseManager mUseCaseManager;
+
     protected UseCaseBase mNextUseCase;
 
     public boolean isNeedInitFlag() {
@@ -41,8 +41,6 @@ public abstract class UseCaseBase extends TestBase{
 
     protected boolean mNeedInitFlag = true;
 
-    private boolean mPassed = false;
-
     public String getTitle() {
         return mTitle;
     }
@@ -52,7 +50,6 @@ public abstract class UseCaseBase extends TestBase{
     }
 
     public UseCaseBase() {
-        mUseCaseManager = UseCaseManager.getInstance(null, null);
         setDelay(USECASE_DEFAULT_DELAY);
     }
 
@@ -70,7 +67,7 @@ public abstract class UseCaseBase extends TestBase{
         boolean isPassed = true;
         try{
             if(children == null || children.isEmpty()){
-                return true;
+                return isPassed;
             }
             createExcelSheet();
 

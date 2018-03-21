@@ -77,12 +77,7 @@ public class ParseDurationFromLogs {
         Pattern datePattern = Pattern.compile(dateReg);
         Matcher dateMatcher = datePattern.matcher(str);
         String dateStr = "";
-        int month = 1;
-        int days = 1;
-        int hours = 0;
-        int minutes = 0;
-        int seconds = 0;
-        int milliseconds = 0;
+        int month = 1,days = 1,hours = 0,minutes = 0,seconds = 0,milliseconds = 0;
         if(timeMatcher.find()) {
             timeStr = timeMatcher.group();
             LogUtils.d(TAG, "Found value: " + timeStr);
@@ -110,6 +105,7 @@ public class ParseDurationFromLogs {
         }
         Date d = new Date(1970, month, days, hours, minutes, seconds);
         long duration = d.getTime()+milliseconds;
+        return duration;
         /*long h = duration/(60*60*1000);
         long m = (duration%(60*60*1000))/(60*1000);
         long s = (duration%(60*1000))/1000;
@@ -118,6 +114,5 @@ public class ParseDurationFromLogs {
         LogUtils.d(TAG, "m:"+m);
         LogUtils.d(TAG, "s:"+s);
         LogUtils.d(TAG, "ms:"+ms);*/
-        return duration;
     }
 }

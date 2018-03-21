@@ -45,6 +45,40 @@ public class CktTestAssistantMainActivity extends AppCompatActivity
         PermissionUtil.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
     }
 
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        LogUtils.d(TAG, "onCreate");
+        setContentView(R.layout.activity_ckt_test_assistant_main);
+        Intent it = getIntent();
+        TabLayout tabLayout = (TabLayout) findViewById(R.id.tab);
+        ViewPager viewPager = (ViewPager) findViewById(R.id.fragment);
+        mUseCaseManager = UseCaseManager.getInstance(getApplicationContext(), this);
+        boolean flag = mUseCaseManager.getRebootFlagFromSharedPreference();
+        boolean reboot = it.getBooleanExtra("reboot", false);
+        boolean isRebootTest = flag && reboot;
+        mUseCaseManager.init(mHandler, isRebootTest);
+        mUseCaseManager.addFinishExecuteObserver(this);
+
+        FragmentAdapter adapter = new FragmentAdapter(getSupportFragmentManager(), getTabTitles(), mHandler);
+        viewPager.setAdapter(adapter);
+        tabLayout.setupWithViewPager(viewPager);
+
+        //PermissionUtil.requestPerssions(this, REQUEST_CODE, mPermissions);
+        List<String> deniedPermissions = PermissionUtil.getDeniedPermissions(this, mPermissions);
+        if(deniedPermissions != null){
+            for (String p : deniedPermissions){
+                LogUtils.d(TAG, "permission: "+p);
+            }
+            if (deniedPermissions != null) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    requestPermissions(deniedPermissions.toArray(new String[deniedPermissions.size()]), 1);
+                }
+                //返回结果onRequestPermissionsResult
+            }
+        }
+    }
+
     public Handler mHandler = new Handler(){
         @Override
         public void handleMessage(Message msg) {
@@ -92,44 +126,21 @@ public class CktTestAssistantMainActivity extends AppCompatActivity
             }
         }
     };
-    private AlertDialog.Builder mProgressDialogBuilder = null;
-    private View mProgressView;
-    private TextView mProgressTitleTextView;
-    private TextView mProgressMessageTextView;
-    private AlertDialog mDialog;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        LogUtils.d(TAG, "onCreate");
-        setContentView(R.layout.activity_ckt_test_assistant_main);
-        Intent it = getIntent();
-        TabLayout tabLayout = (TabLayout) findViewById(R.id.tab);
-        ViewPager viewPager = (ViewPager) findViewById(R.id.fragment);
-        mUseCaseManager = UseCaseManager.getInstance(getApplicationContext(), this);
-        boolean flag = mUseCaseManager.getRebootFlagFromSharedPreference();
-        boolean reboot = it.getBooleanExtra("reboot", false);
-        boolean isRebootTest = flag && reboot;
-        mUseCaseManager.init(mHandler, isRebootTest);
-        mUseCaseManager.addFinishExecuteObserver(this);
+    public void finishExecueHandler() {
+        LogUtils.d(TAG, "CktTestAssistantMainActivity finishExecueHandler");
+    }
 
-        FragmentAdapter adapter = new FragmentAdapter(getSupportFragmentManager(), getTabTitles(), mHandler);
-        viewPager.setAdapter(adapter);
-        tabLayout.setupWithViewPager(viewPager);
+    @Override
+    public void onPermissionsGranted(int requestCode, List<String> perms, boolean isAllGranted) {
+        //do nothing
+    }
 
-        //PermissionUtil.requestPerssions(this, REQUEST_CODE, mPermissions);
-        List<String> deniedPermissions = PermissionUtil.getDeniedPermissions(this, mPermissions);
-        if(deniedPermissions != null){
-            for (String p : deniedPermissions){
-                LogUtils.d(TAG, "permission: "+p);
-            }
-            if (deniedPermissions != null) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    requestPermissions(deniedPermissions.toArray(new String[deniedPermissions.size()]), 1);
-                }
-                //返回结果onRequestPermissionsResult
-            }
-        }
+    @Override
+    public void onPermissionsDenied(int requestCode, List<String> perms, boolean isAllDenied) {
+        LogUtils.e(TAG, "grant permission failed!");
+        finish();
     }
 
     @Override
@@ -166,6 +177,11 @@ public class CktTestAssistantMainActivity extends AppCompatActivity
         super.onDestroy();
     }
 
+    private AlertDialog.Builder mProgressDialogBuilder = null;
+    private View mProgressView;
+    private TextView mProgressTitleTextView;
+    private TextView mProgressMessageTextView;
+    private AlertDialog mDialog;
     private String[] getTabTitles() {
         return getResources().getStringArray(R.array.tabTitles);
     }
@@ -242,12 +258,6 @@ public class CktTestAssistantMainActivity extends AppCompatActivity
     }
 
     @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        LogUtils.d(TAG, "keycode = "+ keyCode);
-        return super.onKeyDown(keyCode, event);
-    }
-
-    @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode){
             case MyConstants.BROWSER_REQUESTCODE:
@@ -257,21 +267,5 @@ public class CktTestAssistantMainActivity extends AppCompatActivity
                 break;
         }
         super.onActivityResult(requestCode, resultCode, data);
-    }
-
-    @Override
-    public void finishExecueHandler() {
-        LogUtils.d(TAG, "CktTestAssistantMainActivity finishExecueHandler");
-    }
-
-    @Override
-    public void onPermissionsGranted(int requestCode, List<String> perms, boolean isAllGranted) {
-        //do nothing
-    }
-
-    @Override
-    public void onPermissionsDenied(int requestCode, List<String> perms, boolean isAllDenied) {
-        LogUtils.e(TAG, "grant permission failed!");
-        finish();
     }
 }

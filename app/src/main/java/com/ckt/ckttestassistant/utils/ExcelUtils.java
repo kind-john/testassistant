@@ -81,7 +81,7 @@ public final class ExcelUtils {
         int times = tb.getTimes();
         int completedTimes = tb.getCompletedTimes();
         int failTimes = tb.getFailTimes();
-        if(failTimes == 0 && completedTimes == times){
+        if(tb.isPassed()){
             result = MyConstants.SUCCESS;
             labelFormat.setBackground(Colour.GREEN);
         }else{

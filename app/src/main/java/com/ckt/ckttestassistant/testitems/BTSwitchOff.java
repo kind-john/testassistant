@@ -64,7 +64,6 @@ public class BTSwitchOff extends TestItemBase {
     @Override
     public boolean doExecute(UseCaseManager.ExecuteCallback executeCallback, boolean finish) {
         LogUtils.d(TAG, mClassName+" doExecute");
-        boolean passed = false;
         try{
             if(mBluetoothAdapter != null){
                 if (mBluetoothAdapter.getState() != BluetoothAdapter.STATE_OFF){
@@ -86,23 +85,23 @@ public class BTSwitchOff extends TestItemBase {
                     }
                     if(mBluetoothAdapter.getState() == BluetoothAdapter.STATE_OFF){
                         LogUtils.d(TAG, mClassName+" close BT passed");
-                        passed = true;
+                        mPassed = true;
                     }
                 }else{
-                    passed = true;
+                    mPassed = true;
                 }
             }
         }catch (Exception e){
             e.printStackTrace();
         }finally {
-            task2(passed);
+            task2();
         }
 
         if(finish && executeCallback != null){
             LogUtils.d(TAG, "stop test handler");
             executeCallback.stopTestHandler();
         }
-        return passed;
+        return mPassed;
     }
 
     @Override

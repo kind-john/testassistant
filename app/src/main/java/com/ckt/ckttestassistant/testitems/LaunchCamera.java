@@ -4,6 +4,7 @@ import android.app.ActivityManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.provider.MediaStore;
 import android.support.v7.app.AlertDialog;
@@ -16,6 +17,7 @@ import com.ckt.ckttestassistant.UseCaseManager;
 import com.ckt.ckttestassistant.utils.ExcelUtils;
 import com.ckt.ckttestassistant.utils.LogUtils;
 import com.ckt.ckttestassistant.utils.MyConstants;
+import com.ckt.ckttestassistant.utils.SystemInvokeImpl;
 import com.ckt.ckttestassistant.utils.XmlTagConstants;
 
 import org.w3c.dom.Document;
@@ -46,6 +48,8 @@ public class LaunchCamera extends TestItemBase {
     public static final int ID = 29;
     private static final String TITLE = "Launch Camera";
     private static final String TAG = "LaunchCamera";
+    private static final String TARGET_PACKAGE_NAME = "com.mediatek.camera";
+    private static final String TARGET_ACTIVITY_NAME = "com.android.camera.CameraActivity";
 
     public LaunchCamera() {
         super();
@@ -73,51 +77,39 @@ public class LaunchCamera extends TestItemBase {
 
     }
 
-    private boolean launchSuccess(){
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            final ActivityManager am = (ActivityManager)
-                    mContext.getSystemService(Context.ACTIVITY_SERVICE);
-            final List<ActivityManager.RecentTaskInfo> recentTasks =
-                    am.getRecentTasks(1, ActivityManager.RECENT_IGNORE_UNAVAILABLE);
-            ActivityManager.RecentTaskInfo rt = recentTasks.get(0);
-            String packageName = rt.topActivity.getPackageName();
-            String topActivityName = rt.topActivity.getClassName();
-            if("com.mediatek.camera".equals(packageName) &&
-                    "com.android.camera.CameraActivity".equals(topActivityName)){
-                return true;
-            }
-        }
-        return false;
-    }
     @Override
     public boolean doExecute(UseCaseManager.ExecuteCallback executeCallback, boolean finish) {
         LogUtils.d(TAG, mClassName+" doExecute");
-        boolean passed = false;
         Intent intent = new Intent(MediaStore.INTENT_ACTION_STILL_IMAGE_CAMERA);
-        mContext.startActivity(intent);
-
-        int count = 0;
-        while(!launchSuccess()){
-            count++;
-            if(count < 5){
-                LogUtils.d(TAG, "sleep count = "+count);
-                try{
-                    Thread.sleep(1000);
-                }catch (InterruptedException e){
-                    e.printStackTrace();
+        if(mContext.getPackageManager().resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY) != null){
+            mContext.startActivity(intent);
+            int count = 0;
+            while(!mSystemInvoke.launchSuccess(mContext,
+                    TARGET_PACKAGE_NAME,
+                    TARGET_ACTIVITY_NAME)){
+                count++;
+                if(count < MyConstants.MAX_TRY){
+                    LogUtils.d(TAG, "sleep count = "+count);
+                    try{
+                        Thread.sleep(1000);
+                    }catch (InterruptedException e){
+                        e.printStackTrace();
+                    }
                 }
             }
+            if (mSystemInvoke.launchSuccess(mContext,
+                    TARGET_PACKAGE_NAME,
+                    TARGET_ACTIVITY_NAME)){
+                mPassed = true;
+            }
         }
-        if (launchSuccess()){
-            passed = true;
-        }
-        task2(passed);
+        task2();
 
         if(finish && executeCallback != null){
             LogUtils.d(TAG, "stop test handler");
             executeCallback.stopTestHandler();
         }
-        return passed;
+        return mPassed;
     }
 
     @Override
