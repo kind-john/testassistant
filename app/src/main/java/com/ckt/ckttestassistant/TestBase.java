@@ -5,10 +5,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.support.v7.app.AlertDialog;
 
-import com.ckt.ckttestassistant.usecases.UseCaseBase;
-
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by ckt on 18-3-9.
@@ -223,9 +220,7 @@ public abstract class TestBase implements Cloneable{
      * @return
      */
     public boolean isParentExpand() {
-        if (mParent == null)
-            return false;
-        return mParent.isExpand();
+        return mParent != null && mParent.isExpand();
     }
 
     /**
@@ -282,7 +277,7 @@ public abstract class TestBase implements Cloneable{
     public abstract boolean task();
 
     public boolean isPassed() {
-        return mFailTimes == 0 && mCompletedTimes == mTimes ? true : false;
+        return mFailTimes == 0 && mCompletedTimes == mTimes;
     }
 
     @Override

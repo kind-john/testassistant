@@ -19,7 +19,6 @@ import com.ckt.ckttestassistant.utils.HandlerMessageWhat;
 import com.ckt.ckttestassistant.utils.JSONUtils;
 import com.ckt.ckttestassistant.utils.LogUtils;
 import com.ckt.ckttestassistant.utils.MyConstants;
-import com.ckt.ckttestassistant.utils.PointConstants;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -227,8 +226,7 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
         if (mPref == null) {
             mPref = PreferenceManager.getDefaultSharedPreferences(mContext);
         }
-        boolean status = mPref.getBoolean(MyConstants.PREF_TEST_STATUS, false);
-        return status;
+        return mPref.getBoolean(MyConstants.PREF_TEST_STATUS, false);
     }
 
     /**
@@ -239,8 +237,7 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
         if (mPref == null) {
             mPref = PreferenceManager.getDefaultSharedPreferences(mContext);
         }
-        boolean flag = mPref.getBoolean(MyConstants.REBOOT_FLAG, false);
-        return flag;
+        return mPref.getBoolean(MyConstants.REBOOT_FLAG, false);
     }
 
     /**
@@ -657,15 +654,15 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
      * Created by ckt on 18-2-1.
      * 需要监听所有用例数据变化的类，必需实现此接口
      */
-    public static interface UseCaseChangeObserver {
-        public void allUseCaseChangeNofify(int position, int i);
+    public interface UseCaseChangeObserver {
+        void allUseCaseChangeNofify(int position, int i);
     }
 
     /**
      * 需要监听已选用例数据变化的类，必需实现此接口
      */
-    public static interface SelectedUseCaseChangeObserver {
-        public void selectedUseCaseChangeNofify();
+    public interface SelectedUseCaseChangeObserver {
+        void selectedUseCaseChangeNofify();
     }
 
     /**
@@ -748,11 +745,11 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
      * 测试任务执行完成后的回调接口，
      * 状态提示框就是实现此回调关闭的
      */
-    public static interface ExecuteCallback{
+    public interface ExecuteCallback{
         /*public void closeProgressView();
         public void updateProgressTitle(String title);
         public void updateProgressMessage(String message);*/
-        public void stopTestHandler();
+        void stopTestHandler();
         //public void clearSelectedUseCase();
     }
 
@@ -764,8 +761,8 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
         this.mExecuteCallback = executeCallback;
     }
 
-    public static interface FinishExecuteObserver{
-        public void finishExecueHandler();
+    public interface FinishExecuteObserver{
+        void finishExecueHandler();
     }
 
     public ArrayList<FinishExecuteObserver> getFinishExecuteObserver() {

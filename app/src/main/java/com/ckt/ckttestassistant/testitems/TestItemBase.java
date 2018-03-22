@@ -33,8 +33,6 @@ import jxl.write.WritableWorkbook;
 import jxl.write.WriteException;
 import jxl.write.biff.RowsExceededException;
 
-import static java.lang.Thread.sleep;
-
 /**
  * Created by ckt on 18-1-26.
  */
@@ -109,7 +107,6 @@ public abstract class TestItemBase extends TestBase implements CktResultsHelper.
             WritableSheet sheet = book.getSheet(mParent.getTitle());
             if(sheet == null){
                 LogUtils.e(TAG, "sheet can not find : "+ mParent.getTitle());
-                return ;
             }else{
                 WritableFont font = new WritableFont(WritableFont.createFont("楷体"), 11, WritableFont.BOLD);
                 WritableCellFormat format = new WritableCellFormat(font);

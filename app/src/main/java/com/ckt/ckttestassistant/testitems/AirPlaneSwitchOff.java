@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.net.ConnectivityManager;
 import android.os.Build;
 import android.provider.Settings;
 import android.support.v7.app.AlertDialog;
@@ -16,7 +15,6 @@ import android.widget.EditText;
 
 import com.ckt.ckttestassistant.R;
 import com.ckt.ckttestassistant.UseCaseManager;
-import com.ckt.ckttestassistant.utils.ExcelUtils;
 import com.ckt.ckttestassistant.utils.LogUtils;
 import com.ckt.ckttestassistant.utils.MyConstants;
 import com.ckt.ckttestassistant.utils.XmlTagConstants;
@@ -25,24 +23,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xmlpull.v1.XmlSerializer;
-
-import java.io.File;
-import java.io.IOException;
-
-import jxl.Cell;
-import jxl.LabelCell;
-import jxl.Workbook;
-import jxl.format.Colour;
-import jxl.read.biff.BiffException;
-import jxl.write.Label;
-import jxl.write.Number;
-import jxl.write.WritableCell;
-import jxl.write.WritableCellFormat;
-import jxl.write.WritableFont;
-import jxl.write.WritableSheet;
-import jxl.write.WritableWorkbook;
-import jxl.write.WriteException;
-import jxl.write.biff.RowsExceededException;
 
 /**
  * Created by ckt on 18-1-31.
@@ -86,7 +66,7 @@ public class AirPlaneSwitchOff extends TestItemBase {
         LogUtils.d(TAG, mClassName+" doExecute");
         try {
             boolean isOff = Settings.Global.getInt(mContext.getContentResolver(),
-                    Settings.Global.AIRPLANE_MODE_ON) == 0 ? true : false;
+                    Settings.Global.AIRPLANE_MODE_ON) == 0;
             if(!isOff){
                 Settings.Global.putInt(mContext.getContentResolver(),
                         Settings.Global.AIRPLANE_MODE_ON,
@@ -111,9 +91,7 @@ public class AirPlaneSwitchOff extends TestItemBase {
             }else{
                 mPassed = true;
             }
-        } catch (Settings.SettingNotFoundException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
+        } catch (Settings.SettingNotFoundException | InterruptedException e) {
             e.printStackTrace();
         } finally {
             task2();

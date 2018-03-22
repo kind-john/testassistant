@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    android:sharedUserId="android.uid.system"
     package="com.ckt.ckttestassistant">
-
+<!--android:sharedUserId="android.uid.system"-->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"></uses-permission>
     <uses-permission android:name="android.permission.REBOOT"></uses-permission>
     <uses-permission android:name="android.permission.INJECT_EVENTS"></uses-permission>

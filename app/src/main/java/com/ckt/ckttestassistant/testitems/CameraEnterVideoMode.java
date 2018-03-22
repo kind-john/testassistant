@@ -22,8 +22,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xmlpull.v1.XmlSerializer;
 
-import java.util.HashMap;
-
 /**
  * Created by ckt on 18-1-31.
  */

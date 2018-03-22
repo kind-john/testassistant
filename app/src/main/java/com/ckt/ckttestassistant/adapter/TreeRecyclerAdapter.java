@@ -8,6 +8,9 @@ import android.view.View;
 
 import com.ckt.ckttestassistant.TestBase;
 import com.ckt.ckttestassistant.interfaces.OnTreeTestBaseClickListener;
+import com.ckt.ckttestassistant.interfaces.UpdateShowPanelListener;
+import com.ckt.ckttestassistant.testitems.TestItemBase;
+import com.ckt.ckttestassistant.usecases.UseCaseBase;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,18 +24,24 @@ public abstract class TreeRecyclerAdapter extends RecyclerView.Adapter<RecyclerV
     /**
      * 存储所有可见的TestBase
      */
-    protected List<TestBase> mTestBases = new ArrayList<>();
+    protected ArrayList<TestBase> mTestBases = new ArrayList<>();
     protected LayoutInflater mInflater;
 
     /**
      * 存储所有的TestBase
      */
-    protected List<TestBase> mAllTestBases = new ArrayList<>();
+    protected ArrayList<TestBase> mAllTestBases = new ArrayList<>();
 
     /**
      * 点击的回调接口
      */
-    private OnTreeTestBaseClickListener onTreeTestBaseClickListener;
+    protected OnTreeTestBaseClickListener onTreeTestBaseClickListener;
+
+    public void setUpdateShowPanelListener(UpdateShowPanelListener updateShowPanelListener) {
+        this.mUpdateShowPanelListener = updateShowPanelListener;
+    }
+
+    protected UpdateShowPanelListener mUpdateShowPanelListener = null;
     /**
      * 默认不展开
      */
@@ -43,60 +52,85 @@ public abstract class TreeRecyclerAdapter extends RecyclerView.Adapter<RecyclerV
             OnTreeTestBaseClickListener onTreeTestBaseClickListener) {
         this.onTreeTestBaseClickListener = onTreeTestBaseClickListener;
     }
-    public TreeRecyclerAdapter(RecyclerView mTree, Context context, List<TestBase> datas,
+    public TreeRecyclerAdapter(Context context, ArrayList<TestBase> datas,
                            int defaultExpandLevel, int iconExpand, int iconNoExpand) {
 
         this.iconExpand = iconExpand;
         this.iconNoExpand = iconNoExpand;
 
-        for (TestBase TestBase:datas){
-            //TestBase.getChildren().clear();
-            TestBase.iconExpand = iconExpand;
-            TestBase.iconNoExpand = iconNoExpand;
-        }
         this.defaultExpandLevel = defaultExpandLevel;
         mContext = context;
-        /**
-         * 对所有的TestBase进行排序
+        /*
+          对所有的TestBase进行排序
          */
-        mAllTestBases = TreeHelper.getSortedTestBases(datas, defaultExpandLevel);
-        /**
-         * 过滤出可见的TestBase
+        mAllTestBases = datas;
+        /*
+          过滤出可见的TestBase
          */
-        mTestBases = TreeHelper.filterVisibleTestBase(mAllTestBases);
+        mTestBases = filterVisibleTestBase(mAllTestBases);
         mInflater = LayoutInflater.from(context);
+    }
+
+    private ArrayList<TestBase> filterVisibleTestBase(ArrayList<TestBase> tbs) {
+        ArrayList<TestBase> results = new ArrayList<TestBase>();
+        if(tbs != null && !tbs.isEmpty()) {
+            for (int index = 0; index < tbs.size(); index++) {
+                TestBase tb = tbs.get(index);
+                if (tb.isRoot() || tb.isParentExpand()){
+                    results.add(tb);
+                    addVisibleChildTestBase(results, tb);
+                }
+            }
+        }
+        return results;
+    }
+
+    private static void addVisibleChildTestBase(List<TestBase> result, TestBase tb) {
+        if(tb.isExpand()){
+            List<TestBase> children = tb.getChildren();
+            if(children != null && !children.isEmpty()){
+                for (TestBase child : children){
+                    result.add(child);
+                    if (child instanceof UseCaseBase) {
+                        addVisibleChildTestBase(result, child);
+                    }
+                }
+            }
+        }
     }
 
     /**
      *
-     * @param mTree
      * @param context
      * @param datas
      * @param defaultExpandLevel
      *            默认展开几级树
      */
-    public TreeRecyclerAdapter(RecyclerView mTree, Context context, List<TestBase> datas,
+    public TreeRecyclerAdapter(Context context, ArrayList<TestBase> datas,
                            int defaultExpandLevel) {
-        this(mTree,context,datas,defaultExpandLevel,-1,-1);
+        this(context,datas,defaultExpandLevel,-1,-1);
     }
 
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder,final int position) {
         TestBase TestBase = mTestBases.get(position);
-//        convertView = getConvertView(TestBase, position, convertView, parent);
         // 设置内边距
         holder.itemView.setPadding(TestBase.getLevel() * 30, 3, 3, 3);
-        /**
-         * 设置节点点击时，可以展开以及关闭,将事件继续往外公布
+        /*
+          设置节点点击时，可以展开以及关闭,将事件继续往外公布
          */
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                expandOrCollapse(position);
-                if (onTreeTestBaseClickListener != null) {
-                    onTreeTestBaseClickListener.onClick(mTestBases.get(position),
-                            position);
+                TestBase tb = mTestBases.get(position);
+                if (tb instanceof UseCaseBase) {
+                    expandOrCollapse(tb);
+                } else if (tb instanceof TestItemBase) {
+                    if (onTreeTestBaseClickListener != null) {
+                        onTreeTestBaseClickListener.onClick(mTestBases.get(position),
+                                position);
+                    }
                 }
             }
         });
@@ -109,102 +143,10 @@ public abstract class TreeRecyclerAdapter extends RecyclerView.Adapter<RecyclerV
     }
 
     /**
-     * 清除掉之前数据并刷新  重新添加
-     * @param mlists
-     * @param defaultExpandLevel 默认展开几级列表
-     */
-    public void addDataAll(List<TestBase> mlists,int defaultExpandLevel){
-        mAllTestBases.clear();
-        addData(-1,mlists,defaultExpandLevel);
-    }
-
-    /**
-     * 在指定位置添加数据并刷新 可指定刷新后显示层级
-     * @param index
-     * @param mlists
-     * @param defaultExpandLevel 默认展开几级列表
-     */
-    public void addData(int index,List<TestBase> mlists,int defaultExpandLevel){
-        this.defaultExpandLevel = defaultExpandLevel;
-        notifyData(index,mlists);
-    }
-
-    /**
-     * 在指定位置添加数据并刷新
-     * @param index
-     * @param mlists
-     */
-    public void addData(int index,List<TestBase> mlists){
-        notifyData(index,mlists);
-    }
-
-    /**
-     * 添加数据并刷新
-     * @param mlists
-     */
-    public void addData(List<TestBase> mlists){
-        addData(mlists,defaultExpandLevel);
-    }
-
-    /**
-     * 添加数据并刷新 可指定刷新后显示层级
-     * @param mlists
-     * @param defaultExpandLevel
-     */
-    public void addData(List<TestBase> mlists,int defaultExpandLevel){
-        this.defaultExpandLevel = defaultExpandLevel;
-        notifyData(-1,mlists);
-    }
-
-    /**
-     * 添加数据并刷新
-     * @param TestBase
-     */
-    public void addData(TestBase TestBase){
-        addData(TestBase,defaultExpandLevel);
-    }
-
-    /**
-     * 添加数据并刷新 可指定刷新后显示层级
-     * @param TestBase
-     * @param defaultExpandLevel
-     */
-    public void addData(TestBase TestBase,int defaultExpandLevel){
-        List<TestBase> TestBases = new ArrayList<>();
-        TestBases.add(TestBase);
-        this.defaultExpandLevel = defaultExpandLevel;
-        notifyData(-1,TestBases);
-    }
-
-    /**
      * 刷新数据
-     * @param index
-     * @param mListTestBases
      */
-    private void notifyData(int index,List<TestBase> mListTestBases){
-        for (int i = 0; i < mListTestBases.size(); i++) {
-            TestBase TestBase = mListTestBases.get(i);
-            TestBase.getChildren().clear();
-            TestBase.iconExpand = iconExpand;
-            TestBase.iconNoExpand = iconNoExpand;
-        }
-        for (int i = 0; i < mAllTestBases.size(); i++) {
-            TestBase TestBase = mAllTestBases.get(i);
-            TestBase.getChildren().clear();
-        }
-        if (index != -1){
-            mAllTestBases.addAll(index,mListTestBases);
-        }else {
-            mAllTestBases.addAll(mListTestBases);
-        }
-        /**
-         * 对所有的TestBase进行排序
-         */
-        mAllTestBases = TreeHelper.getSortedTestBases(mAllTestBases, defaultExpandLevel);
-        /**
-         * 过滤出可见的TestBase
-         */
-        mTestBases = TreeHelper.filterVisibleTestBase(mAllTestBases);
+    public void notifyData(){
+        mTestBases = filterVisibleTestBase(mAllTestBases);
         //刷新数据
         notifyDataSetChanged();
     }
@@ -213,7 +155,7 @@ public abstract class TreeRecyclerAdapter extends RecyclerView.Adapter<RecyclerV
      * 获取排序后所有节点
      * @return
      */
-    public List<TestBase> getAllTestBases(){
+    public ArrayList<TestBase> getAllTestBases(){
         if(mAllTestBases == null)
             mAllTestBases = new ArrayList<TestBase>();
         return mAllTestBases;
@@ -222,16 +164,14 @@ public abstract class TreeRecyclerAdapter extends RecyclerView.Adapter<RecyclerV
     /**
      * 相应ListView的点击事件 展开或关闭某节点
      *
-     * @param position
+     * @param tb
      */
-    public void expandOrCollapse(int position) {
-        TestBase n = mTestBases.get(position);
-
-        if (n != null) {// 排除传入参数错误异常
-            if (!n.isLeaf())
+    public void expandOrCollapse(TestBase tb) {
+        if (tb != null) {// 排除传入参数错误异常
+            if (!tb.isLeaf())
             {
-                n.setExpand(!n.isExpand());
-                mTestBases = TreeHelper.filterVisibleTestBase(mAllTestBases);
+                tb.setExpand(!tb.isExpand());
+                mTestBases = filterVisibleTestBase(mAllTestBases);
                 notifyDataSetChanged();// 刷新视图
             }
         }

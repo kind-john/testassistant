@@ -25,17 +25,11 @@ import com.ckt.ckttestassistant.adapter.CktItemDecoration;
 import com.ckt.ckttestassistant.adapter.TestCategoryListAdapter;
 import com.ckt.ckttestassistant.adapter.TestItemListAdapter;
 import com.ckt.ckttestassistant.interfaces.OnItemClickListener;
-import com.ckt.ckttestassistant.testitems.CktTestItem;
-import com.ckt.ckttestassistant.testitems.Reboot;
 import com.ckt.ckttestassistant.testitems.TestItemBase;
-import com.ckt.ckttestassistant.testitems.WifiSwitchOn;
-import com.ckt.ckttestassistant.usecases.UseCaseBase;
 import com.ckt.ckttestassistant.utils.LogUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-
-import static android.R.attr.id;
 
 /**
  * Created by ckt on 18-1-30.
@@ -43,11 +37,8 @@ import static android.R.attr.id;
 
 public class DefineUseCaseFragment extends Fragment {
     private static final String TAG = "DefineUseCaseFragment";
-    private Handler mHandler = null;
-    private RecyclerView mTestCategoryList;
     private Context mContext;
     private ArrayList<TestCategory> mTestCategoryItems = new ArrayList<TestCategory>();
-    private TestCategoryListAdapter mAdapter;
     private RecyclerView mTestItemList;
     private HashMap<String, ArrayList<TestBase>> mAllTestItems = new HashMap<String,ArrayList<TestBase>>();
     private ArrayList<TestBase> mSelectedTestItems = new ArrayList<TestBase>();
@@ -159,14 +150,12 @@ public class DefineUseCaseFragment extends Fragment {
 
     };
     private int mCurrentType = 0;
-    private Button mDeleteButton;
-    private Button mSaveButton;
     private TextView mTestItemTextView;
     private UseCaseManager mUseCaseManager;
     private Activity mActivity;
 
     public void setHandler(Handler handler) {
-        this.mHandler = handler;
+        Handler mHandler = handler;
     }
 
     @Override
@@ -234,15 +223,10 @@ public class DefineUseCaseFragment extends Fragment {
         mTestItemTextView = (TextView) rootView.findViewById(R.id.usecasetext);
         generateShowPanelString(mSelectedTestItems);
         mTestItemTextView.setText(mShowPanelInfo.toString());
-        mDeleteButton = (Button) rootView.findViewById(R.id.delete);
+        Button mDeleteButton = (Button) rootView.findViewById(R.id.delete);
         mDeleteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //do something
-                /*int start = mShowPanelInfo.lastIndexOf(">") - 1;
-                int end = mShowPanelInfo.length();
-                LogUtils.d(TAG, "start = "+start+ "; end = "+end);
-                mShowPanelInfo.delete(start, end);*/
                 if(mSelectedTestItems != null && !mSelectedTestItems.isEmpty()){
                     TestBase ti = mSelectedTestItems.get(mSelectedTestItems.size() - 1);
                     ti.setSN(-1);
@@ -252,7 +236,7 @@ public class DefineUseCaseFragment extends Fragment {
                 mTestItemTextView.setText(mShowPanelInfo.toString());
             }
         });
-        mSaveButton = (Button) rootView.findViewById(R.id.save);
+        Button mSaveButton = (Button) rootView.findViewById(R.id.save);
         mSaveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -287,9 +271,9 @@ public class DefineUseCaseFragment extends Fragment {
 
             }
         });
-        mTestCategoryList = (RecyclerView) rootView.findViewById(R.id.testcategorylist);
+        RecyclerView mTestCategoryList = (RecyclerView) rootView.findViewById(R.id.testcategorylist);
         initTestCategoryListFocus(mTestCategoryItems);
-        mAdapter = new TestCategoryListAdapter(mContext, mTestCategoryItems);
+        TestCategoryListAdapter mAdapter = new TestCategoryListAdapter(mContext, mTestCategoryItems);
         mAdapter.setOnItemClickListener(new OnItemClickListener() {
             @Override
             public void onItemClick(int pos) {
@@ -384,9 +368,10 @@ public class DefineUseCaseFragment extends Fragment {
 
     private void generateShowPanelString(ArrayList<TestBase> selectItems) {
         mShowPanelInfo.delete(0, mShowPanelInfo.length());
-        mShowPanelInfo.append("test item : ");
+        String StartTag = getResources().getString(R.string.testItemStartTag);
+        mShowPanelInfo.append(StartTag);
         if (selectItems != null && !selectItems.isEmpty()){
-            mShowPanelInfo.delete(12, mShowPanelInfo.length());
+            mShowPanelInfo.delete(StartTag.length(), mShowPanelInfo.length());
             for (int i = 0; i < selectItems.size(); i++){
                 mShowPanelInfo.append(" > " + selectItems.get(i).getTitle());
                 mShowPanelInfo.append(" x ");
@@ -394,7 +379,7 @@ public class DefineUseCaseFragment extends Fragment {
             }
         } else {
             //处理最后一个删除不了的问题
-            mShowPanelInfo.delete(12, mShowPanelInfo.length());
+            mShowPanelInfo.delete(StartTag.length(), mShowPanelInfo.length());
         }
     }
 }

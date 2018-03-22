@@ -2,7 +2,6 @@ package com.ckt.ckttestassistant.adapter;
 
 import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
-import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -77,7 +76,6 @@ public class TestItemListAdapter extends RecyclerView.Adapter<TestItemListAdapte
                 }else{
                     holder.mTitle.setBackgroundColor(Color.TRANSPARENT);
                 }
-                final int index = position;
                 holder.mItemView.setOnClickListener(new View.OnClickListener() {
 
                     @Override
@@ -93,7 +91,7 @@ public class TestItemListAdapter extends RecyclerView.Adapter<TestItemListAdapte
                             mOldCheckedPosition = position;
                         }*/
                         if(mItemClickListener != null){
-                            mItemClickListener.onItemClick(index);
+                            mItemClickListener.onItemClick(position);
                         }
                     }
                 });
@@ -104,7 +102,7 @@ public class TestItemListAdapter extends RecyclerView.Adapter<TestItemListAdapte
                         public void onClick(View v) {
                             if (mUpdateShowPanelListener != null){
                                 if(mSelectedItems != null){
-                                    TestBase tb2 = mAllItems.get(index);
+                                    TestBase tb2 = mAllItems.get(position);
                                     if(tb2 instanceof TestItemBase){
                                         TestItemBase ti2 = (TestItemBase)tb2.deepClone(null);
                                         mSelectedItems.add(ti2);

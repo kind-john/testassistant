@@ -89,7 +89,7 @@ public class SystemInvokeImpl implements SystemInvokeInterface{
             } catch (Exception e) {
                 e.printStackTrace();
             }finally {
-                simIsOK = (newState == TelephonyManager.SIM_STATE_READY) ? true : false;
+                simIsOK = (newState == TelephonyManager.SIM_STATE_READY);
                 if(!simIsOK){
                     return false;
                 }

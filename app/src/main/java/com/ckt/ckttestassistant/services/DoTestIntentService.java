@@ -13,7 +13,6 @@ import com.ckt.ckttestassistant.utils.CktXmlHelper2;
 import com.ckt.ckttestassistant.utils.LogUtils;
 
 import java.util.ArrayList;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * An {@link IntentService} subclass for handling asynchronous task requests in
@@ -79,12 +78,16 @@ public class DoTestIntentService extends IntentService {
         if (intent != null) {
             String cmd = intent.getStringExtra(COMMAND);
             if (cmd != null){
-                if(cmd.equals(INIT_COMMAND)) {
-                    initHandler();
-                }else if(cmd.equals(STARTEXECUTE_COMMAND)){
-                    startTestHandler();
-                }else if(cmd.equals(CREATEEXCELFILE_COMMAND)){
-                    createExcelFile();
+                switch (cmd) {
+                    case INIT_COMMAND:
+                        initHandler();
+                        break;
+                    case STARTEXECUTE_COMMAND:
+                        startTestHandler();
+                        break;
+                    case CREATEEXCELFILE_COMMAND:
+                        createExcelFile();
+                        break;
                 }
             }
         }

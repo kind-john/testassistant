@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="usecasehead">用例：</string>
+    <string name="empty">没有内容</string>
+    <string name="useCaseStartTag">"用例 ： "</string>
+    <string name="testItemStartTag">"测试项 : "</string>
+</resources>

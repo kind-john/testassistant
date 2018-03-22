@@ -78,7 +78,7 @@ public class AirPlaneSwitchOn extends TestItemBase {
         LogUtils.d(TAG, mClassName + " doExecute");
         try {
             boolean isOn = Settings.Global.getInt(mContext.getContentResolver(),
-                    Settings.Global.AIRPLANE_MODE_ON) == 1 ? true : false;
+                    Settings.Global.AIRPLANE_MODE_ON) == 1;
             if (!isOn) {
                 Settings.Global.putInt(mContext.getContentResolver(),
                         Settings.Global.AIRPLANE_MODE_ON,
@@ -103,9 +103,7 @@ public class AirPlaneSwitchOn extends TestItemBase {
             } else {
                 mPassed = true;
             }
-        } catch (Settings.SettingNotFoundException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
+        } catch (Settings.SettingNotFoundException | InterruptedException e) {
             e.printStackTrace();
         } finally {
             task2();

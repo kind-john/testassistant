@@ -1,23 +1,10 @@
 package com.ckt.ckttestassistant.utils;
 
-/**
- * Created by ckt on 18-1-26.
+/*
+  Created by ckt on 18-1-26.
  */
 
-import android.content.Context;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.os.Build;
-import android.os.Environment;
 import android.util.Log;
-
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.PrintWriter;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
 
 /**
  * Author: pecuyu

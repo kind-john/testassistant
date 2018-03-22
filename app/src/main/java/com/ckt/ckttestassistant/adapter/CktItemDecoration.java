@@ -15,9 +15,6 @@ import android.view.View;
  */
 
 public class CktItemDecoration extends RecyclerView.ItemDecoration {
-    private final int[] ATTRS = new int[]{
-            android.R.attr.listDivider
-    };
 
     public static final int HORIZONTAL_LIST = LinearLayoutManager.HORIZONTAL;
     public static final int VERTICAL_LIST = LinearLayoutManager.VERTICAL;
@@ -36,6 +33,9 @@ public class CktItemDecoration extends RecyclerView.ItemDecoration {
     private int mDecorationType = 0;
 
     public CktItemDecoration(Context context, int orientation, int type) {
+        int[] ATTRS = new int[]{
+                android.R.attr.listDivider
+        };
         final TypedArray a = context.obtainStyledAttributes(ATTRS);
         mDivider = a.getDrawable(0);
         a.recycle();

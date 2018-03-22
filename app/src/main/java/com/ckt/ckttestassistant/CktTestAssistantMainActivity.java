@@ -10,7 +10,6 @@ import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
@@ -34,9 +33,9 @@ public class CktTestAssistantMainActivity extends AppCompatActivity
     private UseCaseManager mUseCaseManager;
     private String[] mPermissions = {
             "android.permission.WRITE_EXTERNAL_STORAGE",
-            "android.intent.action.AIRPLANE_MODE",
-            "android.permission.WRITE_SECURE_SETTINGS",
-            "android.permission.ACCESS_FINE_LOCATION"
+            //"android.intent.action.AIRPLANE_MODE",
+            //"android.permission.WRITE_SECURE_SETTINGS",
+            //"android.permission.ACCESS_FINE_LOCATION"
     };
 
     @Override

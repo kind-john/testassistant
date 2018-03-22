@@ -10,7 +10,6 @@ import android.widget.EditText;
 import com.ckt.ckttestassistant.R;
 import com.ckt.ckttestassistant.UseCaseManager;
 import com.ckt.ckttestassistant.utils.LogUtils;
-import com.ckt.ckttestassistant.utils.SystemInvokeImpl;
 import com.ckt.ckttestassistant.utils.XmlTagConstants;
 
 import org.w3c.dom.Document;

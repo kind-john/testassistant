@@ -3,6 +3,7 @@
     <!-- TPTest -->
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
+    <color name="listitem_focus">#60d6ea</color>
     <color name="colorAccent">#FF4081</color>
     <color name="color_stop_record">#FF2DBC91</color>
     <color name="red">#cf00</color>

@@ -30,7 +30,6 @@ public class DataUsageSwitchOff extends TestItemBase {
     public static final int ID = 13;
     private static final String TITLE = "Data Usage Switch Off";
     private static final String TAG = "DataUsageSwitchOff";
-    private TelephonyManager mTelephonyManager;
 
     public DataUsageSwitchOff() {
         super();
@@ -62,7 +61,7 @@ public class DataUsageSwitchOff extends TestItemBase {
     public boolean doExecute(UseCaseManager.ExecuteCallback executeCallback, boolean finish) {
         LogUtils.d(TAG, mClassName+" doExecute");
         try {
-            mTelephonyManager = (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
+            TelephonyManager mTelephonyManager = (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
             Method getMethod, setMethod;
             getMethod = mTelephonyManager.getClass().getMethod("getDataEnabled");
             setMethod = mTelephonyManager.getClass().getMethod("setDataEnabled", boolean.class);

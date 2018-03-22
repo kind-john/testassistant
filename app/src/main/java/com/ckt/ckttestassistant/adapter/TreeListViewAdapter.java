@@ -4,9 +4,7 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.BaseAdapter;
-import android.widget.ListView;
 
 import com.ckt.ckttestassistant.TestBase;
 
@@ -82,17 +80,17 @@ public abstract class TreeListViewAdapter extends BaseAdapter
 
         this.defaultExpandLevel = defaultExpandLevel;
         mContext = context;
-        /**
-         * 对所有的TestBase进行排序
+        /*
+          对所有的TestBase进行排序
          */
         mAllTestBases = datas;//TreeHelper.getSortedTestBases(datas, defaultExpandLevel);
-        /**
-         * 过滤出可见的TestBase
+        /*
+          过滤出可见的TestBase
          */
         mTestBases = TreeHelper.filterVisibleTestBase(mAllTestBases);
         mInflater = LayoutInflater.from(context);
-        /**
-         * 设置节点点击时，可以展开以及关闭；并且将ItemClick事件继续往外公布
+        /*
+          设置节点点击时，可以展开以及关闭；并且将ItemClick事件继续往外公布
          */
 
     }

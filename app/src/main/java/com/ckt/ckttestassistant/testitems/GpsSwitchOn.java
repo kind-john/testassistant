@@ -1,18 +1,14 @@
 package com.ckt.ckttestassistant.testitems;
 
-import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.PackageManager;
 import android.location.LocationManager;
 import android.provider.Settings;
-import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
-import android.util.Xml;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
@@ -27,8 +23,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xmlpull.v1.XmlSerializer;
-
-import static android.R.attr.enabled;
 
 /**
  * Created by ckt on 18-1-31.

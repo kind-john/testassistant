@@ -4,11 +4,9 @@ import android.content.Context;
 import android.util.Xml;
 
 import com.ckt.ckttestassistant.TestBase;
-import com.ckt.ckttestassistant.testitems.CktTestItem;
 import com.ckt.ckttestassistant.testitems.Reboot;
 import com.ckt.ckttestassistant.testitems.TestItemBase;
 import com.ckt.ckttestassistant.testitems.WifiSwitchOn;
-import com.ckt.ckttestassistant.usecases.CktUseCase;
 import com.ckt.ckttestassistant.usecases.UseCaseBase;
 
 import org.w3c.dom.Document;
@@ -89,173 +87,205 @@ public class CktXmlHelper2 {
                         String name = parser.getName();
                         LogUtils.d(TAG,"XmlPullParser.START_TAG name:"+name);
 
-                        if (name.equals(XmlTagConstants.XMLTAG_USECASE)) { // 判断开始标签元素是否是student
-                            int id = Integer.parseInt(parser.getAttributeValue(0));
-                            String className = parser.getAttributeValue(1);
-                            LogUtils.d(TAG, "usecase id : " + id + "; className = " + className);
+                        switch (name) {
+                            case XmlTagConstants.XMLTAG_USECASE:  // 判断开始标签元素是否是student
+                                int id = Integer.parseInt(parser.getAttributeValue(0));
+                                String className = parser.getAttributeValue(1);
+                                LogUtils.d(TAG, "usecase id : " + id + "; className = " + className);
 
-                            if(allUseCaseMaxID < id){
-                                allUseCaseMaxID = id;
-                                LogUtils.d(TAG, "set allUseCaseMaxID = " + id);
-                            }
-                            LogUtils.d(TAG, "getUseCases : allUseCaseMaxID = "+allUseCaseMaxID);
-                            if (id >= 0) {
-                                try {
-                                    // 根据给定的类名初始化类
-                                    Class catClass = Class.forName(className);
-                                    // 实例化这个类
-                                    usecase = (UseCaseBase) catClass.newInstance();
-                                    usecase.setID(id);
-
-                                }catch (IllegalAccessException e) {
-                                    e.printStackTrace();
-                                } catch (InstantiationException e) {
-                                    e.printStackTrace();
-                                } catch (ClassNotFoundException e) {
-                                    e.printStackTrace();
+                                if (allUseCaseMaxID < id) {
+                                    allUseCaseMaxID = id;
+                                    LogUtils.d(TAG, "set allUseCaseMaxID = " + id);
                                 }
-                            } else {
-                                LogUtils.e(TAG, "error: id < -1 ,from "+path);
+                                LogUtils.d(TAG, "getUseCases : allUseCaseMaxID = " + allUseCaseMaxID);
+                                if (id >= 0) {
+                                    try {
+                                        // 根据给定的类名初始化类
+                                        Class catClass = Class.forName(className);
+                                        // 实例化这个类
+                                        usecase = (UseCaseBase) catClass.newInstance();
+                                        usecase.setID(id);
+
+                                    } catch (IllegalAccessException e) {
+                                        e.printStackTrace();
+                                    } catch (InstantiationException e) {
+                                        e.printStackTrace();
+                                    } catch (ClassNotFoundException e) {
+                                        e.printStackTrace();
+                                    }
+                                } else {
+                                    LogUtils.e(TAG, "error: id < -1 ,from " + path);
+                                }
+                                break;
+                            case XmlTagConstants.XMLTAG_USECASE_TITLE: {
+                                String title = parser.nextText();
+                                LogUtils.d(TAG, "title : " + title);
+
+                                if (usecase != null) {
+                                    LogUtils.d(TAG, "usecase title : " + title);
+                                    usecase.setTitle(title);
+                                }
+                                break;
                             }
-                        }else if(name.equals(XmlTagConstants.XMLTAG_USECASE_TITLE)){
-                            String title = parser.nextText();
-                            LogUtils.d(TAG, "title : " + title);
+                            case XmlTagConstants.XMLTAG_USECASE_TIMES: {
+                                int times = Integer.parseInt(parser.nextText());
+                                LogUtils.d(TAG, "times : " + times);
 
-                            if(usecase != null){
-                                LogUtils.d(TAG, "usecase title : " + title);
-                                usecase.setTitle(title);
-                            }
-                        }else if(name.equals(XmlTagConstants.XMLTAG_USECASE_TIMES)){
-                            int times = Integer.parseInt(parser.nextText());
-                            LogUtils.d(TAG, "times : " + times);
-
-                            if(usecase != null){
-                                LogUtils.d(TAG, "usecase times : " + times);
-                                usecase.setTimes(times);
-                            }
-
-                        }else if(name.equals(XmlTagConstants.XMLTAG_USECASE_FAILTIMES)){
-                            int failtimes = Integer.parseInt(parser.nextText());
-                            LogUtils.d(TAG, "failtimes : " + failtimes);
-
-                            if(usecase != null){
-                                LogUtils.d(TAG, "usecase failtimes : " + failtimes);
-                                usecase.setFailTimes(failtimes);
-                            }
-
-                        }else if(name.equals(XmlTagConstants.XMLTAG_USECASE_COMPLETEDTIMES)){
-                            int completedtimes = Integer.parseInt(parser.nextText());
-                            LogUtils.d(TAG, "completedtimes : " + completedtimes);
-
-                            if(usecase != null){
-                                LogUtils.d(TAG, "usecase completedtimes : " + completedtimes);
-                                usecase.setCompletedTimes(completedtimes);
-                            }
-
-                        }else if(name.equals(XmlTagConstants.XMLTAG_USECASE_SELECTED)){
-                            boolean isChecked = Boolean.parseBoolean(parser.nextText());
-                            LogUtils.d(TAG, "usecase isChecked : " + isChecked);
-                            if(usecase != null){
-                                usecase.setChecked(isChecked);
-                            }
-                        }else if(name.equals(XmlTagConstants.XMLTAG_USECASE_DELAY)){
-                            int delay = Integer.parseInt(parser.nextText());
-                            LogUtils.d(TAG, "delay : " + delay);
-                            if(usecase != null){
-                                LogUtils.d(TAG, "usecase delay : " + delay);
-                                usecase.setDelay(delay);
-                            }
-                        }else if(name.equals(XmlTagConstants.XMLTAG_TESTITEM_TITLE)){
-                            String title = parser.nextText();
-                            LogUtils.d(TAG, "title : " + title);
-
-                            if(testitem != null){
-                                LogUtils.d(TAG, "testitem title : " + title);
-                                testitem.setTitle(title);
-                            }
-                        }else if(name.equals(XmlTagConstants.XMLTAG_TESTITEM_TIMES)){
-                            int times = Integer.parseInt(parser.nextText());
-                            LogUtils.d(TAG, "times : " + times);
-
-                            if(testitem != null){
-                                LogUtils.d(TAG, "testitem times : " + times);
-                                testitem.setTimes(times);
-                            }
-
-                        }else if(name.equals(XmlTagConstants.XMLTAG_TESTITEM_FAILTIMES)){
-                            int failtimes = Integer.parseInt(parser.nextText());
-                            LogUtils.d(TAG, "failtimes : " + failtimes);
-
-                            if(testitem != null){
-                                LogUtils.d(TAG, "testitem failtimes : " + failtimes);
-                                testitem.setFailTimes(failtimes);
-                            }
-
-                        }else if(name.equals(XmlTagConstants.XMLTAG_TESTITEM_COMPLETEDTIMES)){
-                            int completedtimes = Integer.parseInt(parser.nextText());
-                            LogUtils.d(TAG, "completedtimes : " + completedtimes);
-
-                            if(testitem != null){
-                                LogUtils.d(TAG, "testitem completedtimes : " + completedtimes);
-                                testitem.setCompletedTimes(completedtimes);
-                            }
-
-                        }else if(name.equals(XmlTagConstants.XMLTAG_TESTITEM_SELECTED)){
-                            boolean isChecked = Boolean.parseBoolean(parser.nextText());
-                            LogUtils.d(TAG, "testitem isChecked : " + isChecked);
-                            if(testitem != null){
-                                testitem.setChecked(isChecked);
-                            }
-                        }else if(name.equals(XmlTagConstants.XMLTAG_TESTITEM)){
-                            if (usecase != null) {
-                                int id2 = Integer.parseInt(parser.getAttributeValue(0));
-                                String className2 = parser.getAttributeValue(1);
-                                LogUtils.d(TAG, "testitem id : " + id2+"; className = "+className2);
-                                try {
-                                    // 根据给定的类名初始化类
-                                    Class catClass = Class.forName(className2);
-                                    // 实例化这个类
-                                    testitem = (TestItemBase) catClass.newInstance();
-                                    testitem.setContext(context);
-                                    testitem.setID(id2);
-                                }catch (IllegalAccessException e) {
-                                    e.printStackTrace();
-                                } catch (InstantiationException e) {
-                                    e.printStackTrace();
-                                } catch (ClassNotFoundException e) {
-                                    e.printStackTrace();
+                                if (usecase != null) {
+                                    LogUtils.d(TAG, "usecase times : " + times);
+                                    usecase.setTimes(times);
                                 }
 
+                                break;
                             }
-                        }else if(name.equals(XmlTagConstants.XMLTAG_TESTITEM_DELAY)){
-                            int delay = Integer.parseInt(parser.nextText());
-                            LogUtils.d(TAG, "delay : " + delay);
-                            if(testitem != null){
-                                LogUtils.d(TAG, "testitem delay : " + delay);
-                                if(testitem instanceof WifiSwitchOn){
-                                    ((WifiSwitchOn)testitem).setDelay(delay);
-                                }else if(testitem instanceof Reboot){
-                                    ((Reboot)testitem).setDelay(delay);
-                                }else{
-                                    LogUtils.d(TAG, "there is no "+XmlTagConstants.XMLTAG_TESTITEM_DELAY);
+                            case XmlTagConstants.XMLTAG_USECASE_FAILTIMES: {
+                                int failtimes = Integer.parseInt(parser.nextText());
+                                LogUtils.d(TAG, "failtimes : " + failtimes);
+
+                                if (usecase != null) {
+                                    LogUtils.d(TAG, "usecase failtimes : " + failtimes);
+                                    usecase.setFailTimes(failtimes);
                                 }
+
+                                break;
                             }
-                        }else{
-                            LogUtils.e(TAG, "error: some new tag has not parser!!! name = " + name);
+                            case XmlTagConstants.XMLTAG_USECASE_COMPLETEDTIMES: {
+                                int completedtimes = Integer.parseInt(parser.nextText());
+                                LogUtils.d(TAG, "completedtimes : " + completedtimes);
+
+                                if (usecase != null) {
+                                    LogUtils.d(TAG, "usecase completedtimes : " + completedtimes);
+                                    usecase.setCompletedTimes(completedtimes);
+                                }
+
+                                break;
+                            }
+                            case XmlTagConstants.XMLTAG_USECASE_SELECTED: {
+                                boolean isChecked = Boolean.parseBoolean(parser.nextText());
+                                LogUtils.d(TAG, "usecase isChecked : " + isChecked);
+                                if (usecase != null) {
+                                    usecase.setChecked(isChecked);
+                                }
+                                break;
+                            }
+                            case XmlTagConstants.XMLTAG_USECASE_DELAY: {
+                                int delay = Integer.parseInt(parser.nextText());
+                                LogUtils.d(TAG, "delay : " + delay);
+                                if (usecase != null) {
+                                    LogUtils.d(TAG, "usecase delay : " + delay);
+                                    usecase.setDelay(delay);
+                                }
+                                break;
+                            }
+                            case XmlTagConstants.XMLTAG_TESTITEM_TITLE: {
+                                String title = parser.nextText();
+                                LogUtils.d(TAG, "title : " + title);
+
+                                if (testitem != null) {
+                                    LogUtils.d(TAG, "testitem title : " + title);
+                                    testitem.setTitle(title);
+                                }
+                                break;
+                            }
+                            case XmlTagConstants.XMLTAG_TESTITEM_TIMES: {
+                                int times = Integer.parseInt(parser.nextText());
+                                LogUtils.d(TAG, "times : " + times);
+
+                                if (testitem != null) {
+                                    LogUtils.d(TAG, "testitem times : " + times);
+                                    testitem.setTimes(times);
+                                }
+
+                                break;
+                            }
+                            case XmlTagConstants.XMLTAG_TESTITEM_FAILTIMES: {
+                                int failtimes = Integer.parseInt(parser.nextText());
+                                LogUtils.d(TAG, "failtimes : " + failtimes);
+
+                                if (testitem != null) {
+                                    LogUtils.d(TAG, "testitem failtimes : " + failtimes);
+                                    testitem.setFailTimes(failtimes);
+                                }
+
+                                break;
+                            }
+                            case XmlTagConstants.XMLTAG_TESTITEM_COMPLETEDTIMES: {
+                                int completedtimes = Integer.parseInt(parser.nextText());
+                                LogUtils.d(TAG, "completedtimes : " + completedtimes);
+
+                                if (testitem != null) {
+                                    LogUtils.d(TAG, "testitem completedtimes : " + completedtimes);
+                                    testitem.setCompletedTimes(completedtimes);
+                                }
+
+                                break;
+                            }
+                            case XmlTagConstants.XMLTAG_TESTITEM_SELECTED: {
+                                boolean isChecked = Boolean.parseBoolean(parser.nextText());
+                                LogUtils.d(TAG, "testitem isChecked : " + isChecked);
+                                if (testitem != null) {
+                                    testitem.setChecked(isChecked);
+                                }
+                                break;
+                            }
+                            case XmlTagConstants.XMLTAG_TESTITEM:
+                                if (usecase != null) {
+                                    int id2 = Integer.parseInt(parser.getAttributeValue(0));
+                                    String className2 = parser.getAttributeValue(1);
+                                    LogUtils.d(TAG, "testitem id : " + id2 + "; className = " + className2);
+                                    try {
+                                        // 根据给定的类名初始化类
+                                        Class catClass = Class.forName(className2);
+                                        // 实例化这个类
+                                        testitem = (TestItemBase) catClass.newInstance();
+                                        testitem.setContext(context);
+                                        testitem.setID(id2);
+                                    } catch (IllegalAccessException e) {
+                                        e.printStackTrace();
+                                    } catch (InstantiationException e) {
+                                        e.printStackTrace();
+                                    } catch (ClassNotFoundException e) {
+                                        e.printStackTrace();
+                                    }
+
+                                }
+                                break;
+                            case XmlTagConstants.XMLTAG_TESTITEM_DELAY: {
+                                int delay = Integer.parseInt(parser.nextText());
+                                LogUtils.d(TAG, "delay : " + delay);
+                                if (testitem != null) {
+                                    LogUtils.d(TAG, "testitem delay : " + delay);
+                                    if (testitem instanceof WifiSwitchOn) {
+                                        ((WifiSwitchOn) testitem).setDelay(delay);
+                                    } else if (testitem instanceof Reboot) {
+                                        ((Reboot) testitem).setDelay(delay);
+                                    } else {
+                                        LogUtils.d(TAG, "there is no " + XmlTagConstants.XMLTAG_TESTITEM_DELAY);
+                                    }
+                                }
+                                break;
+                            }
+                            default:
+                                LogUtils.e(TAG, "error: some new tag has not parser!!! name = " + name);
+                                break;
                         }
                         break;
 
                     case XmlPullParser.END_TAG:
                         String endName = parser.getName();
                         LogUtils.d(TAG,"XmlPullParser.END_TAG name:"+endName);
-                        if (endName.equals(XmlTagConstants.XMLTAG_USECASE)) {
-                            allUseCases.add(usecase);
-                            usecase = null;
-                        }else if (endName.equals(XmlTagConstants.XMLTAG_TESTITEM)) {
-                            usecase.addTestItem(testitem);
-                            testitem = null;
-                        }else{
-                            LogUtils.d(TAG, "ignored endName = " + endName);
+                        switch (endName) {
+                            case XmlTagConstants.XMLTAG_USECASE:
+                                allUseCases.add(usecase);
+                                usecase = null;
+                                break;
+                            case XmlTagConstants.XMLTAG_TESTITEM:
+                                usecase.addTestItem(testitem);
+                                testitem = null;
+                                break;
+                            default:
+                                LogUtils.d(TAG, "ignored endName = " + endName);
+                                break;
                         }
                         break;
 

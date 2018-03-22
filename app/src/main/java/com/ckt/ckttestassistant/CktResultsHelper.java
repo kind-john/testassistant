@@ -6,8 +6,8 @@ package com.ckt.ckttestassistant;
 
 public class CktResultsHelper {
     public interface ResultCallBack{
-        public boolean isSuccess();
-        public void saveTestData();
+        boolean isSuccess();
+        void saveTestData();
     }
 
     private ResultCallBack mCallBack;

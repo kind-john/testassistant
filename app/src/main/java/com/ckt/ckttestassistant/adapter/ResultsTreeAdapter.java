@@ -4,12 +4,10 @@ import android.content.Context;
 import android.graphics.Color;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.TextView;
 
 import com.ckt.ckttestassistant.R;
 import com.ckt.ckttestassistant.TestBase;
-import com.ckt.ckttestassistant.usecases.UseCaseBase;
 import com.ckt.ckttestassistant.utils.LogUtils;
 
 import java.util.ArrayList;
@@ -46,19 +44,6 @@ public class ResultsTreeAdapter extends TreeListViewAdapter {
             if (!n.isLeaf()) {
                 n.setExpand(!n.isExpand());
                 mTestBases = filterVisibleTestBase(mAllTestBases);
-                notifyDataSetChanged();// 刷新视图
-            }
-        }
-    }
-
-    private static void addVisibleChildTestBase(List<TestBase> result, TestBase tb) {
-        if(tb.isExpand()){
-            List<TestBase> children = tb.getChildren();
-            if(children != null && !children.isEmpty()){
-                for (TestBase child : children){
-                        result.add(child);
-                        addVisibleChildTestBase(result, child);
-                }
             }
         }
     }
@@ -70,8 +55,6 @@ public class ResultsTreeAdapter extends TreeListViewAdapter {
             // 如果为跟节点，或者上层目录为展开状态
             if (tb.isRoot() || tb.isParentExpand()) {
                 result.add(tb);
-                addVisibleChildTestBase(result, tb);
-
             }
         }
         return result;
@@ -96,16 +79,27 @@ public class ResultsTreeAdapter extends TreeListViewAdapter {
         convertView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                expandOrCollapse(position);
+                /*expandOrCollapse(position);
+                if (!tb.isChecked()) {
+                    setChecked(position);
+                }
+                notifyDataSetChanged();*/
             }
         });
         viewHolder.mTitle.setText(tb.getTitle());
+        if(tb.isChecked()){
+            viewHolder.mTitle.setBackgroundResource(R.drawable.background_of_listitem_focus);
+            //viewHolder.mTitle.setBackgroundColor(Color.GREEN);
+        }else{
+            viewHolder.mTitle.setBackgroundColor(Color.TRANSPARENT);
+        }
         boolean status = tb.isPassed();
         viewHolder.mStatus.setText(String.valueOf(status));
         if(status){
-            viewHolder.mStatus.setBackgroundColor(Color.GREEN);
+            viewHolder.mStatus.setBackgroundResource(R.drawable.background_of_pass_text);
+
         }else{
-            viewHolder.mStatus.setBackgroundColor(Color.RED);
+            viewHolder.mStatus.setBackgroundResource(R.drawable.background_of_file_text);
         }
         return convertView;
     }
@@ -114,21 +108,21 @@ public class ResultsTreeAdapter extends TreeListViewAdapter {
         LogUtils.d(TAG, "setFocus");
         int index = 0;
         int size = mTestBases.size();
+        if (size <= 0) {
+            return;
+        }
         if(position > 0 && position < size){
             index = position;
         }
+        setChecked(index);
         expandOrCollapse(index);
+        notifyDataSetChanged();
     }
 
-    private boolean isAllChildren(List<TestBase> children) {
-        if(children != null && !children.isEmpty()){
-            for (int i = 0; i < children.size(); i++){
-                if(children.get(i) instanceof UseCaseBase){
-                    return false;
-                }
-            }
-        }
-        return true;
+    @Override
+    public void notifyData() {
+        mTestBases = filterVisibleTestBase(mAllTestBases);
+        notifyDataSetChanged();
     }
 
     private final class UseCaseListHolder

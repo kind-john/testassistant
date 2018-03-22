@@ -10,7 +10,6 @@ import android.widget.TextView;
 
 import com.ckt.ckttestassistant.R;
 import com.ckt.ckttestassistant.TestBase;
-import com.ckt.ckttestassistant.testitems.TestItemBase;
 import com.ckt.ckttestassistant.utils.LogUtils;
 
 import java.util.ArrayList;

@@ -1,8 +1,5 @@
 package com.ckt.ckttestassistant.utils;
 
-import android.content.Context;
-import android.os.Environment;
-
 /**
  * Created by ckt on 18-2-6.
  */

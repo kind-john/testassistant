@@ -1,6 +1,5 @@
 package com.ckt.ckttestassistant.fragment;
 
-import android.content.Context;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.util.SparseArray;

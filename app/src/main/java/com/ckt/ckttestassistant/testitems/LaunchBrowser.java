@@ -13,15 +13,12 @@ import com.ckt.ckttestassistant.R;
 import com.ckt.ckttestassistant.UseCaseManager;
 import com.ckt.ckttestassistant.utils.LogUtils;
 import com.ckt.ckttestassistant.utils.MyConstants;
-import com.ckt.ckttestassistant.utils.SystemInvokeImpl;
 import com.ckt.ckttestassistant.utils.XmlTagConstants;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xmlpull.v1.XmlSerializer;
-
-import static android.provider.ContactsContract.Directory.PACKAGE_NAME;
 
 /**
  * Created by ckt on 18-1-31.

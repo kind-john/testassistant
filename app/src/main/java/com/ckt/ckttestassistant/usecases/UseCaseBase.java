@@ -1,23 +1,15 @@
 package com.ckt.ckttestassistant.usecases;
 
 import android.content.Context;
-import android.os.Bundle;
 import android.os.Handler;
-import android.os.Message;
 
 import com.ckt.ckttestassistant.TestBase;
-import com.ckt.ckttestassistant.UseCaseManager;
 import com.ckt.ckttestassistant.testitems.TestItemBase;
 import com.ckt.ckttestassistant.utils.LogUtils;
-import com.ckt.ckttestassistant.utils.MyConstants;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xmlpull.v1.XmlSerializer;
-
-import java.io.Closeable;
-import java.io.File;
-import java.util.ArrayList;
 
 /**
  * Created by ckt on 18-1-26.

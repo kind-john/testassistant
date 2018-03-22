@@ -2,11 +2,7 @@ package com.ckt.ckttestassistant.adapter;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.graphics.drawable.Drawable;
-import android.os.Build;
-import android.support.annotation.RequiresApi;
 import android.support.v7.widget.RecyclerView;
-import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,7 +22,6 @@ import java.util.ArrayList;
 
 public class TestCategoryListAdapter extends RecyclerView.Adapter<TestCategoryListAdapter.TestCategoryListHolder>{
     private static final String TAG = "TestCategoryListAdapter";
-    private final Context mContext;
     private final ArrayList<TestCategory> mItems;
     private OnItemClickListener mItemClickListener;
     private int mOldCheckedPosition = 0;
@@ -35,7 +30,7 @@ public class TestCategoryListAdapter extends RecyclerView.Adapter<TestCategoryLi
         this.mItemClickListener = listener;
     }
     public TestCategoryListAdapter(Context context, ArrayList<TestCategory> items) {
-        this.mContext = context;
+        Context mContext = context;
         this.mItems = items;
     }
 
@@ -56,11 +51,10 @@ public class TestCategoryListAdapter extends RecyclerView.Adapter<TestCategoryLi
         if(mItems != null && position < mItems.size()){
             holder.mTitle.setText(mItems.get(position).getTitle());
             if(mItems.get(position).isChecked()){
-                holder.mTitle.setBackgroundColor(Color.GREEN);
+                holder.mTitle.setBackgroundResource(R.drawable.background_of_listitem_focus);
             }else{
                 holder.mTitle.setBackgroundColor(Color.TRANSPARENT);
             }
-            final int index = position;
             holder.mItemView.setOnClickListener(new View.OnClickListener() {
 
                 @Override
@@ -68,14 +62,13 @@ public class TestCategoryListAdapter extends RecyclerView.Adapter<TestCategoryLi
                     if(position != mOldCheckedPosition){
                         if(mOldCheckedPosition > -1){
                             mItems.get(mOldCheckedPosition).setChecked(false);
-                            notifyItemChanged(mOldCheckedPosition);
                         }
                         mItems.get(position).setChecked(true);
-                        notifyItemChanged(position);
+                        notifyDataSetChanged();
                         mOldCheckedPosition = position;
                     }
                     if(mItemClickListener != null){
-                        mItemClickListener.onItemClick(index);
+                        mItemClickListener.onItemClick(position);
                         //v.setBackgroundColor(Color.BLUE);
                     }
                 }

@@ -14,7 +14,6 @@ import android.widget.EditText;
 import com.ckt.ckttestassistant.R;
 import com.ckt.ckttestassistant.UseCaseManager;
 import com.ckt.ckttestassistant.utils.LogUtils;
-import com.ckt.ckttestassistant.utils.MyConstants;
 import com.ckt.ckttestassistant.utils.PointConstants;
 import com.ckt.ckttestassistant.utils.XmlTagConstants;
 
@@ -22,8 +21,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xmlpull.v1.XmlSerializer;
-
-import java.util.HashMap;
 
 /**
  * Created by ckt on 18-1-31.

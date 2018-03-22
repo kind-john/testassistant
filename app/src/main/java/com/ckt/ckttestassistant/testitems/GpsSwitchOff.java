@@ -9,7 +9,6 @@ import android.content.IntentFilter;
 import android.location.LocationManager;
 import android.provider.Settings;
 import android.support.v7.app.AlertDialog;
-import android.telephony.TelephonyManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
@@ -24,9 +23,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xmlpull.v1.XmlSerializer;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 
 /**
  * Created by ckt on 18-1-31.

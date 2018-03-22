@@ -104,8 +104,7 @@ public class ParseDurationFromLogs {
             LogUtils.d(TAG, "day:"+days);
         }
         Date d = new Date(1970, month, days, hours, minutes, seconds);
-        long duration = d.getTime()+milliseconds;
-        return duration;
+        return d.getTime()+milliseconds;
         /*long h = duration/(60*60*1000);
         long m = (duration%(60*60*1000))/(60*1000);
         long s = (duration%(60*1000))/1000;

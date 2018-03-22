@@ -12,4 +12,8 @@
     <string name="createresultfail">create excel fail!</string>
     <string name="title_activity_open_file">open file</string>
     <string name="pleaseinputpath">Please input config file path</string>
+    <string name="usecasehead">use case:</string>
+    <string name="empty">empty</string>
+    <string name="useCaseStartTag">"Use case : "</string>
+    <string name="testItemStartTag">"Test item : "</string>
 </resources>

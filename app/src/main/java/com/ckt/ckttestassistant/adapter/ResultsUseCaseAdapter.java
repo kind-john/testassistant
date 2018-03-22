@@ -6,12 +6,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
 import com.ckt.ckttestassistant.R;
 import com.ckt.ckttestassistant.TestBase;
-import com.ckt.ckttestassistant.usecases.UseCaseBase;
 import com.ckt.ckttestassistant.utils.LogUtils;
 
 import java.util.ArrayList;

@@ -2,19 +2,13 @@ package com.ckt.ckttestassistant.adapter;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.opengl.Visibility;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import com.ckt.ckttestassistant.R;
 import com.ckt.ckttestassistant.TestBase;
-import com.ckt.ckttestassistant.interfaces.OnItemClickListener;
 import com.ckt.ckttestassistant.usecases.UseCaseBase;
 import com.ckt.ckttestassistant.utils.LogUtils;
 
@@ -88,7 +82,7 @@ public class UseCaseTreeAdapter extends TreeListViewAdapter {
         }
 
         if(tb.isChecked()){
-            viewHolder.mTitle.setBackgroundResource(R.drawable.button_shap_pressed);
+            viewHolder.mTitle.setBackgroundResource(R.drawable.background_of_listitem_focus);
             //viewHolder.mTitle.setBackgroundColor(Color.GREEN);
         }else{
             viewHolder.mTitle.setBackgroundColor(Color.TRANSPARENT);

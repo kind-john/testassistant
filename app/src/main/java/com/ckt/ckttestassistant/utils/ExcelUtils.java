@@ -1,8 +1,6 @@
 package com.ckt.ckttestassistant.utils;
 
 import android.content.Context;
-import android.os.Environment;
-import android.util.Log;
 import android.widget.Toast;
 
 import com.ckt.ckttestassistant.TestBase;
@@ -12,7 +10,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import jxl.Cell;
@@ -122,10 +119,10 @@ public final class ExcelUtils {
         return 0;
     }
 
-    /**
-     * 在appName/BatteryMonitor目录下生成表格文件
-     *
-     * @param titles    表格的第一行内容，即各列标题
+    /*
+      在appName/BatteryMonitor目录下生成表格文件
+
+      @param titles    表格的第一行内容，即各列标题
      * @param excelName 生成的表格文件的名字
      * @param data      需要写入表格的数据
      * @throws WriteException 写入表格异常
@@ -240,11 +237,11 @@ public final class ExcelUtils {
         }
     }
 
-    /**
-     * 初始化Excel
-     * add by gongpeng.wang for webtest in 2017-12-05
-     *
-     * @param fileName
+    /*
+      初始化Excel
+      add by gongpeng.wang for webtest in 2017-12-05
+
+      @param fileName
      * @param colName
      */
     /*public static void initExcel(String fileName, String[] colName) {
@@ -395,11 +392,11 @@ public final class ExcelUtils {
     private static String EXPORT_SUCCESS = "导出成功，路径:";
     //add by yonglong.cai for sensortest
 
-    /**
-     * 创建指南针Excel表格
-     * add by yonglong.cai for sensortest
-     *
-     * @param filename 文件名
+    /*
+      创建指南针Excel表格
+      add by yonglong.cai for sensortest
+
+      @param filename 文件名
      * @param results  结果
      * @return
      */
@@ -457,11 +454,11 @@ public final class ExcelUtils {
         return EXPORT_FAIL;
     }
 
-    *//**
-     * 创建霍尔传感器Excel表格
-     * add by yonglong.cai for sensortest
-     *
-     * @param filename         文件名
+    *//*
+      创建霍尔传感器Excel表格
+      add by yonglong.cai for sensortest
+
+      @param filename         文件名
      * @param results          结果
      * @param maxCloseInterval 最大盒盖-皮套应用出现间隔时间
      * @param maxOpenInterval  最大开盖-亮屏间隔时间
@@ -529,11 +526,11 @@ public final class ExcelUtils {
         return EXPORT_FAIL;
     }
 
-    *//**
-     * 创建加速度传感器  Excel表格
-     * add by yonglong.cai for sensortest
-     *
-     * @param filename 文件名
+    *//*
+      创建加速度传感器  Excel表格
+      add by yonglong.cai for sensortest
+
+      @param filename 文件名
      * @param results  结果
      * @return
      *//*
@@ -580,11 +577,11 @@ public final class ExcelUtils {
         return EXPORT_FAIL;
     }
 
-    *//**
-     * 创建Gyroscope Excel表格
-     * add by yonglong.cai for sensortest
-     *
-     * @param filename 文件名
+    *//*
+      创建Gyroscope Excel表格
+      add by yonglong.cai for sensortest
+
+      @param filename 文件名
      * @param results  结果
      * @return
      *//*
@@ -632,11 +629,11 @@ public final class ExcelUtils {
         return EXPORT_FAIL;
     }
 
-    *//**
-     * PSensor的Excel使用方法
-     * add by yonglong.cai for sensortest
-     *
-     * @param filename 文件名
+    *//*
+      PSensor的Excel使用方法
+      add by yonglong.cai for sensortest
+
+      @param filename 文件名
      * @param results  结果
      * @return
      *//*
@@ -686,11 +683,11 @@ public final class ExcelUtils {
         return EXPORT_FAIL;
     }
 
-    *//**
-     * LSensor的Excel使用方法
-     * add by yonglong.cai for sensortest
-     *
-     * @param filename 文件名
+    *//*
+      LSensor的Excel使用方法
+      add by yonglong.cai for sensortest
+
+      @param filename 文件名
      * @param results  结果
      * @return
      *//*

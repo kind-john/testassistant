@@ -32,9 +32,6 @@ public class DataUsageSwitchOn extends TestItemBase {
     public static final int ID = 12;
     private static final String TITLE = "Data Usage Switch On";
     private static final String TAG = "DataUsageSwitchOn";
-    private TelephonyManager mTelephonyManager;
-    private boolean aSyncTaskCompleted = false;
-    private boolean mState = false;
 
     public DataUsageSwitchOn() {
         super();
@@ -66,7 +63,7 @@ public class DataUsageSwitchOn extends TestItemBase {
     public boolean doExecute(UseCaseManager.ExecuteCallback executeCallback, boolean finish) {
         LogUtils.d(TAG, mClassName+" doExecute");
         try {
-            mTelephonyManager = (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
+            TelephonyManager mTelephonyManager = (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
             Method getMethod, setMethod;
             getMethod = mTelephonyManager.getClass().getMethod("getDataEnabled");
             setMethod = mTelephonyManager.getClass().getMethod("setDataEnabled", boolean.class);
@@ -180,8 +177,8 @@ public class DataUsageSwitchOn extends TestItemBase {
         @Override
         public void onReceive(Context context, Intent intent) {
             if(Intent.ACTION_LOCALE_CHANGED.equals(intent.getAction())){
-                aSyncTaskCompleted = true;
-                mState = intent.getBooleanExtra("state", false);
+                boolean aSyncTaskCompleted = true;
+                boolean mState = intent.getBooleanExtra("state", false);
             }
         }
     }

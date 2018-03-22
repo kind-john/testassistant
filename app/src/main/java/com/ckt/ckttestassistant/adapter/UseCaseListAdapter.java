@@ -74,7 +74,6 @@ public class UseCaseListAdapter extends RecyclerView.Adapter<UseCaseListAdapter.
             }else{
                 holder.mTitle.setBackgroundColor(Color.TRANSPARENT);
             }
-            final int index = position;
             holder.mItemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -89,7 +88,7 @@ public class UseCaseListAdapter extends RecyclerView.Adapter<UseCaseListAdapter.
                         mOldCheckedPosition = position;
                     }
                     if(mItemClickListener != null){
-                        mItemClickListener.onItemClick(index);
+                        mItemClickListener.onItemClick(position);
                     }
                 }
             });
@@ -100,7 +99,7 @@ public class UseCaseListAdapter extends RecyclerView.Adapter<UseCaseListAdapter.
                         /*if(mSelectedItems != null) {
                             mSelectedItems.add(mAllItems.get(index));
                         }*/
-                        mUpdateShowPanelListener.updateShowPanelForAdd(index);
+                        mUpdateShowPanelListener.updateShowPanelForAdd(position);
                     }
                 }
             });
