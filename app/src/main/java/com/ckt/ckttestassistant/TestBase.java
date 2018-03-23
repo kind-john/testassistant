@@ -274,8 +274,6 @@ public abstract class TestBase implements Cloneable{
         return clone;
     }
 
-    public abstract boolean task();
-
     public boolean isPassed() {
         return mFailTimes == 0 && mCompletedTimes == mTimes;
     }
@@ -296,4 +294,8 @@ public abstract class TestBase implements Cloneable{
                 ", isChecked=" + isChecked +
                 '}';
     }
+
+    public abstract boolean task();
+
+    public abstract void showPropertyDialog(Context context, final boolean isNeedUpdateXml);
 }

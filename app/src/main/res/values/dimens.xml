@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="horizontal_gap">2dp</dimen>
+    <dimen name="vertical_gap">2dp</dimen>
+    <dimen name="divider_width">1dp</dimen>
+    <dimen name="left_gap">5dp</dimen>
+    <dimen name="right_gap">5dp</dimen>
+    <dimen name="item_corner_radius">5dp</dimen>
+</resources>

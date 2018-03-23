@@ -26,6 +26,8 @@ public final class MyConstants {
 
     public static final String REBOOT_FLAG = "reboot_flag";
 
+    public static final String ITEM_DIVIDER_STRING = " | ";
+
     /**
      * @Description 私有化构造方法
      */

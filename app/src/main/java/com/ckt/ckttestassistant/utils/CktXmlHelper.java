@@ -35,7 +35,7 @@ import javax.xml.transform.stream.StreamResult;
 public class CktXmlHelper {
     private static final String TAG = "CktXmlHelper";
     private static CktXmlHelper instance = null;
-    private static int MAX_LEVEL = 2;
+    public static int MAX_LEVEL = 2;
     private CktXmlHelper() {
 
     }
@@ -474,6 +474,7 @@ public class CktXmlHelper {
                                             // 实例化这个类
                                             usecase2 = (UseCaseBase) catClass.newInstance();
                                             usecase2.setContext(context);
+                                            usecase2.setActivity(activity);
                                             usecase2.setID(id);
                                             usecase2.setExpand(false);
                                             if (usecase != null) {
@@ -485,6 +486,7 @@ public class CktXmlHelper {
                                             // 实例化这个类
                                             usecase = (UseCaseBase) catClass.newInstance();
                                             usecase.setContext(context);
+                                            usecase.setActivity(activity);
                                             usecase.setID(id);
                                             usecase.setExpand(false);
                                             usecase.setParent(null);

@@ -11,6 +11,8 @@ import android.os.Message;
 import android.preference.PreferenceManager;
 
 import com.ckt.ckttestassistant.services.DoTestIntentService;
+import com.ckt.ckttestassistant.testitems.EndTagItem;
+import com.ckt.ckttestassistant.testitems.StartTagItem;
 import com.ckt.ckttestassistant.testitems.TestItemBase;
 import com.ckt.ckttestassistant.usecases.CktUseCase;
 import com.ckt.ckttestassistant.usecases.UseCaseBase;
@@ -315,23 +317,50 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
      */
     public synchronized void addUsecaseToAllUseCaseXml(ArrayList<TestBase> selectedTestItems, String name) {
         LogUtils.d(TAG, "method addUsecaseToAllUseCaseXml enter");
-        if(selectedTestItems == null || selectedTestItems.isEmpty()){
-            LogUtils.d(TAG, "don't select any testitem,so don't save anything!");
-            return;
-        }
-        String path = mContext.getFilesDir()+"/usecases.xml";
-        UseCaseBase uc = new CktUseCase(mContext);
-        uc.setTitle(name);
-        uc.setChildren(selectedTestItems);
-        uc.setChildrenSN();
-        ArrayList<TestBase> ucs = new ArrayList<TestBase>();
-        ucs.add(uc);
-        try {
-            mXmlHelper.addUsecase(path, ucs, false);
-            getAllUseCaseFromXml();
-            notifyAllUseCaseChange();
-        }catch (Exception e){
-            e.printStackTrace();
+        if(selectedTestItems != null && !selectedTestItems.isEmpty()){
+            String path = mContext.getFilesDir()+"/usecases.xml";
+            UseCaseBase parent1 = new CktUseCase(mContext, mActivity);
+            UseCaseBase parent2 = null;
+            UseCaseBase parent3 = null;
+            parent1.setTitle(name);
+
+            for (int index = 0; index < selectedTestItems.size(); index++) {
+                TestBase tb = selectedTestItems.get(index);
+
+                if (tb instanceof StartTagItem) {
+                    if (parent2 != null){
+                        parent3 = new CktUseCase(mContext, mActivity);
+                    } else {
+                        parent2 = new CktUseCase(mContext, mActivity);
+                    }
+                } else if (tb instanceof EndTagItem) {
+                    if (parent3 != null) {
+                        parent2.addTestItem(parent3);
+                        parent3 = null;
+                    } else if (parent2 != null) {
+                        parent1.addTestItem(parent2);
+                        parent2 = null;
+                    }
+                } else {
+                    if (parent3 != null) {
+                        parent3.addTestItem(tb);
+                    } else if (parent2 != null) {
+                        parent2.addTestItem(tb);
+                    } else if (parent1 != null) {
+                        parent1.addTestItem(tb);
+                    }
+                }
+            }
+            parent1.setChildrenSN();
+            ArrayList<TestBase> ucs = new ArrayList<TestBase>();
+            ucs.add(parent1);
+            try {
+                mXmlHelper.addUsecase(path, ucs, false);
+                getAllUseCaseFromXml();
+                notifyAllUseCaseChange();
+            }catch (Exception e){
+                e.printStackTrace();
+            }
         }
         LogUtils.d(TAG, "method addUsecaseToAllUseCaseXml exit");
     }

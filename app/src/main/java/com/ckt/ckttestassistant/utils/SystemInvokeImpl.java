@@ -2,8 +2,11 @@ package com.ckt.ckttestassistant.utils;
 
 import android.app.ActivityManager;
 import android.content.Context;
+import android.content.Intent;
 import android.net.wifi.WifiManager;
 import android.os.Build;
+import android.provider.Settings;
+import android.support.annotation.RequiresApi;
 import android.telephony.TelephonyManager;
 
 import java.lang.reflect.Method;
@@ -131,19 +134,41 @@ public class SystemInvokeImpl implements SystemInvokeInterface{
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
     @Override
     public void openAPMMode(Context context) {
-
+        Settings.Global.putInt(context.getContentResolver(),
+                Settings.Global.AIRPLANE_MODE_ON,
+                1);
+        Intent intent = new Intent(Intent.ACTION_AIRPLANE_MODE_CHANGED);
+        intent.addFlags(Intent.FLAG_RECEIVER_REPLACE_PENDING);
+        intent.putExtra("state", true);
+        context.sendBroadcast(intent);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
     @Override
     public void closeAPMMode(Context context) {
-
+        Settings.Global.putInt(context.getContentResolver(),
+                Settings.Global.AIRPLANE_MODE_ON,
+                0);
+        Intent intent = new Intent(Intent.ACTION_AIRPLANE_MODE_CHANGED);
+        intent.addFlags(Intent.FLAG_RECEIVER_REPLACE_PENDING);
+        intent.putExtra("state", false);
+        context.sendBroadcast(intent);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
     @Override
-    public boolean APMModeIsEnabled() {
-        return false;
+    public boolean APMModeIsEnabled(Context context) {
+        boolean isOn = false;
+        try {
+            isOn = Settings.Global.getInt(context.getContentResolver(),
+                    Settings.Global.AIRPLANE_MODE_ON) == 1;
+        } catch (Settings.SettingNotFoundException e) {
+            e.printStackTrace();
+        }
+        return isOn;
     }
 
     @Override
@@ -182,27 +207,27 @@ public class SystemInvokeImpl implements SystemInvokeInterface{
     }
 
     @Override
-    public boolean GpsIsEnabled() {
+    public boolean gpsIsEnabled() {
         return false;
     }
 
     @Override
-    public void MyWakeUp(Context context) {
+    public void myWakeUp(Context context) {
 
     }
 
     @Override
-    public void MySleep(Context context) {
+    public void mySleep(Context context) {
 
     }
 
     @Override
-    public void MyReboot(Context context) {
+    public void myReboot(Context context) {
 
     }
 
     @Override
-    public void MyBrightnessChange(Context context, int value) {
+    public void myBrightnessChange(Context context, int value) {
 
     }
 
@@ -217,7 +242,8 @@ public class SystemInvokeImpl implements SystemInvokeInterface{
     }
 
     @Override
-    public boolean NFCIsEnabled() {
+    public boolean nfcIsEnabled() {
         return false;
     }
+
 }

@@ -1,18 +1,17 @@
 package com.ckt.ckttestassistant.adapter;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.ckt.ckttestassistant.R;
 import com.ckt.ckttestassistant.TestBase;
+import com.ckt.ckttestassistant.interfaces.OnSetParametersListener;
 import com.ckt.ckttestassistant.testitems.TestItemBase;
 import com.ckt.ckttestassistant.usecases.UseCaseBase;
 
@@ -24,6 +23,7 @@ import java.util.ArrayList;
 
 public class UseCaseTreeRecyclerAdapter extends TreeRecyclerAdapter {
     private static final String TAG = "UseCaseTreeRecyclerAdapter";
+
 
     public UseCaseTreeRecyclerAdapter(Context context, ArrayList<TestBase> datas, int defaultExpandLevel, int iconExpand, int iconNoExpand) {
         super(context, datas, defaultExpandLevel, iconExpand, iconNoExpand);
@@ -52,18 +52,30 @@ public class UseCaseTreeRecyclerAdapter extends TreeRecyclerAdapter {
                 }
             }
         });
+
+        viewHolder.mTitle.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mOnSetParametersListener != null) {
+                    mOnSetParametersListener.setItemParameters(tb);
+                }
+            }
+        });
         viewHolder.mTitle.setText(tb.getTitle());
 
-        /*if(tb.isChecked()){
-            viewHolder.mTitle.setBackgroundResource(R.drawable.background_of_listitem_focus);
-        }else{
-            viewHolder.mTitle.setBackgroundColor(Color.TRANSPARENT);
-        }*/
         if(tb.getLevel() != 0){
             viewHolder.mAdd.setVisibility(View.INVISIBLE);
         }else{
             viewHolder.mAdd.setVisibility(View.VISIBLE);
         }
+
+        viewHolder.mIcon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+            TestBase tb = mTestBases.get(position);
+            expandOrCollapse(tb);
+            }
+        });
         if (tb instanceof UseCaseBase) {
             viewHolder.mIcon.setVisibility(View.VISIBLE);
 

@@ -22,6 +22,7 @@ import android.widget.TextView;
 import com.ckt.ckttestassistant.TestBase;
 import com.ckt.ckttestassistant.UseCaseManager;
 import com.ckt.ckttestassistant.adapter.UseCaseTreeRecyclerAdapter;
+import com.ckt.ckttestassistant.interfaces.OnSetParametersListener;
 import com.ckt.ckttestassistant.interfaces.OnTreeTestBaseClickListener;
 import com.ckt.ckttestassistant.interfaces.UpdateShowPanelListener;
 import com.ckt.ckttestassistant.services.DoTestIntentService;
@@ -29,6 +30,7 @@ import com.ckt.ckttestassistant.testitems.TestItemBase;
 import com.ckt.ckttestassistant.utils.LogUtils;
 import com.ckt.ckttestassistant.R;
 import com.ckt.ckttestassistant.usecases.UseCaseBase;
+import com.ckt.ckttestassistant.utils.MyConstants;
 
 import java.util.ArrayList;
 
@@ -93,19 +95,17 @@ public class UseCaseFragment extends Fragment implements View.OnClickListener, U
 
         mAdapter = new UseCaseTreeRecyclerAdapter(mContext, mAllItems, 1);
         //mAdapter.setFocus(0);
-        mAdapter.setOnTreeTestBaseClickListener(new OnTreeTestBaseClickListener() {
+
+        mAdapter.setOnSetParametersListener(new OnSetParametersListener() {
             @Override
-            public void onClick(TestBase node, int position) {
-                if (node instanceof TestItemBase) {
-                    ((TestItemBase)node).showPropertyDialog(mActivity, true);
-                }
+            public void setItemParameters(TestBase tb) {
+                tb.showPropertyDialog(mActivity, true);
             }
         });
         mAdapter.setUpdateShowPanelListener(new UpdateShowPanelListener() {
             @Override
             public void updateShowPanelForAdd(TestBase tb) {
-                int index = mAllItems.indexOf(tb);
-                showPropertySetting((UseCaseBase)tb, index);
+                setShowPanelForAdd(mAllItems.indexOf(tb));
             }
         });
 
@@ -174,46 +174,6 @@ public class UseCaseFragment extends Fragment implements View.OnClickListener, U
         mContext.startService(it);
     }
 
-    private void showPropertySetting(final UseCaseBase uc, final int index) {
-        LogUtils.d(TAG, "showPropertySetting :"+this.getClass().getName());
-        AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);
-        View v = LayoutInflater.from(mContext).inflate(R.layout.settings_usecase, null);
-        final EditText delayEditText = (EditText)v.findViewById(R.id.delay);
-        delayEditText.setText(String.valueOf(uc.getDelay()));
-        final EditText timesEditText = (EditText)v.findViewById(R.id.times);
-        timesEditText.setText(String.valueOf(uc.getTimes()));
-
-        builder.setTitle(uc.getTitle())
-                .setView(v)
-                .setMessage("set properties")
-                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        LogUtils.d(TAG, "Positive onClick");
-                        int delay = Integer.parseInt(delayEditText.getText().toString());
-                        int times = Integer.parseInt(timesEditText.getText().toString());
-                        LogUtils.d(TAG, "delay = "+delay+"; times = "+times);
-                        if(delay >= 0 && times > 0){
-                            uc.setDelay(delay);
-                            uc.setTimes(times);
-                            setShowPanelForAdd(index);
-                        }
-                    }
-                })
-                .setNegativeButton("cancel", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        LogUtils.d(TAG, "Negative onClick");
-                    }
-                })
-                .setOnDismissListener(new DialogInterface.OnDismissListener() {
-                    @Override
-                    public void onDismiss(DialogInterface dialog) {
-                        LogUtils.d(TAG, "onDismiss");
-                    }
-                }).create().show();
-    }
-
     private boolean needStartTest() {
         /*if(!mUseCaseManager.getTestStatus()){
             return false;
@@ -257,9 +217,13 @@ public class UseCaseFragment extends Fragment implements View.OnClickListener, U
         if (selectItems != null && !selectItems.isEmpty()){
             mShowPanelInfo.delete(startTag.length(), mShowPanelInfo.length());
             for (int i = 0; i < selectItems.size(); i++){
-                mShowPanelInfo.append(" > " + selectItems.get(i).getTitle());
+                TestBase tb = selectItems.get(i);
+                mShowPanelInfo.append(tb.getTitle());
                 mShowPanelInfo.append(" x ");
-                mShowPanelInfo.append(selectItems.get(i).getTimes());
+                mShowPanelInfo.append(tb.getTimes());
+                if (i < selectItems.size() - 1) {
+                    mShowPanelInfo.append(MyConstants.ITEM_DIVIDER_STRING);
+                }
             }
         } else {
             //处理最后一个删除不了的问题
@@ -311,7 +275,7 @@ public class UseCaseFragment extends Fragment implements View.OnClickListener, U
                 importPathEditText.setSelection(importPathEditText.getText().length());
                 importBuilder.setTitle(R.string.importusecaseconfig)
                         .setView(importFilePathView)
-                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 LogUtils.d(TAG, "Positive onClick");
@@ -319,7 +283,7 @@ public class UseCaseFragment extends Fragment implements View.OnClickListener, U
                                 mUseCaseManager.importUseCaseConfig(path);
                             }
                         })
-                        .setNegativeButton("cancel", new DialogInterface.OnClickListener() {
+                        .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 LogUtils.d(TAG, "Negative onClick");
@@ -340,7 +304,7 @@ public class UseCaseFragment extends Fragment implements View.OnClickListener, U
                 exportPathEditText.setSelection(exportPathEditText.getText().length());
                 exportBuilder.setTitle(R.string.exportusecaseconfig)
                         .setView(exportFilePathView)
-                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 LogUtils.d(TAG, "Positive onClick");
@@ -348,7 +312,7 @@ public class UseCaseFragment extends Fragment implements View.OnClickListener, U
                                 mUseCaseManager.exportUseCaseConfig(path);
                             }
                         })
-                        .setNegativeButton("cancel", new DialogInterface.OnClickListener() {
+                        .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 LogUtils.d(TAG, "Negative onClick");

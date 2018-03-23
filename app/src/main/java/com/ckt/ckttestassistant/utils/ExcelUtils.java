@@ -321,7 +321,7 @@ public final class ExcelUtils {
                     sheet.setRowView(j + 1, 350); //设置行高
                 }
                 writebook.write();
-                Toast.makeText(c, "导出到手机Excel成功", Toast.LENGTH_SHORT).show();
+                ToastHelper.showToast(c, "导出到手机Excel成功", Toast.LENGTH_SHORT);
                 result = true;
             } catch (Exception e) {
                 e.printStackTrace();

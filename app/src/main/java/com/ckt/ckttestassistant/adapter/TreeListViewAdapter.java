@@ -48,7 +48,7 @@ public abstract class TreeListViewAdapter extends BaseAdapter
     }
 
     public void notifyData() {
-        mTestBases = TreeHelper.filterVisibleTestBase(mAllTestBases);
+        mTestBases = filterVisibleTestBase(mAllTestBases);
         notifyDataSetChanged();
     }
 
@@ -87,13 +87,15 @@ public abstract class TreeListViewAdapter extends BaseAdapter
         /*
           过滤出可见的TestBase
          */
-        mTestBases = TreeHelper.filterVisibleTestBase(mAllTestBases);
+        mTestBases = filterVisibleTestBase(mAllTestBases);
         mInflater = LayoutInflater.from(context);
         /*
           设置节点点击时，可以展开以及关闭；并且将ItemClick事件继续往外公布
          */
 
     }
+
+    protected abstract List<TestBase> filterVisibleTestBase(List<TestBase> allTestBases);
 
     /**
      *
@@ -138,7 +140,7 @@ public abstract class TreeListViewAdapter extends BaseAdapter
         if (n != null) {// 排除传入参数错误异常
             if (!n.isLeaf()) {
                 n.setExpand(!n.isExpand());
-                mTestBases = TreeHelper.filterVisibleTestBase(mAllTestBases);
+                mTestBases = filterVisibleTestBase(mAllTestBases);
                 notifyDataSetChanged();// 刷新视图
             }
         }
@@ -160,6 +162,11 @@ public abstract class TreeListViewAdapter extends BaseAdapter
     public long getItemId(int position)
     {
         return position;
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return mTestBases == null || mTestBases.size() == 0;
     }
 
     @Override

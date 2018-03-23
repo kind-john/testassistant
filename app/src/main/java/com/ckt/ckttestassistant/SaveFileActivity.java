@@ -14,6 +14,8 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.ckt.ckttestassistant.utils.ToastHelper;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -86,11 +88,11 @@ public class SaveFileActivity extends Activity
 
         } catch (Exception ex) {
 
-            Toast.makeText(this,
+            ToastHelper.showToast(this,
 
                     "Error in SaveFileActivity.onCreate: " + ex.getMessage(),
 
-                    Toast.LENGTH_SHORT).show();
+                    Toast.LENGTH_SHORT);
 
         }
 

@@ -1,5 +1,6 @@
 package com.ckt.ckttestassistant.usecases;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Handler;
 
@@ -45,9 +46,10 @@ public abstract class UseCaseBase extends TestBase{
         setDelay(USECASE_DEFAULT_DELAY);
     }
 
-    public UseCaseBase(Context context) {
+    public UseCaseBase(Context context, Activity activity) {
         this();
         mContext = context;
+        mActivity = activity;
     }
 
     public void setNextUseCase(UseCaseBase nextUseCase){

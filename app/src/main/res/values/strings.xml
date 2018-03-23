@@ -16,4 +16,16 @@
     <string name="empty">empty</string>
     <string name="useCaseStartTag">"Use case : "</string>
     <string name="testItemStartTag">"Test item : "</string>
+    <string name="insert_starttag">start tag</string>
+    <string name="insert_endtag">end tag</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="set_tag_times">set use case times</string>
+    <string name="item_invalide">item invalide</string>
+    <string name="uc_must_has_chilren">must has child item</string>
+    <string name="tag_insert_error">tag insert invalide</string>
+    <string name="default_uc_name">uc</string>
+    <string name="set_uc_name">set usecase name:</string>
+    <string name="item_is_null">test item is null,please add!</string>
+    <string name="set_propeties">set propeties</string>
 </resources>

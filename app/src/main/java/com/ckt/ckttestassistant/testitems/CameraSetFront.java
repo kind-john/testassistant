@@ -81,8 +81,8 @@ public class CameraSetFront extends TestItemBase {
 
         builder.setTitle("CameraSetFront settings")
                 .setView(v)
-                .setMessage("for test")
-                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                .setMessage(R.string.set_propeties)
+                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         LogUtils.d(TAG, "Positive onClick");
@@ -98,7 +98,7 @@ public class CameraSetFront extends TestItemBase {
                         }
                     }
                 })
-                .setNegativeButton("cancel", new DialogInterface.OnClickListener() {
+                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         LogUtils.d(TAG, "Negative onClick");

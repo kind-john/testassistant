@@ -77,16 +77,9 @@ public class AirPlaneSwitchOn extends TestItemBase {
     public boolean doExecute(UseCaseManager.ExecuteCallback executeCallback, boolean finish) {
         LogUtils.d(TAG, mClassName + " doExecute");
         try {
-            boolean isOn = Settings.Global.getInt(mContext.getContentResolver(),
-                    Settings.Global.AIRPLANE_MODE_ON) == 1;
-            if (!isOn) {
-                Settings.Global.putInt(mContext.getContentResolver(),
-                        Settings.Global.AIRPLANE_MODE_ON,
-                        1);
-                Intent intent = new Intent(Intent.ACTION_AIRPLANE_MODE_CHANGED);
-                intent.addFlags(Intent.FLAG_RECEIVER_REPLACE_PENDING);
-                intent.putExtra("state", true);
-                mContext.sendBroadcast(intent);
+            if (!mSystemInvoke.APMModeIsEnabled(mContext)) {
+                mSystemInvoke.openAPMMode(mContext);
+
                 mContext.registerReceiver(new MyReceiver(),
                         new IntentFilter(Intent.ACTION_AIRPLANE_MODE_CHANGED));
                 int count = 0;
@@ -103,7 +96,7 @@ public class AirPlaneSwitchOn extends TestItemBase {
             } else {
                 mPassed = true;
             }
-        } catch (Settings.SettingNotFoundException | InterruptedException e) {
+        } catch (InterruptedException e) {
             e.printStackTrace();
         } finally {
             task2();
@@ -172,8 +165,8 @@ public class AirPlaneSwitchOn extends TestItemBase {
 
         builder.setTitle("AirPlaneSwitchOn settings")
                 .setView(v)
-                .setMessage("for test")
-                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                .setMessage(R.string.set_propeties)
+                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         LogUtils.d(TAG, "Positive onClick");
@@ -189,7 +182,7 @@ public class AirPlaneSwitchOn extends TestItemBase {
                         }
                     }
                 })
-                .setNegativeButton("cancel", new DialogInterface.OnClickListener() {
+                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         LogUtils.d(TAG, "Negative onClick");

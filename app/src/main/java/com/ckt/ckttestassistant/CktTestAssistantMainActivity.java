@@ -1,5 +1,6 @@
 package com.ckt.ckttestassistant;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -58,7 +59,6 @@ public class CktTestAssistantMainActivity extends AppCompatActivity
         boolean isRebootTest = flag && reboot;
         mUseCaseManager.init(mHandler, isRebootTest);
         mUseCaseManager.addFinishExecuteObserver(this);
-
         FragmentAdapter adapter = new FragmentAdapter(getSupportFragmentManager(), getTabTitles(), mHandler);
         viewPager.setAdapter(adapter);
         tabLayout.setupWithViewPager(viewPager);

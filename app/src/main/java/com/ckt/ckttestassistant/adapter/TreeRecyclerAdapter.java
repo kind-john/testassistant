@@ -7,6 +7,7 @@ import android.view.View;
 
 
 import com.ckt.ckttestassistant.TestBase;
+import com.ckt.ckttestassistant.interfaces.OnSetParametersListener;
 import com.ckt.ckttestassistant.interfaces.OnTreeTestBaseClickListener;
 import com.ckt.ckttestassistant.interfaces.UpdateShowPanelListener;
 import com.ckt.ckttestassistant.testitems.TestItemBase;
@@ -37,21 +38,29 @@ public abstract class TreeRecyclerAdapter extends RecyclerView.Adapter<RecyclerV
      */
     protected OnTreeTestBaseClickListener onTreeTestBaseClickListener;
 
-    public void setUpdateShowPanelListener(UpdateShowPanelListener updateShowPanelListener) {
-        this.mUpdateShowPanelListener = updateShowPanelListener;
-    }
-
-    protected UpdateShowPanelListener mUpdateShowPanelListener = null;
-    /**
-     * 默认不展开
-     */
-    private int defaultExpandLevel = 0;
-    /** 展开与关闭的图片*/
-    private int iconExpand = -1,iconNoExpand = -1;
     public void setOnTreeTestBaseClickListener(
             OnTreeTestBaseClickListener onTreeTestBaseClickListener) {
         this.onTreeTestBaseClickListener = onTreeTestBaseClickListener;
     }
+
+    protected UpdateShowPanelListener mUpdateShowPanelListener = null;
+
+    /** 展开与关闭的图片*/
+    public void setUpdateShowPanelListener(UpdateShowPanelListener updateShowPanelListener) {
+        this.mUpdateShowPanelListener = updateShowPanelListener;
+    }
+
+    protected OnSetParametersListener mOnSetParametersListener;
+
+    public void setOnSetParametersListener(OnSetParametersListener setParametersListener) {
+        this.mOnSetParametersListener = setParametersListener;
+    }
+
+    /**
+     * 默认不展开
+     */
+    private int defaultExpandLevel = 0;
+    private int iconExpand = -1,iconNoExpand = -1;
     public TreeRecyclerAdapter(Context context, ArrayList<TestBase> datas,
                            int defaultExpandLevel, int iconExpand, int iconNoExpand) {
 
@@ -120,20 +129,7 @@ public abstract class TreeRecyclerAdapter extends RecyclerView.Adapter<RecyclerV
         /*
           设置节点点击时，可以展开以及关闭,将事件继续往外公布
          */
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                TestBase tb = mTestBases.get(position);
-                if (tb instanceof UseCaseBase) {
-                    expandOrCollapse(tb);
-                } else if (tb instanceof TestItemBase) {
-                    if (onTreeTestBaseClickListener != null) {
-                        onTreeTestBaseClickListener.onClick(mTestBases.get(position),
-                                position);
-                    }
-                }
-            }
-        });
+
         onBindViewHolder(TestBase,holder,position);
     }
 

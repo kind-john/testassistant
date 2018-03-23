@@ -1,79 +1,129 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <LinearLayout
-        android:id="@+id/showpanel"
-        android:layout_width="match_parent"
+    <ScrollView
+        android:id="@+id/panel"
+        android:layout_width="0dp"
         android:layout_height="100dp"
-        android:orientation="horizontal">
-
-        <ScrollView
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_marginLeft="8dp"
-            android:layout_marginStart="8dp"
-            android:layout_weight="1">
-
-            <TextView
-                android:id="@+id/usecasetext"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:text="@string/usecasehead" />
-        </ScrollView>
-
-        <LinearLayout
-            android:id="@+id/buttons"
-            android:layout_width="80dp"
-            android:layout_height="match_parent"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentTop="true"
-            android:orientation="vertical">
-
-            <Button
-                android:id="@+id/delete"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:background="@drawable/btn_selector"
-                android:layout_margin="1dp"
-                android:text="@string/deletetestitem" />
-
-            <Button
-                android:id="@+id/save"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:background="@drawable/btn_selector"
-                android:layout_margin="1dp"
-                android:text="@string/savetestitem" />
-        </LinearLayout>
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/testcategorylist"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="3" />
+        android:layout_marginRight="@dimen/horizontal_gap"
+        android:layout_marginTop="@dimen/vertical_gap"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toLeftOf="@+id/insertStart"
+        app:layout_constraintTop_toTopOf="parent">
 
         <TextView
-            android:layout_width="1dp"
+            android:id="@+id/testitemtext"
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginBottom="10dp"
-            android:background="@color/gray" />
+            android:text="@string/usecasehead" />
+    </ScrollView>
 
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/testitemlist"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_marginLeft="2dp"
-            android:layout_weight="7"/>
-    </LinearLayout>
-</LinearLayout>
+    <Button
+        android:id="@+id/delete"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginRight="@dimen/horizontal_gap"
+        android:layout_marginTop="@dimen/vertical_gap"
+        android:background="@drawable/btn_selector"
+        android:text="@string/deletetestitem"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/save"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginRight="@dimen/horizontal_gap"
+        android:layout_marginTop="@dimen/vertical_gap"
+        android:background="@drawable/btn_selector"
+        android:text="@string/savetestitem"
+        app:layout_constraintBottom_toBottomOf="@id/panel"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/delete" />
+
+    <Button
+        android:id="@+id/insertStart"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="@dimen/horizontal_gap"
+        android:layout_marginTop="@dimen/vertical_gap"
+        android:text="@string/insert_starttag"
+        android:background="@drawable/btn_selector"
+        app:layout_constraintRight_toLeftOf="@+id/delete"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/insertEnd"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="@dimen/horizontal_gap"
+        android:layout_marginTop="@dimen/vertical_gap"
+        android:text="@string/insert_endtag"
+        android:background="@drawable/btn_selector"
+        app:layout_constraintBottom_toBottomOf="@id/panel"
+        app:layout_constraintRight_toLeftOf="@+id/save"
+        app:layout_constraintTop_toBottomOf="@+id/insertStart" />
+
+    <TextView
+        android:id="@+id/divider"
+        android:layout_width="@dimen/divider_width"
+        android:layout_height="0dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginTop="@dimen/vertical_gap"
+        android:background="@color/gray"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toRightOf="@+id/categorylist"
+        app:layout_constraintRight_toLeftOf="@+id/testitemlist"
+        app:layout_constraintTop_toBottomOf="@+id/panel" />
+
+    <TextView
+        android:id="@+id/emptyview"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:gravity="center"
+        android:text="@string/empty"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/panel" />
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/categorylist"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginBottom="@dimen/vertical_gap"
+        android:layout_marginLeft="@dimen/horizontal_gap"
+        android:layout_marginRight="@dimen/horizontal_gap"
+        android:layout_marginTop="@dimen/vertical_gap"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_weight="3"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toLeftOf="@+id/testitemlist"
+        app:layout_constraintTop_toBottomOf="@+id/panel" />
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/testitemlist"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginBottom="@dimen/vertical_gap"
+        android:layout_marginEnd="@dimen/horizontal_gap"
+        android:layout_marginLeft="@dimen/horizontal_gap"
+        android:layout_marginRight="@dimen/horizontal_gap"
+        android:layout_marginStart="@dimen/horizontal_gap"
+        android:layout_marginTop="@dimen/vertical_gap"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_weight="7"
+        app:layout_constraintLeft_toRightOf="@+id/categorylist"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/panel" />
+
+
+</android.support.constraint.ConstraintLayout>

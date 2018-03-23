@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.ckt.ckttestassistant.R;
 import com.ckt.ckttestassistant.TestBase;
@@ -30,9 +31,9 @@ public class ResultsFragment extends Fragment implements UseCaseManager.Selected
     private Handler mHandler = null;
     private Context mContext;
     private ArrayList<TestBase> mSelectedItems;
-    private ListView mTestItemListView;
     private ResultsTreeAdapter mUseCaseAdapter;
-    private ResultsTestItemAdapter mTestItemAdapter;
+    private ListView mUseCaseListView;
+    private TextView mEmptyView;
 
     public void setHandler(Handler handler) {
         this.mHandler = handler;
@@ -43,14 +44,10 @@ public class ResultsFragment extends Fragment implements UseCaseManager.Selected
         super.onCreate(savedInstanceState);
         Activity mActivity = getActivity();
         mContext = mActivity.getApplicationContext();
-        UseCaseManager mUseCaseManager = UseCaseManager.getInstance(mContext, mActivity);
-        mUseCaseManager.init(mHandler, false);
-        mUseCaseManager.addSelectedUseCaseChangeObserver(this);
-        mSelectedItems = mUseCaseManager.getSelectItems();
-        if(mSelectedItems != null && !mSelectedItems.isEmpty()){
-            int mCurrentUseCase = 0;
-            ArrayList<TestBase> mCurrentTestItems = mSelectedItems.get(mCurrentUseCase).getChildren();
-        }
+        UseCaseManager useCaseManager = UseCaseManager.getInstance(mContext, mActivity);
+        useCaseManager.init(mHandler, false);
+        useCaseManager.addSelectedUseCaseChangeObserver(this);
+        mSelectedItems = useCaseManager.getSelectItems();
     }
 
     @Nullable
@@ -58,7 +55,8 @@ public class ResultsFragment extends Fragment implements UseCaseManager.Selected
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         LogUtils.d(TAG, "onCreateView");
         View rootView = inflater.inflate(R.layout.fragment_results_layout, container, false);
-        ListView mUseCaseListView = (ListView) rootView.findViewById(R.id.testedusecaselist);
+        mUseCaseListView = (ListView) rootView.findViewById(R.id.testedusecaselist);
+        mEmptyView = (TextView) rootView.findViewById(R.id.emptyview);
         mUseCaseAdapter = new ResultsTreeAdapter(mContext, mSelectedItems, 1);
 
         mUseCaseAdapter.setOnTreeTestBaseClickListener(new TreeListViewAdapter.OnTreeTestBaseClickListener() {
@@ -68,6 +66,7 @@ public class ResultsFragment extends Fragment implements UseCaseManager.Selected
             }
         });
         mUseCaseListView.setAdapter(mUseCaseAdapter);
+        mUseCaseListView.setEmptyView(mEmptyView);
         return rootView;
     }
 

@@ -10,12 +10,14 @@ import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.Editable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.ckt.ckttestassistant.R;
 import com.ckt.ckttestassistant.TestBase;
@@ -25,8 +27,13 @@ import com.ckt.ckttestassistant.adapter.CktItemDecoration;
 import com.ckt.ckttestassistant.adapter.TestCategoryListAdapter;
 import com.ckt.ckttestassistant.adapter.TestItemListAdapter;
 import com.ckt.ckttestassistant.interfaces.OnItemClickListener;
+import com.ckt.ckttestassistant.testitems.EndTagItem;
+import com.ckt.ckttestassistant.testitems.StartTagItem;
 import com.ckt.ckttestassistant.testitems.TestItemBase;
+import com.ckt.ckttestassistant.utils.CktXmlHelper;
 import com.ckt.ckttestassistant.utils.LogUtils;
+import com.ckt.ckttestassistant.utils.MyConstants;
+import com.ckt.ckttestassistant.utils.ToastHelper;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,7 +42,7 @@ import java.util.HashMap;
  * Created by ckt on 18-1-30.
  */
 
-public class DefineUseCaseFragment extends Fragment {
+public class DefineUseCaseFragment extends Fragment implements View.OnClickListener{
     private static final String TAG = "DefineUseCaseFragment";
     private Context mContext;
     private ArrayList<TestCategory> mTestCategoryItems = new ArrayList<TestCategory>();
@@ -153,6 +160,10 @@ public class DefineUseCaseFragment extends Fragment {
     private TextView mTestItemTextView;
     private UseCaseManager mUseCaseManager;
     private Activity mActivity;
+    private RecyclerView mTestCategoryList;
+    private TextView mDivider;
+    private TextView mEmptyView;
+    private static volatile int mTagLevel = 1;
 
     public void setHandler(Handler handler) {
         Handler mHandler = handler;
@@ -188,31 +199,131 @@ public class DefineUseCaseFragment extends Fragment {
             }
             mAllTestItems.put(mTestCategory[j], itemList);
         }
-        /*CktTestItem item1 = new CktTestItem(mContext);
-        item1.setTitle("ckt test item");
-        itemList.add(item1);
-        mAllTestItems.put(mTestCategory[0], itemList);
+    }
 
-        ArrayList<TestItemBase> itemList1 = new ArrayList<TestItemBase>();
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.delete:
+                if(mSelectedTestItems != null && !mSelectedTestItems.isEmpty()){
+                    TestBase ti = mSelectedTestItems.get(mSelectedTestItems.size() - 1);
+                    if (ti instanceof StartTagItem) {
+                        mTagLevel--;
+                    } else if (ti instanceof EndTagItem) {
+                        mTagLevel++;
+                    }
+                    ti.setSN(-1);
+                    mSelectedTestItems.remove(ti);
+                }
+                generateShowPanelString(mSelectedTestItems);
+                break;
+            case R.id.save:
+                if (mSelectedTestItems == null || mSelectedTestItems.isEmpty()) {
+                    ToastHelper.showToast(mContext, R.string.item_is_null, Toast.LENGTH_SHORT);
+                }
+                View dialogView = LayoutInflater.from(mContext).inflate(R.layout.usecase_title_setting, null);
+                final EditText titleView = (EditText) dialogView.findViewById(R.id.titlesetting);
+                titleView.setText(R.string.default_uc_name);
+                titleView.setSelection(titleView.getText().length());
+                AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);
+                builder.setTitle(R.string.set_uc_name)
+                        .setView(dialogView)
+                        .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                if (checkSelectedItemValide()) {
+                                    String title = titleView.getText().toString();
+                                    LogUtils.d(TAG, "usecase title = "+ title);
+                                    mUseCaseManager.addUsecaseToAllUseCaseXml(mSelectedTestItems, title);
+                                    if(mSelectedTestItems != null && !mSelectedTestItems.isEmpty()){
+                                        mSelectedTestItems.clear();
+                                        generateShowPanelString(mSelectedTestItems);
+                                    }
+                                } else {
+                                    // show toast
+                                    ToastHelper.showToast(mContext, R.string.item_invalide, Toast.LENGTH_SHORT);
+                                }
+                            }
+                        })
+                        .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                //do nothing
+                            }
+                        }).create().show();
+                break;
+            case R.id.insertStart:
+                if (mTagLevel < CktXmlHelper.MAX_LEVEL) {
+                    mTagLevel++;
+                    mSelectedTestItems.add(new StartTagItem());
+                    generateShowPanelString(mSelectedTestItems);
+                } else {
+                    ToastHelper.showToast(mContext, R.string.tag_insert_error, Toast.LENGTH_LONG);
+                }
+                break;
+            case R.id.insertEnd:
+                if (mTagLevel > 1) {
+                    AlertDialog.Builder tagBuilder = new AlertDialog.Builder(mActivity);
+                    View tagView = LayoutInflater.from(mActivity).inflate(R.layout.settings_usecase_times_layout, null);
+                    final EditText timesEditText = (EditText) tagView.findViewById(R.id.times);
+                    timesEditText.setText("1");
+                    timesEditText.setSelection(timesEditText.getText().length());
+                    tagBuilder.setTitle(R.string.set_tag_times)
+                            .setView(tagView)
+                            .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    Editable ea = timesEditText.getText();
+                                    if (ea == null){
+                                        // do nothing
+                                    } else {
+                                        if (mSelectedTestItems != null &&
+                                                mSelectedTestItems.size() > 1 &&
+                                                !(mSelectedTestItems.get(mSelectedTestItems.size() - 1) instanceof StartTagItem) &&
+                                                !(mSelectedTestItems.get(mSelectedTestItems.size() - 1) instanceof EndTagItem)) {
+                                            mTagLevel--;
+                                            EndTagItem ett = new EndTagItem();
+                                            ett.setTimes(Integer.parseInt(timesEditText.getText().toString()));
+                                            mSelectedTestItems.add(ett);
+                                            generateShowPanelString(mSelectedTestItems);
+                                        } else {
+                                            ToastHelper.showToast(mContext, R.string.uc_must_has_chilren, Toast.LENGTH_LONG);
+                                        }
+                                    }
+                                }
+                            })
+                            .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
 
-        CktTestItem item1 = new CktTestItem(mContext);
-        item1.setTitle("ckt test item");
-        itemList1.add(item1);
-        mAllTestItems.put(mTestCategory[0], itemList1);
+                                }
+                            }).create().show();
 
-        ArrayList<TestItemBase> itemList2 = new ArrayList<TestItemBase>();
-        WifiSwitchOn item2 = new WifiSwitchOn(mContext);
-        item2.setTitle("wifi switch on");
-        itemList2.clear();
-        itemList2.add(item2);
-        mAllTestItems.put(mTestCategory[1], itemList2);
+                } else {
+                    ToastHelper.showToast(mContext, R.string.tag_insert_error, Toast.LENGTH_LONG);
+                }
+                break;
+            default:
+                break;
+        }
+    }
 
-        ArrayList<TestItemBase> itemList3 = new ArrayList<TestItemBase>();
-        Reboot item3 = new Reboot(mContext);
-        item3.setTitle("reboot");
-        itemList3.clear();
-        itemList3.add(item3);
-        mAllTestItems.put(mTestCategory[2], itemList3);*/
+    private boolean checkSelectedItemValide() {
+        if (mSelectedTestItems != null && !mSelectedTestItems.isEmpty()) {
+            int startTagCount = 0;
+            int endTagCount = 0;
+            for (TestBase tb : mSelectedTestItems) {
+                if (tb instanceof StartTagItem) {
+                    startTagCount++;
+                } else if (tb instanceof EndTagItem) {
+                    endTagCount++;
+                }
+            }
+            if (startTagCount == endTagCount) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Nullable
@@ -220,61 +331,12 @@ public class DefineUseCaseFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         LogUtils.d(TAG, "onCreateView");
         View rootView = inflater.inflate(R.layout.fragment_defineusecase_layout, container, false);
-        mTestItemTextView = (TextView) rootView.findViewById(R.id.usecasetext);
+        initViews(rootView);
+
         generateShowPanelString(mSelectedTestItems);
-        mTestItemTextView.setText(mShowPanelInfo.toString());
-        Button mDeleteButton = (Button) rootView.findViewById(R.id.delete);
-        mDeleteButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(mSelectedTestItems != null && !mSelectedTestItems.isEmpty()){
-                    TestBase ti = mSelectedTestItems.get(mSelectedTestItems.size() - 1);
-                    ti.setSN(-1);
-                    mSelectedTestItems.remove(ti);
-                }
-                generateShowPanelString(mSelectedTestItems);
-                mTestItemTextView.setText(mShowPanelInfo.toString());
-            }
-        });
-        Button mSaveButton = (Button) rootView.findViewById(R.id.save);
-        mSaveButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //do something
-                View dialogView = LayoutInflater.from(mContext).inflate(R.layout.usecase_title_setting, null);
-                final EditText titleView = (EditText) dialogView.findViewById(R.id.titlesetting);
-                titleView.setText("default");
-                titleView.setSelection(titleView.getText().length());
-                AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);
-                builder.setTitle("set usecase title:")
-                        .setView(dialogView)
-                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                String title = titleView.getText().toString();
-                                LogUtils.d(TAG, "usecase title = "+ title);
-                                mUseCaseManager.addUsecaseToAllUseCaseXml(mSelectedTestItems, title);
-                                if(mSelectedTestItems != null && !mSelectedTestItems.isEmpty()){
-                                    mSelectedTestItems.clear();
-                                    generateShowPanelString(mSelectedTestItems);
-                                    mTestItemTextView.setText(mShowPanelInfo.toString());
-                                }
-                            }
-                        })
-                        .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                //do nothing
-                            }
-                        }).create().show();
-
-
-            }
-        });
-        RecyclerView mTestCategoryList = (RecyclerView) rootView.findViewById(R.id.testcategorylist);
         initTestCategoryListFocus(mTestCategoryItems);
-        TestCategoryListAdapter mAdapter = new TestCategoryListAdapter(mContext, mTestCategoryItems);
-        mAdapter.setOnItemClickListener(new OnItemClickListener() {
+        TestCategoryListAdapter adapter = new TestCategoryListAdapter(mContext, mTestCategoryItems);
+        adapter.setOnItemClickListener(new OnItemClickListener() {
             @Override
             public void onItemClick(int pos) {
                 LogUtils.d(TAG, "onItemClick");
@@ -288,10 +350,44 @@ public class DefineUseCaseFragment extends Fragment {
         mTestCategoryList.addItemDecoration(new CktItemDecoration(mContext,
                 LinearLayoutManager.VERTICAL,
                 CktItemDecoration.DECORATION_TYPE_TESTCATEGORY));
-        mTestCategoryList.setAdapter(mAdapter);
-        mTestItemList = (RecyclerView) rootView.findViewById(R.id.testitemlist);
+        mTestCategoryList.setAdapter(adapter);
+        if (mTestCategoryItems == null || mTestCategoryItems.isEmpty()) {
+            showEmptyView();
+        } else {
+            hideEmptyView();
+        }
         initTestItemList();
         return rootView;
+    }
+
+    private void hideEmptyView() {
+        mEmptyView.setVisibility(View.GONE);
+        mTestCategoryList.setVisibility(View.VISIBLE);
+        mTestItemList.setVisibility(View.VISIBLE);
+        mDivider.setVisibility(View.VISIBLE);
+    }
+
+    private void showEmptyView() {
+        mEmptyView.setVisibility(View.VISIBLE);
+        mTestCategoryList.setVisibility(View.GONE);
+        mTestItemList.setVisibility(View.GONE);
+        mDivider.setVisibility(View.GONE);
+    }
+
+    private void initViews(View rootView) {
+        mTestItemTextView = (TextView) rootView.findViewById(R.id.testitemtext);
+        Button deleteButton = (Button) rootView.findViewById(R.id.delete);
+        Button saveButton = (Button) rootView.findViewById(R.id.save);
+        Button insertStartButton = (Button) rootView.findViewById(R.id.insertStart);
+        Button insertEndButton = (Button) rootView.findViewById(R.id.insertEnd);
+        deleteButton.setOnClickListener(this);
+        saveButton.setOnClickListener(this);
+        insertStartButton.setOnClickListener(this);
+        insertEndButton.setOnClickListener(this);
+        mTestCategoryList = (RecyclerView) rootView.findViewById(R.id.categorylist);
+        mTestItemList = (RecyclerView) rootView.findViewById(R.id.testitemlist);
+        mDivider = (TextView) rootView.findViewById(R.id.divider);
+        mEmptyView = (TextView) rootView.findViewById(R.id.emptyview);
     }
 
     private void initTestCategoryListFocus(ArrayList<TestCategory> tcs) {
@@ -363,7 +459,6 @@ public class DefineUseCaseFragment extends Fragment {
         }
 
         generateShowPanelString(mSelectedTestItems);
-        mTestItemTextView.setText(mShowPanelInfo.toString());
     }
 
     private void generateShowPanelString(ArrayList<TestBase> selectItems) {
@@ -373,13 +468,27 @@ public class DefineUseCaseFragment extends Fragment {
         if (selectItems != null && !selectItems.isEmpty()){
             mShowPanelInfo.delete(StartTag.length(), mShowPanelInfo.length());
             for (int i = 0; i < selectItems.size(); i++){
-                mShowPanelInfo.append(" > " + selectItems.get(i).getTitle());
-                mShowPanelInfo.append(" x ");
-                mShowPanelInfo.append(selectItems.get(i).getTimes());
+                TestBase ti = selectItems.get(i);
+                if (ti instanceof StartTagItem) {
+                    mShowPanelInfo.append(" (");
+                } else if (ti instanceof EndTagItem) {
+                    mShowPanelInfo.delete(mShowPanelInfo.length() - MyConstants.ITEM_DIVIDER_STRING.length(), mShowPanelInfo.length());
+                    mShowPanelInfo.append(")");
+                    mShowPanelInfo.append(" x ");
+                    mShowPanelInfo.append(ti.getTimes());
+                } else {
+                    mShowPanelInfo.append(ti.getTitle());
+                    mShowPanelInfo.append(" x ");
+                    mShowPanelInfo.append(ti.getTimes());
+                    if (i < selectItems.size() - 1) {
+                        mShowPanelInfo.append(MyConstants.ITEM_DIVIDER_STRING);
+                    }
+                }
             }
         } else {
             //处理最后一个删除不了的问题
             mShowPanelInfo.delete(StartTag.length(), mShowPanelInfo.length());
         }
+        mTestItemTextView.setText(mShowPanelInfo.toString());
     }
 }

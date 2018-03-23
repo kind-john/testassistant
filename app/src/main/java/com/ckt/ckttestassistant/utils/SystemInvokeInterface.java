@@ -1,6 +1,8 @@
 package com.ckt.ckttestassistant.utils;
 
 import android.content.Context;
+import android.os.Build;
+import android.support.annotation.RequiresApi;
 
 /**
  * Created by ckt on 18-3-19.
@@ -17,7 +19,8 @@ public interface SystemInvokeInterface {
 
     void openAPMMode(Context context);
     void closeAPMMode(Context context);
-    boolean APMModeIsEnabled();
+
+    boolean APMModeIsEnabled(Context context);
 
     void openBluetooth(Context context);
     void closeBluetooth(Context context);
@@ -28,15 +31,15 @@ public interface SystemInvokeInterface {
 
     void openGps(Context context);
     void closeGps(Context context);
-    boolean GpsIsEnabled();
+    boolean gpsIsEnabled();
 
-    void MyWakeUp(Context context);
-    void MySleep(Context context);
+    void myWakeUp(Context context);
+    void mySleep(Context context);
 
-    void MyReboot(Context context);
-    void MyBrightnessChange(Context context, int value);
+    void myReboot(Context context);
+    void myBrightnessChange(Context context, int value);
 
     void openNFC(Context context);
     void closeNFC(Context context);
-    boolean NFCIsEnabled();
+    boolean nfcIsEnabled();
 }

@@ -12,6 +12,7 @@ import com.ckt.ckttestassistant.TestBase;
 import com.ckt.ckttestassistant.usecases.UseCaseBase;
 import com.ckt.ckttestassistant.utils.LogUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -24,6 +25,37 @@ public class UseCaseTreeAdapter extends TreeListViewAdapter {
 
     public UseCaseTreeAdapter(Context context, List<TestBase> datas, int defaultExpandLevel, int iconExpand, int iconNoExpand) {
         super(context, datas, defaultExpandLevel, iconExpand, iconNoExpand);
+    }
+
+    private static void addVisibleChildTestBase(List<TestBase> result, TestBase tb) {
+        if(tb.isExpand()){
+            List<TestBase> children = tb.getChildren();
+            if(children != null && !children.isEmpty()){
+                for (TestBase child : children){
+                    if(child instanceof UseCaseBase){
+                        result.add(child);
+                        addVisibleChildTestBase(result, child);
+                    }
+                }
+            }
+        }
+    }
+
+    @Override
+    protected List<TestBase> filterVisibleTestBase(List<TestBase> allTestBases) {
+        List<TestBase> result = new ArrayList<TestBase>();
+
+        for (TestBase tb : allTestBases) {
+            // 如果为跟节点，或者上层目录为展开状态
+            if (tb.isRoot() || tb.isParentExpand()) {
+                if(tb instanceof UseCaseBase){
+                    result.add(tb);
+                    addVisibleChildTestBase(result, tb);
+                }
+
+            }
+        }
+        return result;
     }
 
     public UseCaseTreeAdapter(Context context, List<TestBase> datas,
@@ -105,7 +137,7 @@ public class UseCaseTreeAdapter extends TreeListViewAdapter {
                 setChecked(position);
             }else{
                 tb.setExpand(true);
-                mTestBases = TreeHelper.filterVisibleTestBase(mAllTestBases);
+                mTestBases = filterVisibleTestBase(mAllTestBases);
                 List<TestBase> children = tb.getChildren();
                 if(children != null && !children.isEmpty()){
                     for (int i = 0; i < children.size(); i++){

@@ -28,6 +28,7 @@
     <color name="orange_yellow">#FFB90F</color>
     <!--add by cyl for sensortest-->
 
+    <color name="gray_1">#e9e6e6</color>
     <color name="gray">#bdbdbd</color>
     <color name="black">#000000</color>
     <color name="keyTextColor">#424242</color>

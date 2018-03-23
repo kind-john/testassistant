@@ -23,6 +23,12 @@ public class TestItemTreeAdapter extends TreeListViewAdapter {
         super(context, datas, defaultExpandLevel, iconExpand, iconNoExpand);
     }
 
+    @Override
+    protected List<TestBase> filterVisibleTestBase(List<TestBase> allTestBases) {
+        List<TestBase> result = allTestBases;
+        return result;
+    }
+
     public TestItemTreeAdapter(Context context, List<TestBase> datas,
                               int defaultExpandLevel) {
         super(context, datas, defaultExpandLevel);

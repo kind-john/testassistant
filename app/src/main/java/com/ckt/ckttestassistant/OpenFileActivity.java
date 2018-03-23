@@ -12,6 +12,7 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.ckt.ckttestassistant.R;
+import com.ckt.ckttestassistant.utils.ToastHelper;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -48,9 +49,9 @@ public class OpenFileActivity extends Activity
             //
             setCurrentPath(Environment.getExternalStorageDirectory().getAbsolutePath() + "/");
         } catch (Exception ex) {
-            Toast.makeText(this,
+            ToastHelper.showToast(this,
                     "Error in OpenFileActivity.onCreate: " + ex.getMessage(),
-                    Toast.LENGTH_SHORT).show();
+                    Toast.LENGTH_SHORT);
         }
 
     }

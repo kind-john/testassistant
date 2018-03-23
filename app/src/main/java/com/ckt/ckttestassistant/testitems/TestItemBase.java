@@ -287,6 +287,5 @@ public abstract class TestItemBase extends TestBase implements CktResultsHelper.
 
     public abstract boolean doExecute(UseCaseManager.ExecuteCallback executeCallback, boolean finish);
     public abstract void saveParametersToXml(XmlSerializer serializer) throws Exception;
-    public abstract void showPropertyDialog(Context context, final boolean isNeedUpdateXml);
     public abstract void saveParameters(Document doc, Element element);
 }

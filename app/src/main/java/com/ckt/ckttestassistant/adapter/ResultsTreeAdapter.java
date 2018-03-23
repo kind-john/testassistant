@@ -48,15 +48,8 @@ public class ResultsTreeAdapter extends TreeListViewAdapter {
         }
     }
 
-    private List<TestBase> filterVisibleTestBase(List<TestBase> tbs) {
-        List<TestBase> result = new ArrayList<TestBase>();
-
-        for (TestBase tb : tbs) {
-            // 如果为跟节点，或者上层目录为展开状态
-            if (tb.isRoot() || tb.isParentExpand()) {
-                result.add(tb);
-            }
-        }
+    protected List<TestBase> filterVisibleTestBase(List<TestBase> tbs) {
+        List<TestBase> result = tbs;
         return result;
     }
     @Override
@@ -96,10 +89,10 @@ public class ResultsTreeAdapter extends TreeListViewAdapter {
         boolean status = tb.isPassed();
         viewHolder.mStatus.setText(String.valueOf(status));
         if(status){
-            viewHolder.mStatus.setBackgroundResource(R.drawable.background_of_pass_text);
+            convertView.setBackgroundResource(R.drawable.background_of_pass_text);
 
         }else{
-            viewHolder.mStatus.setBackgroundResource(R.drawable.background_of_file_text);
+            convertView.setBackgroundResource(R.drawable.background_of_file_text);
         }
         return convertView;
     }
