@@ -47,6 +47,8 @@ public class XmlTagConstants {
 
     public static final String XMLTAG_TESTITEM_DELAY = "testitem_delay";
 
+    public static final String XMLTAG_TESTITEM_BRIGHTNESS = "testitem_brightness";
+
     public static final String XMLTAG_TESTITEM_USECASESN = "testitem_usecase_sn";
 
     public static final String XMLTAG_TESTITEM_USECASEID = "testitem_usecase_id";

@@ -26,6 +26,16 @@ public class BrightnessSetting extends TestItemBase {
     private static final String TITLE = "Brightness Setting";
     private static final String TAG = "BrightnessSetting";
 
+    public int getBrightness() {
+        return mBrightness;
+    }
+
+    public void setBrightness(int brightness) {
+        this.mBrightness = brightness;
+    }
+
+    private int mBrightness;
+
     public BrightnessSetting() {
         super();
         String className = this.getClass().getName();
@@ -55,7 +65,10 @@ public class BrightnessSetting extends TestItemBase {
     @Override
     public boolean doExecute(UseCaseManager.ExecuteCallback executeCallback, boolean finish) {
         LogUtils.d(TAG, "BrightnessSetting doExecute");
-        //do test,then close progressview
+        mSystemInvoke.mySetBrightness(mContext, mBrightness);
+        if (mSystemInvoke.myGetBrightness(mContext) == mBrightness) {
+            mPassed = true;
+        }
         task2();
         if(finish && executeCallback != null){
             LogUtils.d(TAG, "stop test handler");
@@ -73,12 +86,13 @@ public class BrightnessSetting extends TestItemBase {
     public void showPropertyDialog(Context context, final boolean isNeedUpdateXml) {
         LogUtils.d(TAG, "showPropertyDialog :"+this.getClass().getName());
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        View v = LayoutInflater.from(context).inflate(R.layout.settings_wifi_switch_on, null);
+        View v = LayoutInflater.from(context).inflate(R.layout.settings_brightness_layout, null);
         final EditText delayEditText = (EditText)v.findViewById(R.id.delay);
         delayEditText.setText(String.valueOf(getDelay()));
         final EditText timesEditText = (EditText)v.findViewById(R.id.times);
         timesEditText.setText(String.valueOf(getTimes()));
-
+        final EditText brightnessEditText = (EditText)v.findViewById(R.id.brightness);
+        brightnessEditText.setText(String.valueOf(getBrightness()));
         builder.setTitle("BrightnessSetting setting")
                 .setView(v)
                 .setMessage(R.string.set_propeties)
@@ -88,10 +102,12 @@ public class BrightnessSetting extends TestItemBase {
                         LogUtils.d(TAG, "Positive onClick");
                         int delay = Integer.parseInt(delayEditText.getText().toString());
                         int times = Integer.parseInt(timesEditText.getText().toString());
+                        int brightness = Integer.parseInt(brightnessEditText.getText().toString());
                         LogUtils.d(TAG, "delay = "+delay+"; times = "+times);
                         if(delay >= 0 && times > 0){
                             setDelay(delay);
                             setTimes(times);
+                            setBrightness(brightness);
                             if(isNeedUpdateXml){
                                 mUseCaseManager.updateTestItemOfAllUseCaseXml(BrightnessSetting.this);
                             }
@@ -118,6 +134,11 @@ public class BrightnessSetting extends TestItemBase {
         Node n1 = doc.createTextNode(""+mDelay);
         e1.appendChild(n1);
         element.appendChild(e1);
+
+        Element e2 = doc.createElement(XmlTagConstants.XMLTAG_TESTITEM_BRIGHTNESS);
+        Node n2 = doc.createTextNode(""+mBrightness);
+        e2.appendChild(n2);
+        element.appendChild(e2);
     }
 
     @Override

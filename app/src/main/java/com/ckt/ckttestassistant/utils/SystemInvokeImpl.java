@@ -3,12 +3,16 @@ package com.ckt.ckttestassistant.utils;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Build;
+import android.os.PowerManager;
 import android.provider.Settings;
 import android.support.annotation.RequiresApi;
 import android.telephony.TelephonyManager;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
 
@@ -58,6 +62,11 @@ public class SystemInvokeImpl implements SystemInvokeInterface{
             }
         }
         return false;
+    }
+
+    @Override
+    public void clearAllRecentsApp(Context context) {
+        //EventBus.getDefault().send(new DismissAllTaskViewsEvent());
     }
 
     /**
@@ -226,9 +235,34 @@ public class SystemInvokeImpl implements SystemInvokeInterface{
 
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
     @Override
-    public void myBrightnessChange(Context context, int value) {
+    public void mySetBrightness(Context context, int value) {
+        /*Settings.System.putInt(context.getContentResolver(),
+                Settings.System.SCREEN_BRIGHTNESS,
+                value);*/
+        PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+        try {
+            Method set = pm.getClass().getMethod("setBacklightBrightness", new Class[]{int.class});
+            set.setAccessible(true);
+            set.invoke(pm, value);
+            Settings.System.putInt(context.getContentResolver(),
+                    Settings.System.SCREEN_BRIGHTNESS,
+                    value);
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+    }
 
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
+    @Override
+    public int myGetBrightness(Context context) {
+        return Settings.System.getInt(context.getContentResolver(),
+                Settings.System.SCREEN_BRIGHTNESS, -1);
     }
 
     @Override

@@ -133,11 +133,6 @@ public class CktUseCase extends UseCaseBase {
     }
 
     @Override
-    public void saveParametersToXml(XmlSerializer serializer) {
-
-    }
-
-    @Override
     public void setChildrenSN() {
         if(children != null && !children.isEmpty()){
             for (int i = 0; i < children.size(); i++){

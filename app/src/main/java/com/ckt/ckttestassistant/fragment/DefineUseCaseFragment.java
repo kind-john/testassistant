@@ -106,7 +106,7 @@ public class DefineUseCaseFragment extends Fragment implements View.OnClickListe
             //"com.ckt.ckttestassistant.testitems.AutoScreenOff",
             //"com.ckt.ckttestassistant.testitems.AutoScreenOn",
             "com.ckt.ckttestassistant.testitems.AutoUnlockScreen",
-            //"com.ckt.ckttestassistant.testitems.BrightnessSetting",
+            "com.ckt.ckttestassistant.testitems.BrightnessSetting",
             "com.ckt.ckttestassistant.testitems.GetNetworkStatus",
             //"com.ckt.ckttestassistant.testitems.GotoSleep",
             //"com.ckt.ckttestassistant.testitems.RemoveRecentApp",
@@ -477,9 +477,17 @@ public class DefineUseCaseFragment extends Fragment implements View.OnClickListe
                     mShowPanelInfo.append(" x ");
                     mShowPanelInfo.append(ti.getTimes());
                 } else {
+                    // 如果前面有括号结尾，则增加一个分隔符
+                    if (i > 2) {
+                        TestBase preTi = selectItems.get(i - 1);
+                        if (preTi instanceof EndTagItem) {
+                            mShowPanelInfo.append(MyConstants.ITEM_DIVIDER_STRING);
+                        }
+                    }
                     mShowPanelInfo.append(ti.getTitle());
                     mShowPanelInfo.append(" x ");
                     mShowPanelInfo.append(ti.getTimes());
+                    // 如果不是最后一个测试项，则增加一个分隔符
                     if (i < selectItems.size() - 1) {
                         mShowPanelInfo.append(MyConstants.ITEM_DIVIDER_STRING);
                     }

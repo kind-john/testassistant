@@ -1,14 +1,14 @@
 <resources>
     <string name="app_name">CktTestAssistant</string>
-    <string name="deletetestitem">delete</string>
+    <string name="deletetestitem">Del</string>
     <string name="savetestitem">save</string>
-    <string name="add_testitem">add</string>
-    <string name="add_usecase">add</string>
-    <string name="starttest">start</string>
+    <string name="add_testitem">Add</string>
+    <string name="add_usecase">Add</string>
+    <string name="starttest">Start</string>
     <string name="settingsdelay">delay : </string>
     <string name="settingstimes">times : </string>
-    <string name="importusecaseconfig">import</string>
-    <string name="exportusecaseconfig">export</string>
+    <string name="importusecaseconfig">Import</string>
+    <string name="exportusecaseconfig">Export</string>
     <string name="createresultfail">create excel fail!</string>
     <string name="title_activity_open_file">open file</string>
     <string name="pleaseinputpath">Please input config file path</string>
@@ -16,8 +16,8 @@
     <string name="empty">empty</string>
     <string name="useCaseStartTag">"Use case : "</string>
     <string name="testItemStartTag">"Test item : "</string>
-    <string name="insert_starttag">start tag</string>
-    <string name="insert_endtag">end tag</string>
+    <string name="insert_starttag">(</string>
+    <string name="insert_endtag">)</string>
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
     <string name="set_tag_times">set use case times</string>
@@ -28,4 +28,5 @@
     <string name="set_uc_name">set usecase name:</string>
     <string name="item_is_null">test item is null,please add!</string>
     <string name="set_propeties">set propeties</string>
+    <string name="settingsbrightness">brightness : </string>
 </resources>

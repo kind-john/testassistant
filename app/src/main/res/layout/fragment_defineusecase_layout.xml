@@ -12,6 +12,7 @@
         android:layout_height="100dp"
         android:layout_marginRight="@dimen/horizontal_gap"
         android:layout_marginTop="@dimen/vertical_gap"
+        app:layout_constraintHorizontal_weight="1"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toLeftOf="@+id/insertStart"
         app:layout_constraintTop_toTopOf="parent">
@@ -25,51 +26,62 @@
 
     <Button
         android:id="@+id/delete"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="50dp"
+        android:layout_height="48dp"
         android:layout_gravity="center_horizontal"
         android:layout_marginRight="@dimen/horizontal_gap"
         android:layout_marginTop="@dimen/vertical_gap"
         android:background="@drawable/btn_selector"
         android:text="@string/deletetestitem"
+        android:textAllCaps="false"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        tools:layout_editor_absoluteY="4dp"
+        tools:layout_editor_absoluteX="331dp" />
 
     <Button
         android:id="@+id/save"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="50dp"
+        android:layout_height="48dp"
         android:layout_gravity="center_horizontal"
         android:layout_marginRight="@dimen/horizontal_gap"
         android:layout_marginTop="@dimen/vertical_gap"
         android:background="@drawable/btn_selector"
         android:text="@string/savetestitem"
+        android:textAllCaps="false"
         app:layout_constraintBottom_toBottomOf="@id/panel"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/delete" />
+        app:layout_constraintTop_toBottomOf="@+id/delete"
+        tools:layout_editor_absoluteY="50dp"
+        tools:layout_editor_absoluteX="329dp" />
 
     <Button
         android:id="@+id/insertStart"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="24dp"
+        android:layout_height="48dp"
         android:layout_marginRight="@dimen/horizontal_gap"
         android:layout_marginTop="@dimen/vertical_gap"
         android:text="@string/insert_starttag"
         android:background="@drawable/btn_selector"
         app:layout_constraintRight_toLeftOf="@+id/delete"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        tools:layout_editor_absoluteY="2dp"
+        tools:layout_editor_absoluteX="306dp" />
 
     <Button
         android:id="@+id/insertEnd"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="24dp"
+        android:layout_height="48dp"
         android:layout_marginRight="@dimen/horizontal_gap"
         android:layout_marginTop="@dimen/vertical_gap"
         android:text="@string/insert_endtag"
         android:background="@drawable/btn_selector"
         app:layout_constraintBottom_toBottomOf="@id/panel"
         app:layout_constraintRight_toLeftOf="@+id/save"
-        app:layout_constraintTop_toBottomOf="@+id/insertStart" />
+        app:layout_constraintTop_toBottomOf="@+id/insertStart"
+        tools:layout_editor_absoluteY="54dp"
+        tools:layout_editor_absoluteX="309dp"
+        app:layout_constraintVertical_bias="1.0" />
 
     <TextView
         android:id="@+id/divider"

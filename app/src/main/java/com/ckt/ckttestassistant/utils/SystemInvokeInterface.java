@@ -12,6 +12,7 @@ public interface SystemInvokeInterface {
     boolean checkAllSimIsReady(Context context);
 
     boolean launchSuccess(Context context, String packageName, String activityName);
+    void clearAllRecentsApp(Context context);
 
     void openWifi(Context context);
     void closeWifi(Context context);
@@ -37,9 +38,12 @@ public interface SystemInvokeInterface {
     void mySleep(Context context);
 
     void myReboot(Context context);
-    void myBrightnessChange(Context context, int value);
+
+    void mySetBrightness(Context context, int value);
+    int myGetBrightness(Context context);
 
     void openNFC(Context context);
     void closeNFC(Context context);
+
     boolean nfcIsEnabled();
 }

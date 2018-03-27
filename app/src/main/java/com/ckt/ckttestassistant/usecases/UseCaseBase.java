@@ -188,7 +188,7 @@ public abstract class UseCaseBase extends TestBase{
         children.add(testItem);
     }
 
-    public void saveParametersToXml(XmlSerializer serializer) throws Exception{
+    /*public void saveParametersToXml(XmlSerializer serializer) throws Exception{
         try {
             serializer.startTag(null, "usecase");
             serializer.attribute(null, "id", "1");
@@ -205,7 +205,7 @@ public abstract class UseCaseBase extends TestBase{
         } catch (Exception e) {
             throw new Exception();
         }
-    }
+    }*/
 
     public abstract void setChildrenSN();
 

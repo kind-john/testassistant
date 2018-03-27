@@ -9,7 +9,6 @@ import android.support.annotation.Nullable;
 
 import com.ckt.ckttestassistant.UseCaseManager;
 import com.ckt.ckttestassistant.usecases.UseCaseBase;
-import com.ckt.ckttestassistant.utils.CktXmlHelper2;
 import com.ckt.ckttestassistant.utils.LogUtils;
 
 import java.util.ArrayList;
@@ -26,11 +25,6 @@ public class DoTestIntentService extends IntentService {
     public static final String INIT_COMMAND = "init";
     public static final String STARTEXECUTE_COMMAND = "start";
     public static final String CREATEEXCELFILE_COMMAND = "createexcelfile";
-    private ArrayList<UseCaseBase> mSelectedUseCases;
-    private Handler mHandler;
-    private CktXmlHelper2 mXmlHelper;
-    private Context mContext;
-    private ArrayList<UseCaseBase> mAllUseCases;
     private HandleCallback mHandleCallback;
     public interface HandleCallback{
         void initHandler();

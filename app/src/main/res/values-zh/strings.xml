@@ -4,8 +4,8 @@
     <string name="empty">没有内容</string>
     <string name="useCaseStartTag">"用例 ： "</string>
     <string name="testItemStartTag">"测试项 : "</string>
-    <string name="insert_starttag">首标签</string>
-    <string name="insert_endtag">尾标签</string>
+    <string name="insert_starttag">(</string>
+    <string name="insert_endtag">)</string>
     <string name="add_testitem">添加</string>
     <string name="add_usecase">添加</string>
     <string name="app_name">辅助测试工具</string>
@@ -15,7 +15,7 @@
     <string name="importusecaseconfig">导入用例</string>
     <string name="pleaseinputpath">请输入配置文件</string>
     <string name="savetestitem">保存</string>
-    <string name="settingsdelay">延迟</string>
+    <string name="settingsdelay">延迟：</string>
     <string name="settingstimes">次数：</string>
     <string name="starttest">开始</string>
     <string name="title_activity_open_file">打开文件</string>
@@ -29,4 +29,5 @@
     <string name="set_uc_name">设置用例名字：</string>
     <string name="item_is_null">测试项为空，请添加！</string>
     <string name="set_propeties">设置参数</string>
+    <string name="settingsbrightness">亮度：</string>
 </resources>

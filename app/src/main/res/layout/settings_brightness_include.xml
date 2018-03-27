@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent">
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_marginBottom="10dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView
+            android:layout_width="0dp"
+            android:layout_weight="4"
+            android:paddingLeft="10dp"
+            android:paddingRight="5dp"
+            android:gravity="center_vertical"
+            android:layout_height="wrap_content"
+            android:text="@string/settingsbrightness"/>
+        <EditText
+            android:id="@+id/brightness"
+            android:layout_width="0dp"
+            android:layout_weight="6"
+            android:paddingLeft="5dp"
+            android:paddingRight="10dp"
+            android:gravity="center_vertical"
+            android:layout_height="wrap_content"
+            android:inputType="number"/>
+    </LinearLayout>
+</merge>

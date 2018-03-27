@@ -5,6 +5,7 @@ import android.content.Context;
 import android.util.Xml;
 
 import com.ckt.ckttestassistant.TestBase;
+import com.ckt.ckttestassistant.testitems.BrightnessSetting;
 import com.ckt.ckttestassistant.testitems.TestItemBase;
 import com.ckt.ckttestassistant.usecases.UseCaseBase;
 
@@ -655,6 +656,15 @@ public class CktXmlHelper {
 
                                 break;
                             }
+                            case XmlTagConstants.XMLTAG_TESTITEM_BRIGHTNESS:
+                                int brightness = Integer.parseInt(parser.nextText());
+                                LogUtils.d(TAG, XmlTagConstants.XMLTAG_TESTITEM_BRIGHTNESS+" : " + brightness);
+
+                                if (testitem != null && testitem instanceof BrightnessSetting) {
+                                    ((BrightnessSetting)testitem).setBrightness(brightness);
+                                }
+
+                                break;
                             case XmlTagConstants.XMLTAG_TESTITEM_SELECTED: {
                                 boolean isChecked = Boolean.parseBoolean(parser.nextText());
                                 LogUtils.d(TAG, "testitem isChecked : " + isChecked);

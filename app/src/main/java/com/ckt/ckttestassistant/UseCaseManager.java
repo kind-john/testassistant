@@ -462,7 +462,6 @@ public class UseCaseManager implements DoTestIntentService.HandleCallback{
         LogUtils.d(TAG, "method updateTestItemOfXml enter");
         try {
             mXmlHelper.updateTestItem(path, ti, true);
-
         }catch (Exception e){
             e.printStackTrace();
         }
